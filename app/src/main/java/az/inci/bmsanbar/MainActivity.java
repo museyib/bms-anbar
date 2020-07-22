@@ -1,0 +1,256 @@
+package az.inci.bmsanbar;
+
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.EditText;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+
+import com.google.gson.Gson;
+
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+
+import java.lang.ref.WeakReference;
+import java.util.Objects;
+
+public class MainActivity extends AppBaseActivity {
+
+    String id;
+    String password;
+    String serverUrl;
+    int connectionTimeout;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        enableStorageAccess();
+        loadConfig();
+
+        String[] lastLogin=dbHelper.getLastLogin();
+        id=lastLogin[0];
+        password=lastLogin[1];
+    }
+
+    private void loadConfig()
+    {
+        serverUrl = dbHelper.getParameter("serverUrl");
+        if (serverUrl.isEmpty())
+            serverUrl=config().getServerUrl();
+        config().setServerUrl(serverUrl);
+
+        connectionTimeout=dbHelper.getParameter("connectionTimeout").isEmpty() ? 0 :
+                Integer.parseInt(dbHelper.getParameter("connectionTimeout"));
+        if (connectionTimeout==0)
+            connectionTimeout=config().getConnectionTimeout();
+        config().setConnectionTimeout(connectionTimeout);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.settings_menu, menu);
+        MenuItem item = menu.findItem(R.id.settings);
+        item.setOnMenuItemClickListener(item1 -> {
+            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            return false;
+        });
+        return true;
+    }
+
+    protected void enableStorageAccess()
+    {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED)
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+    }
+
+    public void openPickingDocs(View view) {
+        showLoginDialog(AppConfig.PICK_MODE);
+    }
+
+    public void openPickingDocsForPack(View view) {
+        showLoginDialog(AppConfig.PACK_MODE);
+    }
+
+    public void checkDoc(View view) {
+        showLoginDialog(AppConfig.DLV_MODE);
+    }
+
+    private void showLoginDialog(int mode)
+    {
+        this.mode=mode;
+        View view= getLayoutInflater().inflate(R.layout.login_page,
+                findViewById(android.R.id.content), false);
+
+        EditText idEdit=view.findViewById(R.id.id_edit);
+        EditText passwordEdit=view.findViewById(R.id.password_edit);
+
+        idEdit.setText(id);
+        idEdit.selectAll();
+        passwordEdit.setText(password);
+
+        AlertDialog loginDialog=new AlertDialog.Builder(this)
+                .setTitle(R.string.enter)
+                .setView(view)
+                .setPositiveButton(R.string.enter, (dialog, which) -> {
+                    id =idEdit.getText().toString().toUpperCase();
+                    password=passwordEdit.getText().toString();
+
+                    if (id.isEmpty() || password.isEmpty())
+                    {
+                        showToastMessage(getString(R.string.username_or_password_not_entered));
+                        showLoginDialog(mode);
+                        playSound(SOUND_FAIL);
+                    }
+                    else
+                    {
+                        User user=dbHelper.getUser(id);
+                        if (user!=null) {
+                            loadUserInfo(user, false);
+                            attemptLogin(user);
+                        }
+                        else {
+                            new ServerLoginExecutor(MainActivity.this).execute(url("user", id, password));
+                        }
+
+                        dialog.dismiss();
+                    }
+                }).create();
+
+        Objects.requireNonNull(loginDialog.getWindow()).setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        loginDialog.show();
+    }
+
+    static class ServerLoginExecutor extends AsyncTask<String, Boolean, String>
+    {
+        private WeakReference<MainActivity> reference;
+
+        ServerLoginExecutor(MainActivity activity)
+        {
+            reference=new WeakReference<>(activity);
+        }
+
+        @Override
+        protected String doInBackground(String... url) {
+            MainActivity activity=reference.get();
+            publishProgress(true);
+            RestTemplate template=new RestTemplate();
+            ((SimpleClientHttpRequestFactory)template.getRequestFactory())
+                    .setConnectTimeout(activity.config().getConnectionTimeout()*1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+            String result;
+            try {
+                result = template.postForObject(url[0], null, String.class);
+            }
+            catch (ResourceAccessException ex)
+            {
+                ex.printStackTrace();
+                return null;
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+                return null;
+            }
+            return result;
+        }
+
+        @Override
+        protected void onProgressUpdate(Boolean... b) {
+            reference.get().showProgressDialog(true);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            MainActivity activity = reference.get();
+            if (result==null)
+            {
+                activity.showMessageDialog(activity.getString(R.string.error),
+                        activity.getString(R.string.connection_error),
+                        android.R.drawable.ic_dialog_alert);
+                activity.playSound(SOUND_FAIL);
+            }
+            else {
+                Gson gson = new Gson();
+                User user = gson.fromJson(result, User.class);
+                if (user.getId()==null)
+                {
+                    activity.showMessageDialog(activity.getString(R.string.error),
+                            activity.getString(R.string.username_or_password_incorrect),
+                            android.R.drawable.ic_dialog_alert);
+                    activity.playSound(SOUND_FAIL);
+                }
+                else
+                {
+                    user.setId(user.getId().toUpperCase());
+                    activity.loadUserInfo(user, true);
+                    activity.attemptLogin(user);
+                }
+            }
+            activity.showProgressDialog(false);
+        }
+    }
+
+    private void attemptLogin(User user)
+    {
+        if (!user.getPassword().equals(password))
+        {
+            new ServerLoginExecutor(MainActivity.this).execute(url("user", id, password));
+        }
+        else
+        {
+            dbHelper.updateLastLogin(id, password);
+            Class<?> aClass;
+            switch (mode)
+            {
+                case AppConfig.PICK_MODE:
+                    if (!user.isPick())
+                    {
+                        showMessageDialog(getString(R.string.warning),getString(R.string.not_allowed),
+                                android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                        return;
+                    }
+                    aClass= PickDocActivity.class;
+                    break;
+                case AppConfig.PACK_MODE:
+                    if (!user.isPack())
+                    {
+                        showMessageDialog(getString(R.string.warning),getString(R.string.not_allowed),
+                                android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                        return;
+                    }
+                    aClass= PackDocActivity.class;
+                    break;
+                case AppConfig.DLV_MODE:
+                    if (!user.isLoading())
+                    {
+                        showMessageDialog(getString(R.string.warning),getString(R.string.not_allowed),
+                                android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                        return;
+                    }
+                    aClass= ShipDocActivity.class;
+                    break;
+                default: aClass=null;
+            }
+            Intent intent = new Intent(MainActivity.this, aClass);
+            startActivity(intent);
+        }
+    }
+}
