@@ -297,8 +297,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 .append(WHS_CODE).append(" TEXT,")
                 .append(UOM).append(" TEXT,")
                 .append(UOM_FACTOR).append(" REAL,")
-                .append(QTY).append(" INTEGER,")
-                .append(PICKED_QTY).append(" INTEGER,")
+                .append(QTY).append(" REAL,")
+                .append(PICKED_QTY).append(" REAL,")
                 .append(PICK_AREA).append(" TEXT,")
                 .append(PICK_GROUP).append(" TEXT,")
                 .append(PICK_USER).append(" TEXT,")
@@ -365,8 +365,8 @@ public class DBHelper extends SQLiteOpenHelper {
             trx.setWhsCode(cursor.getString(9));
             trx.setUom(cursor.getString(10));
             trx.setUomFactor(cursor.getDouble(11));
-            trx.setQty(cursor.getInt(12));
-            trx.setPickedQty(cursor.getInt(13));
+            trx.setQty(cursor.getDouble(12));
+            trx.setPickedQty(cursor.getDouble(13));
             trx.setPickArea(cursor.getString(14));
             trx.setPickGroup(cursor.getString(15));
             trx.setPickUser(cursor.getString(16));
@@ -409,8 +409,8 @@ public class DBHelper extends SQLiteOpenHelper {
             trx.setWhsCode(cursor.getString(9));
             trx.setUom(cursor.getString(10));
             trx.setUomFactor(cursor.getDouble(11));
-            trx.setQty(cursor.getInt(12));
-            trx.setPickedQty(cursor.getInt(13));
+            trx.setQty(cursor.getDouble(12));
+            trx.setPickedQty(cursor.getDouble(13));
             trx.setPickArea(cursor.getString(14));
             trx.setPickGroup(cursor.getString(15));
             trx.setPickUser(cursor.getString(16));
@@ -569,9 +569,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 .append(WHS_CODE).append(" TEXT,")
                 .append(UOM).append(" TEXT,")
                 .append(UOM_FACTOR).append(" REAL,")
-                .append(QTY).append(" INTEGER,")
-                .append(PICKED_QTY).append(" INTEGER,")
-                .append(PACKED_QTY).append(" INTEGER,")
+                .append(QTY).append(" REAL,")
+                .append(PICKED_QTY).append(" REAL,")
+                .append(PACKED_QTY).append(" REAL,")
                 .append(PICK_AREA).append(" TEXT,")
                 .append(PICK_GROUP).append(" TEXT,")
                 .append(PICK_USER).append(" TEXT,")
@@ -639,9 +639,9 @@ public class DBHelper extends SQLiteOpenHelper {
             trx.setWhsCode(cursor.getString(9));
             trx.setUom(cursor.getString(10));
             trx.setUomFactor(cursor.getDouble(11));
-            trx.setQty(cursor.getInt(12));
-            trx.setPickedQty(cursor.getInt(13));
-            trx.setPackedQty(cursor.getInt(14));
+            trx.setQty(cursor.getDouble(12));
+            trx.setPickedQty(cursor.getDouble(13));
+            trx.setPackedQty(cursor.getDouble(14));
             trx.setPickArea(cursor.getString(15));
             trx.setPickGroup(cursor.getString(16));
             trx.setPickUser(cursor.getString(17));
@@ -684,9 +684,9 @@ public class DBHelper extends SQLiteOpenHelper {
             trx.setWhsCode(cursor.getString(9));
             trx.setUom(cursor.getString(10));
             trx.setUomFactor(cursor.getDouble(11));
-            trx.setQty(cursor.getInt(12));
-            trx.setPickedQty(cursor.getInt(13));
-            trx.setPackedQty(cursor.getInt(14));
+            trx.setQty(cursor.getDouble(12));
+            trx.setPickedQty(cursor.getDouble(13));
+            trx.setPackedQty(cursor.getDouble(14));
             trx.setPickArea(cursor.getString(15));
             trx.setPickGroup(cursor.getString(16));
             trx.setPickUser(cursor.getString(17));

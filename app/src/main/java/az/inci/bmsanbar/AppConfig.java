@@ -2,7 +2,7 @@ package az.inci.bmsanbar;
 
 class AppConfig {
     static final String DB_NAME= "BMS_ANBAR";
-    static final int DB_VERSION=1;
+    static final int DB_VERSION=2;
 
     static final int PICK_MODE=0;
     static final int PACK_MODE=1;

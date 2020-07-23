@@ -32,6 +32,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.ref.WeakReference;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,11 +56,14 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
     int focusPosition;
     boolean onFocus;
     boolean pickedAll;
+    private DecimalFormat decimalFormat;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pick_trx_layout);
+        decimalFormat=new DecimalFormat();
+
         sendButton=findViewById(R.id.send);
         barcodeButton=findViewById(R.id.barcode);
         trxListView=findViewById(R.id.trx_list);
@@ -232,17 +236,19 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
 
         invCodeView.setText(trx.getInvCode());
         invNameView.setText(trx.getInvName());
-        qtyEdit.setText(String.valueOf(trx.getQty()));
+
+        qtyEdit.setText(decimalFormat.format(trx.getQty()));
         qtyEdit.setEnabled(false);
-        pickedQtyEdit.setText(String.valueOf(trx.getPickedQty()));
+
+        pickedQtyEdit.setText(decimalFormat.format(trx.getPickedQty()));
         pickedQtyEdit.selectAll();
 
         AlertDialog dialog =new AlertDialog.Builder(this)
                 .setView(view)
                 .setPositiveButton(R.string.ok, (dialog1, which) -> {
-                    int pickedQty;
+                    double pickedQty;
                     if (!pickedQtyEdit.getText().toString().isEmpty())
-                        pickedQty = Integer.parseInt(pickedQtyEdit.getText().toString());
+                        pickedQty = Double.parseDouble(pickedQtyEdit.getText().toString());
                     else
                         pickedQty=-1;
 
@@ -346,12 +352,11 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
             TextView qty=convertView.findViewById(R.id.qty);
             TextView pickedQty=convertView.findViewById(R.id.picked);
 
-            assert trx != null;
             invCode.setText(trx.getInvCode());
             invName.setText(trx.getInvName());
             invBrand.setText(trx.getInvBrand());
-            qty.setText(String.valueOf(trx.getQty()));
-            pickedQty.setText(String.valueOf(trx.getPickedQty()));
+            qty.setText(activity.decimalFormat.format(trx.getQty()));
+            pickedQty.setText(activity.decimalFormat.format(trx.getPickedQty()));
             convertView.setTag(trx);
 
             if (trx.getPickedQty() < trx.getQty())

@@ -30,12 +30,91 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttons" >
 
-        <ListView
-            android:id="@+id/doc_list"
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:divider="@android:color/black"
-            android:dividerHeight="3dp" />
+            android:layout_height="wrap_content">
+
+            <TableRow
+                android:id="@+id/header"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:background="#D3F6FA">
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
+
+                <TextView
+                    android:layout_width="110dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/trx_no_label"
+                    android:textColor="@android:color/black" />
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/pick_area"
+                    android:textColor="@android:color/black" />
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/item_count"
+                    android:textColor="@android:color/black" />
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/picked"
+                    android:textColor="@android:color/black" />
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
+
+                <TextView
+                    android:layout_width="250dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/description"
+                    android:textColor="@android:color/black" />
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
+            </TableRow>
+
+            <ListView
+                android:id="@+id/doc_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:divider="@android:color/black"
+                android:dividerHeight="3dp"
+                android:layout_marginTop="20dp" />
+        </RelativeLayout>
 
     </HorizontalScrollView>
 

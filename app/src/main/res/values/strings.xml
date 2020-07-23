@@ -12,7 +12,7 @@
     <string name="trx_no_label">No</string>
     <string name="item_count_label">Sətir:</string>
     <string name="item_count">Sətir</string>
-    <string name="pick_area_label">Yığım zonası:</string>
+    <string name="pick_area">Zona</string>
     <string name="description_label">Açıqlama:</string>
     <string name="description">Açıqlama</string>
     <string name="invs_to_pick">Yığılmalı mallar</string>
@@ -32,7 +32,7 @@
     <string name="picked_label">Yığılıb:</string>
     <string name="customer_label">Müştəri</string>
     <string name="packed">Paketlənib</string>
-    <string name="packed_short">Pak.</string>
+    <string name="packed_short">Paket.</string>
     <string name="pick_user">Yığan</string>
     <string name="add">Yeni</string>
     <string name="driver_label">Sürücü:</string>

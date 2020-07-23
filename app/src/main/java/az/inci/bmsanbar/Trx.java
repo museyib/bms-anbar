@@ -14,9 +14,9 @@ public class Trx {
     private String pickStatus;
     private String invCode;
     private String invName;
-    private int qty;
-    private int pickedQty;
-    private int packedQty;
+    private double qty;
+    private double pickedQty;
+    private double packedQty;
     private String whsCode;
     private String pickArea;
     private String pickGroup;
@@ -80,19 +80,19 @@ public class Trx {
         this.invName = invName;
     }
 
-    public int getQty() {
+    public double getQty() {
         return qty;
     }
 
-    public void setQty(int qty) {
+    public void setQty(double qty) {
         this.qty = qty;
     }
 
-    public int getPickedQty() {
+    public double getPickedQty() {
         return pickedQty;
     }
 
-    public void setPickedQty(int pickedQty) {
+    public void setPickedQty(double pickedQty) {
         this.pickedQty = pickedQty;
     }
 
@@ -259,11 +259,11 @@ public class Trx {
         this.position = position;
     }
 
-    public int getPackedQty() {
+    public double getPackedQty() {
         return packedQty;
     }
 
-    public void setPackedQty(int packedQty) {
+    public void setPackedQty(double packedQty) {
         this.packedQty = packedQty;
     }
 }

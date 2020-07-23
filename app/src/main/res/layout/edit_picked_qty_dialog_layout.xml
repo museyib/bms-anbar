@@ -46,7 +46,7 @@
         android:autofillHints=""
         android:ems="10"
         android:hint="@string/picked"
-        android:inputType="number"
+        android:inputType="number|numberDecimal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/qty">

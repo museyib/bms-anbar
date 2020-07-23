@@ -80,6 +80,10 @@ public class PickDocActivity extends AppBaseActivity {
         docList=dbHelper.getPickDocsByPickUser(config().getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, docList);
         docListView.setAdapter(docAdapter);
+        if (docList.size()==0)
+            findViewById(R.id.header).setVisibility(View.GONE);
+        else
+            findViewById(R.id.header).setVisibility(View.VISIBLE);
     }
 
     public void getNewDocs(String pickUser)
