@@ -103,7 +103,7 @@
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
@@ -115,7 +115,7 @@
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
@@ -127,7 +127,7 @@
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
@@ -139,7 +139,7 @@
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
@@ -151,7 +151,7 @@
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />

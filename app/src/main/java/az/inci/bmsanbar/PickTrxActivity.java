@@ -63,6 +63,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pick_trx_layout);
         decimalFormat=new DecimalFormat();
+        decimalFormat.setGroupingUsed(false);
 
         sendButton=findViewById(R.id.send);
         barcodeButton=findViewById(R.id.barcode);

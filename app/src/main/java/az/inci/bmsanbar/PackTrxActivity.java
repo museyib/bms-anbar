@@ -62,6 +62,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pack_trx_layout);
         decimalFormat=new DecimalFormat();
+        decimalFormat.setGroupingUsed(false);
 
         sendButton=findViewById(R.id.send);
         barcodeButton=findViewById(R.id.barcode);
