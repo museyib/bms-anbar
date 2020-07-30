@@ -187,7 +187,7 @@ public class PackTrxActivity extends ScannerSupportActivity
             }
             else
             {
-                if (trx.getPackedQty() < trx.getPickedQty()) {
+                if (trx.getPackedQty() < trx.getQty()) {
                     trx.setPackedQty(trx.getPackedQty() + 1);
                     dbHelper.updatePackTrx(trx);
                     playSound(SOUND_SUCCESS);

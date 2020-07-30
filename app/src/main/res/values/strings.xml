@@ -80,4 +80,6 @@
     <string name="from_date">Tarixdən</string>
     <string name="to_date">Tarixə</string>
     <string name="ready">Hazır</string>
+    <string name="keyword">Açar söz</string>
+    <string name="keyword_not_entered">Açar söz daxil edilməyib.</string>
 </resources>
