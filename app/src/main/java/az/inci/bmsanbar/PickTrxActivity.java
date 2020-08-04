@@ -184,22 +184,24 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         if (trx!=null) {
             onFocus = true;
             focusPosition=trxList.indexOf(trx);
-            if (!isContinuous) {
-                showEditPickedQtyDialog(trx);
-                playSound(SOUND_SUCCESS);
+            if (trx.getPickedQty() >= trx.getQty())
+            {
+                showMessageDialog(getString(R.string.info),
+                        getString(R.string.already_picked),
+                        android.R.drawable.ic_dialog_info);
+                playSound(SOUND_FAIL);
             }
             else
             {
-                if (trx.getPickedQty() < trx.getQty()) {
+                if (!isContinuous) {
+                    showEditPickedQtyDialog(trx);
+                }
+                else
+                {
                     trx.setPickedQty(trx.getPickedQty() + 1);
                     dbHelper.updatePickTrx(trx);
-                    playSound(SOUND_SUCCESS);
-                } else {
-                    showMessageDialog(getString(R.string.info),
-                            getString(R.string.already_picked),
-                            android.R.drawable.ic_dialog_info);
-                    playSound(SOUND_FAIL);
                 }
+                playSound(SOUND_SUCCESS);
             }
         }
         else {

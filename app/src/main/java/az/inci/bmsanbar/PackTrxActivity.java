@@ -181,22 +181,24 @@ public class PackTrxActivity extends ScannerSupportActivity
         if (trx!=null) {
             onFocus=true;
             focusPosition=trxList.indexOf(trx);
-            if (!isContinuous) {
-                showEditPackedQtyDialog(trx);
-                playSound(SOUND_SUCCESS);
+            if (trx.getPackedQty() >= trx.getQty())
+            {
+                showMessageDialog(getString(R.string.info),
+                        getString(R.string.already_packed),
+                        android.R.drawable.ic_dialog_info);
+                playSound(SOUND_FAIL);
             }
             else
             {
-                if (trx.getPackedQty() < trx.getQty()) {
+                if (!isContinuous) {
+                    showEditPackedQtyDialog(trx);
+                }
+                else
+                {
                     trx.setPackedQty(trx.getPackedQty() + 1);
                     dbHelper.updatePackTrx(trx);
-                    playSound(SOUND_SUCCESS);
-                } else {
-                    showMessageDialog(getString(R.string.info),
-                            getString(R.string.already_picked),
-                            android.R.drawable.ic_dialog_info);
-                    playSound(SOUND_FAIL);
                 }
+                playSound(SOUND_SUCCESS);
             }
         }
         else {

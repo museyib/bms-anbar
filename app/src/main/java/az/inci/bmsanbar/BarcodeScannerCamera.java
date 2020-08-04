@@ -180,42 +180,61 @@ public class BarcodeScannerCamera extends ScannerSupportActivity {
 
     private void getAndContinue(String barcode)
     {
+        switch (trxType) {
+            case "pick":
+                getPickTrx(barcode);
+                break;
+            case "pack":
+                getPackTrx(barcode);
+                break;
+        }
+        add.setEnabled(false);
+    }
+
+    private void getPickTrx(String barcode)
+    {
         Trx trx=dbHelper.getPickTrxByBarcode(barcode, trxNo);
-        if (trx!=null) {
-            switch (trxType) {
-                case "pick":
-                    if (trx.getPickedQty() < trx.getQty()) {
-                        trx.setPickedQty(trx.getPickedQty() + 1);
-                        dbHelper.updatePickTrx(trx);
-                        playSound(R.raw.barcodebeep);
-                    } else {
-                        showMessageDialog(getString(R.string.info),
-                                getString(R.string.already_picked),
-                                android.R.drawable.ic_dialog_info);
-                        playSound(R.raw.serror2);
-                    }
-                    goodInfo.setText(trx.getInvName()+": "+trx.getPickedQty());
-                    break;
-                case "pack":
-                    if (trx.getPackedQty() < trx.getPickedQty()) {
-                        trx.setPackedQty(trx.getPackedQty() + 1);
-                        dbHelper.updatePackTrx(trx);
-                        playSound(R.raw.barcodebeep);
-                    } else {
-                        showMessageDialog(getString(R.string.info),
-                                getString(R.string.already_packed),
-                                android.R.drawable.ic_dialog_info);
-                        playSound(R.raw.serror2);
-                    }
-                    goodInfo.setText(trx.getInvName()+": "+trx.getPackedQty());
-                    break;
+        if (trx!=null)
+        {
+            if (trx.getPickedQty() < trx.getQty()) {
+                trx.setPickedQty(trx.getPickedQty() + 1);
+                dbHelper.updatePickTrx(trx);
+                playSound(SOUND_SUCCESS);
+            } else {
+                showMessageDialog(getString(R.string.info),
+                        getString(R.string.already_picked),
+                        android.R.drawable.ic_dialog_info);
+                playSound(SOUND_FAIL);
             }
+            goodInfo.setText(trx.getInvName() + ": " + trx.getPickedQty());
         }
         else {
             Toast.makeText(this, R.string.good_not_found, Toast.LENGTH_LONG).show();
             playSound(R.raw.serror2);
         }
-        add.setEnabled(false);
+    }
+
+    private void getPackTrx(String barcode)
+    {
+        Trx trx=dbHelper.getPackTrxByBarcode(barcode, trxNo);
+        if (trx!=null)
+        {
+            if (trx.getPackedQty() < trx.getQty()) {
+                trx.setPackedQty(trx.getPackedQty() + 1);
+                dbHelper.updatePackTrx(trx);
+                playSound(SOUND_SUCCESS);
+            } else {
+                showMessageDialog(getString(R.string.info),
+                        getString(R.string.already_packed),
+                        android.R.drawable.ic_dialog_info);
+                playSound(SOUND_FAIL);
+            }
+            goodInfo.setText(trx.getInvName() + ": " + trx.getPackedQty());
+        }
+        else {
+        Toast.makeText(this, R.string.good_not_found, Toast.LENGTH_LONG).show();
+        playSound(R.raw.serror2);
+    }
     }
 
     @Override
