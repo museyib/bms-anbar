@@ -152,23 +152,39 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         equateAll.setOnClickListener(v -> {
-            for (Trx trx : trxList)
-            {
-                trx.setPackedQty(trx.getPickedQty());
-                dbHelper.updatePackTrx(trx);
-            }
+            AlertDialog dialog=new AlertDialog.Builder(this)
+                .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
+                .setNegativeButton("Bəli", (dialogInterface, i) ->
+                {
+                    for (Trx trx : trxList)
+                    {
+                        trx.setPackedQty(trx.getPickedQty());
+                        dbHelper.updatePackTrx(trx);
+                    }
 
-            loadTrx();
+                    loadTrx();
+                })
+                .setPositiveButton("Xeyr", null)
+                .create();
+            dialog.show();
         });
 
         reload.setOnClickListener(view -> {
-            for (Trx trx : trxList)
-            {
-                trx.setPackedQty(0);
-                dbHelper.updatePackTrx(trx);
-            }
+            AlertDialog dialog=new AlertDialog.Builder(this)
+                    .setMessage("Sayları sıfırlamaq istəyirsiniz?")
+                    .setNegativeButton("Bəli", (dialogInterface, i) ->
+                    {
+                        for (Trx trx : trxList)
+                        {
+                            trx.setPackedQty(0);
+                            dbHelper.updatePackTrx(trx);
+                        }
 
-            loadTrx();
+                        loadTrx();
+                    })
+                    .setPositiveButton("Xeyr", null)
+                    .create();
+            dialog.show();
         });
 
         loadTrx();

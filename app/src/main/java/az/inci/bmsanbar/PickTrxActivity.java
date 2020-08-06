@@ -155,23 +155,39 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         });
 
         equateAll.setOnClickListener(v -> {
-            for (Trx trx : trxList)
-            {
-                trx.setPickedQty(trx.getQty());
-                dbHelper.updatePickTrx(trx);
-            }
+            AlertDialog dialog=new AlertDialog.Builder(this)
+                    .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
+                    .setNegativeButton("Bəli", (dialogInterface, i) ->
+                    {
+                        for (Trx trx : trxList)
+                        {
+                            trx.setPickedQty(trx.getQty());
+                            dbHelper.updatePickTrx(trx);
+                        }
 
-            loadTrx();
+                        loadTrx();
+                    })
+                    .setPositiveButton("Xeyr", null)
+                    .create();
+            dialog.show();
         });
 
         reload.setOnClickListener(view -> {
-            for (Trx trx : trxList)
-            {
-                trx.setPickedQty(0);
-                dbHelper.updatePickTrx(trx);
+            AlertDialog dialog=new AlertDialog.Builder(this)
+                    .setMessage("Sayları sıfırlamaq istəyirsiniz?")
+                    .setNegativeButton("Bəli", (dialogInterface, i) ->
+                    {
+                        for (Trx trx : trxList)
+                        {
+                            trx.setPickedQty(0);
+                            dbHelper.updatePickTrx(trx);
+                        }
 
-                loadTrx();
-            }
+                        loadTrx();
+                    })
+                    .setPositiveButton("Xeyr", null)
+                    .create();
+            dialog.show();
         });
 
         loadTrx();
