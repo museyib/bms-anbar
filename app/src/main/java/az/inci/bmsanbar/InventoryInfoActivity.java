@@ -168,7 +168,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
         ListView listView=view.findViewById(R.id.result_list);
         listView.setAdapter(new ResultListAdapter(this, R.layout.result_list_item, list));
 
-        AlertDialog dialog=new AlertDialog.Builder(this)
+        AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle("Axtarışın nəticəsi")
                 .setView(view)
                 .create();

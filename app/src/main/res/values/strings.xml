@@ -82,4 +82,6 @@
     <string name="ready">Hazır</string>
     <string name="keyword">Açar söz</string>
     <string name="keyword_not_entered">Açar söz daxil edilməyib.</string>
+    <string name="update">Versiyanı yenilə</string>
+    <string name="no_new_version">Yeni versiya yoxdur!</string>
 </resources>

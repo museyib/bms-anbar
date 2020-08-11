@@ -48,7 +48,7 @@ public class ShipDocActivity extends AppBaseActivity {
         });
 
         docListView.setOnItemLongClickListener((parent, view, position, id) -> {
-            AlertDialog dialog=new AlertDialog.Builder(this)
+            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                     .setMessage("Silmək istəyirsinizmi?")
                     .setPositiveButton("Sil", (dialogInterface, i) -> {
                         ShipDoc doc= (ShipDoc) parent.getItemAtPosition(position);

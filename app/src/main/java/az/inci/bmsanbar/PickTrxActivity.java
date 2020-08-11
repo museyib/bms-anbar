@@ -106,25 +106,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) -> {
             Trx trx= (Trx) view.getTag();
-            String info=trx.getNotes().replaceAll("; ", "\n");
-            info=info.replaceAll("\\\\n", "\n");
-            info+="\n\nÖlçü vahidi: "+trx.getUom();
-            info+="\n\nBrend: "+trx.getInvBrand();
-            info+="\n\nBarkodlar:"+dbHelper.barcodeList(trx.getInvCode(), DBHelper.PICK_TRX);
-            AlertDialog.Builder builder=new AlertDialog.Builder(PickTrxActivity.this);
-            builder.setTitle("Məlumat");
-            builder.setMessage(info);
-            builder.setPositiveButton("Şəkil", (dialog, which) -> {
-                Intent photoIntent = new Intent(PickTrxActivity.this, PhotoActivity.class);
-                photoIntent.putExtra("invCode", trx.getInvCode());
-                photoIntent.putExtra("notes", trx.getNotes());
-                startActivity(photoIntent);
-            });
-            builder.setNeutralButton("Say", (dialog, which) -> {
-                String url=url("inv","qty",trx.getWhsCode(),trx.getInvCode());
-                new ShowQuantity(PickTrxActivity.this).execute(url);
-            });
-            builder.show();
+            showInfoDialog(trx);
             return true;
         });
 
@@ -134,7 +116,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
                     new SendTrx(this).execute();
                 else
                 {
-                    AlertDialog dialog = new AlertDialog.Builder(this)
+                    AlertDialog dialog = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                             .setMessage("Mallar tam yığılmayıb. Göndərmək istəyirsiniz?")
                             .setNegativeButton("Bəli", (dialogInterface, i) -> new SendTrx(this).execute())
                             .setPositiveButton("Xeyr", null)
@@ -155,7 +137,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         });
 
         equateAll.setOnClickListener(v -> {
-            AlertDialog dialog=new AlertDialog.Builder(this)
+            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                     .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
                     .setNegativeButton("Bəli", (dialogInterface, i) ->
                     {
@@ -173,7 +155,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         });
 
         reload.setOnClickListener(view -> {
-            AlertDialog dialog=new AlertDialog.Builder(this)
+            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                     .setMessage("Sayları sıfırlamaq istəyirsiniz?")
                     .setNegativeButton("Bəli", (dialogInterface, i) ->
                     {
@@ -191,6 +173,29 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         });
 
         loadTrx();
+    }
+
+    private void showInfoDialog(Trx trx)
+    {
+        String info=trx.getNotes().replaceAll("; ", "\n");
+        info=info.replaceAll("\\\\n", "\n");
+        info+="\n\nÖlçü vahidi: "+trx.getUom();
+        info+="\n\nBrend: "+trx.getInvBrand();
+        info+="\n\nBarkodlar:"+dbHelper.barcodeList(trx.getInvCode(), DBHelper.PICK_TRX);
+        AlertDialog.Builder builder=new AlertDialog.Builder(PickTrxActivity.this);
+        builder.setTitle("Məlumat");
+        builder.setMessage(info);
+        builder.setPositiveButton("Şəkil", (dialog, which) -> {
+            Intent photoIntent = new Intent(PickTrxActivity.this, PhotoActivity.class);
+            photoIntent.putExtra("invCode", trx.getInvCode());
+            photoIntent.putExtra("notes", trx.getNotes());
+            startActivity(photoIntent);
+        });
+        builder.setNeutralButton("Say", (dialog, which) -> {
+            String url=url("inv","qty",trx.getWhsCode(),trx.getInvCode());
+            new ShowQuantity(PickTrxActivity.this).execute(url);
+        });
+        builder.show();
     }
 
     @Override
@@ -262,7 +267,9 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         pickedQtyEdit.setText(decimalFormat.format(trx.getPickedQty()));
         pickedQtyEdit.selectAll();
 
-        AlertDialog dialog =new AlertDialog.Builder(this)
+        invNameView.setOnClickListener(view1 -> showInfoDialog(trx));
+
+        AlertDialog dialog =new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setView(view)
                 .setPositiveButton(R.string.ok, (dialog1, which) -> {
                     double pickedQty;

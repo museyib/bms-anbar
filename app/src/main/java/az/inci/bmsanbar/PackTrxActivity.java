@@ -104,26 +104,7 @@ public class PackTrxActivity extends ScannerSupportActivity
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) -> {
             Trx trx= (Trx) view.getTag();
-            String info=trx.getNotes().replaceAll("; ", "\n");
-            info=info.replaceAll("\\\\n", "\n");
-            info+="\n\nÖlçü vahidi: "+trx.getUom();
-            info+="\n\nBrend: "+trx.getInvBrand();
-            info+="\n\nYığan: "+trx.getPickUser();
-            info+="\n\nBarkodlar:"+dbHelper.barcodeList(trx.getInvCode(), DBHelper.PACK_TRX);
-            AlertDialog.Builder builder=new AlertDialog.Builder(PackTrxActivity.this);
-            builder.setTitle("Məlumat");
-            builder.setMessage(info);
-            builder.setPositiveButton("Şəkil", (dialog, which) -> {
-                Intent photoIntent = new Intent(PackTrxActivity.this, PhotoActivity.class);
-                photoIntent.putExtra("invCode", trx.getInvCode());
-                photoIntent.putExtra("notes", trx.getNotes());
-                startActivity(photoIntent);
-            });
-            builder.setNeutralButton("Say", (dialog, which) -> {
-                String url=url("inv","qty",trx.getWhsCode(),trx.getInvCode());
-                new ShowQuantity(PackTrxActivity.this).execute(url);
-            });
-            builder.show();
+            showInfoDialog(trx);
             return true;
         });
 
@@ -132,7 +113,7 @@ public class PackTrxActivity extends ScannerSupportActivity
                 new SendTrx(this).execute();
             else
             {
-                AlertDialog dialog=new AlertDialog.Builder(this)
+                AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                         .setMessage("Mallar tam yığılmayıb. Göndərmək istəyirsiniz?")
                         .setNegativeButton("Bəli", (dialogInterface, i) -> new SendTrx(this).execute())
                         .setPositiveButton("Xeyr", null)
@@ -152,7 +133,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         equateAll.setOnClickListener(v -> {
-            AlertDialog dialog=new AlertDialog.Builder(this)
+            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
                 .setNegativeButton("Bəli", (dialogInterface, i) ->
                 {
@@ -170,7 +151,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         reload.setOnClickListener(view -> {
-            AlertDialog dialog=new AlertDialog.Builder(this)
+            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                     .setMessage("Sayları sıfırlamaq istəyirsiniz?")
                     .setNegativeButton("Bəli", (dialogInterface, i) ->
                     {
@@ -188,6 +169,29 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         loadTrx();
+    }
+
+    private void showInfoDialog(Trx trx)
+    {
+        String info=trx.getNotes().replaceAll("; ", "\n");
+        info=info.replaceAll("\\\\n", "\n");
+        info+="\n\nÖlçü vahidi: "+trx.getUom();
+        info+="\n\nBrend: "+trx.getInvBrand();
+        info+="\n\nBarkodlar:"+dbHelper.barcodeList(trx.getInvCode(), DBHelper.PICK_TRX);
+        AlertDialog.Builder builder=new AlertDialog.Builder(PackTrxActivity.this);
+        builder.setTitle("Məlumat");
+        builder.setMessage(info);
+        builder.setPositiveButton("Şəkil", (dialog, which) -> {
+            Intent photoIntent = new Intent(PackTrxActivity.this, PhotoActivity.class);
+            photoIntent.putExtra("invCode", trx.getInvCode());
+            photoIntent.putExtra("notes", trx.getNotes());
+            startActivity(photoIntent);
+        });
+        builder.setNeutralButton("Say", (dialog, which) -> {
+            String url=url("inv","qty",trx.getWhsCode(),trx.getInvCode());
+            new ShowQuantity(PackTrxActivity.this).execute(url);
+        });
+        builder.show();
     }
 
     @Override
@@ -263,7 +267,9 @@ public class PackTrxActivity extends ScannerSupportActivity
         packedQtyEdit.setText(decimalFormat.format(trx.getPackedQty()));
         packedQtyEdit.selectAll();
 
-        AlertDialog dialog =new AlertDialog.Builder(this)
+        invNameView.setOnClickListener(view1 -> showInfoDialog(trx));
+
+        AlertDialog dialog =new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setView(view)
                 .setPositiveButton(R.string.ok, (dialog1, which) -> {
                     double packedQty;

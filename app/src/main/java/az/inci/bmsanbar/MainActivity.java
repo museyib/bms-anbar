@@ -2,8 +2,11 @@ package az.inci.bmsanbar;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +16,7 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 
 import com.google.gson.Gson;
 
@@ -21,6 +25,10 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
 
@@ -60,10 +68,26 @@ public class MainActivity extends AppBaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.settings_menu, menu);
-        MenuItem item = menu.findItem(R.id.settings);
-        item.setOnMenuItemClickListener(item1 -> {
+        MenuItem itemSettings = menu.findItem(R.id.settings);
+        itemSettings.setOnMenuItemClickListener(item1 -> {
             startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-            return false;
+            return true;
+        });
+
+        MenuItem itemUpdate = menu.findItem(R.id.update);
+        itemUpdate.setOnMenuItemClickListener(item1 -> {
+            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+                    .setTitle("Proqram versiyasını yenilə")
+                    .setMessage("Dəyişiklikdən asılı olaraq məlumatlar silinə bilər. Yeniləmək istəyirsinizmi?")
+                    .setNegativeButton("Bəli", (dialogInterface, i) -> {
+                        String url = url("download");
+                        new Updater(this).execute(url);
+                    })
+                    .setPositiveButton("Xeyr", null)
+                    .create();
+
+            dialog.show();
+            return true;
         });
         return true;
     }
@@ -103,7 +127,7 @@ public class MainActivity extends AppBaseActivity {
         idEdit.selectAll();
         passwordEdit.setText(password);
 
-        AlertDialog loginDialog=new AlertDialog.Builder(this)
+        AlertDialog loginDialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle(R.string.enter)
                 .setView(view)
                 .setPositiveButton(R.string.enter, (dialog, which) -> {
@@ -251,6 +275,111 @@ public class MainActivity extends AppBaseActivity {
             }
             Intent intent = new Intent(MainActivity.this, aClass);
             startActivity(intent);
+        }
+    }
+
+    static class Updater extends AsyncTask<String, Boolean, byte[]>
+    {
+        private WeakReference<MainActivity> reference;
+
+        Updater(MainActivity activity)
+        {
+            reference=new WeakReference<>(activity);
+        }
+
+        @Override
+        protected byte[] doInBackground(String... url) {
+            MainActivity activity=reference.get();
+            publishProgress(true);
+            RestTemplate template=new RestTemplate();
+            ((SimpleClientHttpRequestFactory)template.getRequestFactory())
+                    .setConnectTimeout(activity.config().getConnectionTimeout()*1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+            byte[] result;
+            try {
+                result = template.getForObject(url[0], byte[].class);
+                if (result.length == 0)
+                    return result;
+            }
+            catch (ResourceAccessException ex)
+            {
+                ex.printStackTrace();
+                return null;
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+                return null;
+            }
+            return result;
+        }
+
+        @Override
+        protected void onProgressUpdate(Boolean... b) {
+            reference.get().showProgressDialog(true);
+        }
+
+        @Override
+        protected void onPostExecute(byte[] result) {
+            MainActivity activity = reference.get();
+            File file=new File(Objects.requireNonNull(activity.getExternalFilesDir("/"))
+                    .getPath()+"/BMSAnbar.apk");
+            if (!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            FileOutputStream stream;
+            try {
+                stream = new FileOutputStream(file);
+                stream.write(result);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            PackageManager pm = activity.getPackageManager();
+            PackageInfo info = pm.getPackageArchiveInfo(file.getAbsolutePath(), 0);
+            int version=0;
+            try {
+                version=activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionCode;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+            if (file.length()>0 && info.versionCode>version)
+            {
+
+                Intent installIntent;
+                Uri uri;
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                    installIntent = new Intent(Intent.ACTION_VIEW);
+                    uri = Uri.fromFile(file);
+                    installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    installIntent.setDataAndType(uri, "application/vnd.android.package-archive");
+                }
+                else {
+                    installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                    uri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file);
+                    installIntent.setData(uri);
+                    installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+                activity.startActivity(installIntent);
+            }
+            else
+            {
+                activity.showMessageDialog(activity.getString(R.string.info),
+                        activity.getString(R.string.no_new_version),
+                        android.R.drawable.ic_dialog_info);
+            }
+            activity.showProgressDialog(false);
         }
     }
 }

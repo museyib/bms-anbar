@@ -1,12 +1,10 @@
 package az.inci.bmsanbar;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -59,7 +57,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         View view = getLayoutInflater().inflate(R.layout.progress_dialog_layout,
                 findViewById(android.R.id.content), false);
         if (progressDialog == null) {
-            progressDialog = new AlertDialog.Builder(this)
+            progressDialog = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                     .setView(view)
                     .setCancelable(false)
                     .create();
@@ -101,7 +99,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
 
     protected void showMessageDialog(String title, String message, int icon)
     {
-        new android.app.AlertDialog.Builder(this)
+        new android.app.AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setIcon(icon)
                 .setTitle(title)
                 .setMessage(message).show();
@@ -114,6 +112,11 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         ShowQuantity(AppBaseActivity activity)
         {
             reference=new WeakReference<>(activity);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            reference.get().showProgressDialog(true);
         }
 
         @Override
@@ -141,8 +144,10 @@ public abstract class AppBaseActivity extends AppCompatActivity {
                 title=activity.getString(R.string.error);
                 result = activity.getString(R.string.connection_error);
                 type=android.R.drawable.ic_dialog_alert;
+                activity.playSound(SOUND_FAIL);
             }
             activity.showMessageDialog(title, result, type);
+            activity.showProgressDialog(false);
         }
     }
 
@@ -213,7 +218,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         fromText.setText(new Date(System.currentTimeMillis()).toString());
         toText.setText(new Date(System.currentTimeMillis()).toString());
 
-        AlertDialog dialog=new AlertDialog.Builder(this)
+        AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setView(view)
                 .setTitle("Tarix intervalı")
                 .setPositiveButton("OK", (dialogInterface, i) -> {

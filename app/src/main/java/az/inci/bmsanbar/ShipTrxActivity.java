@@ -10,7 +10,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -67,7 +66,7 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         send.setOnClickListener(v -> new SendSipping(ShipTrxActivity.this).execute());
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) -> {
-            AlertDialog dialog=new AlertDialog.Builder(this)
+            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                     .setMessage(R.string.want_to_delete)
                     .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
                         ShipTrx trx= (ShipTrx) parent.getItemAtPosition(position);
