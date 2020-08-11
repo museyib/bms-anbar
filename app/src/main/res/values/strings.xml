@@ -84,4 +84,5 @@
     <string name="keyword_not_entered">Açar söz daxil edilməyib.</string>
     <string name="update">Versiyanı yenilə</string>
     <string name="no_new_version">Yeni versiya yoxdur!</string>
+    <string name="camera_scanner">Kamera skaner</string>
 </resources>

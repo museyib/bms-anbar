@@ -66,7 +66,7 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         send.setOnClickListener(v -> new SendSipping(ShipTrxActivity.this).execute());
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) -> {
-            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            AlertDialog dialog=new AlertDialog.Builder(this)
                     .setMessage(R.string.want_to_delete)
                     .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
                         ShipTrx trx= (ShipTrx) parent.getItemAtPosition(position);

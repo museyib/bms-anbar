@@ -76,7 +76,7 @@ public class MainActivity extends AppBaseActivity {
 
         MenuItem itemUpdate = menu.findItem(R.id.update);
         itemUpdate.setOnMenuItemClickListener(item1 -> {
-            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            AlertDialog dialog=new AlertDialog.Builder(this)
                     .setTitle("Proqram versiyasını yenilə")
                     .setMessage("Dəyişiklikdən asılı olaraq məlumatlar silinə bilər. Yeniləmək istəyirsinizmi?")
                     .setNegativeButton("Bəli", (dialogInterface, i) -> {
@@ -127,7 +127,7 @@ public class MainActivity extends AppBaseActivity {
         idEdit.selectAll();
         passwordEdit.setText(password);
 
-        AlertDialog loginDialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+        AlertDialog loginDialog=new AlertDialog.Builder(this)
                 .setTitle(R.string.enter)
                 .setView(view)
                 .setPositiveButton(R.string.enter, (dialog, which) -> {

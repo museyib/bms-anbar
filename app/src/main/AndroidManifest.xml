@@ -53,7 +53,8 @@
             android:label="@string/ship_doc"
             android:windowSoftInputMode="stateHidden" />
 
-        <activity android:name=".PhotoActivity" />
+        <activity android:name=".PhotoActivity"
+            android:label="@string/image"/>
 
         <activity android:name=".PackTrxActivity" />
 
@@ -89,7 +90,8 @@
 
         <activity android:name=".PickTrxActivity" />
 
-        <activity android:name=".BarcodeScannerCamera" />
+        <activity android:name=".BarcodeScannerCamera"
+            android:label="@string/camera_scanner"/>
     </application>
 
 </manifest>

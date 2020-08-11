@@ -57,7 +57,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         View view = getLayoutInflater().inflate(R.layout.progress_dialog_layout,
                 findViewById(android.R.id.content), false);
         if (progressDialog == null) {
-            progressDialog = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            progressDialog = new AlertDialog.Builder(this)
                     .setView(view)
                     .setCancelable(false)
                     .create();
@@ -99,7 +99,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
 
     protected void showMessageDialog(String title, String message, int icon)
     {
-        new android.app.AlertDialog.Builder(this, R.style.AlertDialogTheme)
+        new android.app.AlertDialog.Builder(this)
                 .setIcon(icon)
                 .setTitle(title)
                 .setMessage(message).show();
@@ -218,7 +218,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         fromText.setText(new Date(System.currentTimeMillis()).toString());
         toText.setText(new Date(System.currentTimeMillis()).toString());
 
-        AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+        AlertDialog dialog=new AlertDialog.Builder(this)
                 .setView(view)
                 .setTitle("Tarix intervalı")
                 .setPositiveButton("OK", (dialogInterface, i) -> {

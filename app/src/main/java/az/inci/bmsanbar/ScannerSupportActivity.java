@@ -21,7 +21,17 @@ public abstract class ScannerSupportActivity extends AppBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        barcode2DWithSoft = Barcode2DWithSoft.getInstance();
+        try {
+            barcode2DWithSoft = Barcode2DWithSoft.getInstance();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
         scanTask = new ScanTask(this);
         scanTask.execute();
         model= DeviceConfiguration.getModel();

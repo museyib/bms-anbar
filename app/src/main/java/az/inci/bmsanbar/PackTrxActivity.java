@@ -113,7 +113,7 @@ public class PackTrxActivity extends ScannerSupportActivity
                 new SendTrx(this).execute();
             else
             {
-                AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+                AlertDialog dialog=new AlertDialog.Builder(this)
                         .setMessage("Mallar tam yığılmayıb. Göndərmək istəyirsiniz?")
                         .setNegativeButton("Bəli", (dialogInterface, i) -> new SendTrx(this).execute())
                         .setPositiveButton("Xeyr", null)
@@ -133,7 +133,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         equateAll.setOnClickListener(v -> {
-            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            AlertDialog dialog=new AlertDialog.Builder(this)
                 .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
                 .setNegativeButton("Bəli", (dialogInterface, i) ->
                 {
@@ -151,7 +151,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         reload.setOnClickListener(view -> {
-            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            AlertDialog dialog=new AlertDialog.Builder(this)
                     .setMessage("Sayları sıfırlamaq istəyirsiniz?")
                     .setNegativeButton("Bəli", (dialogInterface, i) ->
                     {
@@ -177,6 +177,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         info=info.replaceAll("\\\\n", "\n");
         info+="\n\nÖlçü vahidi: "+trx.getUom();
         info+="\n\nBrend: "+trx.getInvBrand();
+        info+="\n\nYığan: "+trx.getPickUser();
         info+="\n\nBarkodlar:"+dbHelper.barcodeList(trx.getInvCode(), DBHelper.PICK_TRX);
         AlertDialog.Builder builder=new AlertDialog.Builder(PackTrxActivity.this);
         builder.setTitle("Məlumat");
@@ -269,7 +270,7 @@ public class PackTrxActivity extends ScannerSupportActivity
 
         invNameView.setOnClickListener(view1 -> showInfoDialog(trx));
 
-        AlertDialog dialog =new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+        AlertDialog dialog =new AlertDialog.Builder(this)
                 .setView(view)
                 .setPositiveButton(R.string.ok, (dialog1, which) -> {
                     double packedQty;

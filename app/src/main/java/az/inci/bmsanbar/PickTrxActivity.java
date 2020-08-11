@@ -116,7 +116,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
                     new SendTrx(this).execute();
                 else
                 {
-                    AlertDialog dialog = new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+                    AlertDialog dialog = new AlertDialog.Builder(this)
                             .setMessage("Mallar tam yığılmayıb. Göndərmək istəyirsiniz?")
                             .setNegativeButton("Bəli", (dialogInterface, i) -> new SendTrx(this).execute())
                             .setPositiveButton("Xeyr", null)
@@ -137,7 +137,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         });
 
         equateAll.setOnClickListener(v -> {
-            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            AlertDialog dialog=new AlertDialog.Builder(this)
                     .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
                     .setNegativeButton("Bəli", (dialogInterface, i) ->
                     {
@@ -155,7 +155,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         });
 
         reload.setOnClickListener(view -> {
-            AlertDialog dialog=new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            AlertDialog dialog=new AlertDialog.Builder(this)
                     .setMessage("Sayları sıfırlamaq istəyirsiniz?")
                     .setNegativeButton("Bəli", (dialogInterface, i) ->
                     {
@@ -269,7 +269,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
 
         invNameView.setOnClickListener(view1 -> showInfoDialog(trx));
 
-        AlertDialog dialog =new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+        AlertDialog dialog =new AlertDialog.Builder(this)
                 .setView(view)
                 .setPositiveButton(R.string.ok, (dialog1, which) -> {
                     double pickedQty;
