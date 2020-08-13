@@ -178,7 +178,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         info+="\n\nÖlçü vahidi: "+trx.getUom();
         info+="\n\nBrend: "+trx.getInvBrand();
         info+="\n\nYığan: "+trx.getPickUser();
-        info+="\n\nBarkodlar:"+dbHelper.barcodeList(trx.getInvCode(), DBHelper.PICK_TRX);
+        info+="\n\nBarkodlar: "+dbHelper.barcodeList(trx.getInvCode(), DBHelper.PACK_TRX);
         AlertDialog.Builder builder=new AlertDialog.Builder(PackTrxActivity.this);
         builder.setTitle("Məlumat");
         builder.setMessage(info);
