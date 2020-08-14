@@ -37,6 +37,7 @@ public class MainActivity extends AppBaseActivity {
     String id;
     String password;
     String serverUrl;
+    String imageUrl;
     int connectionTimeout;
 
     @Override
@@ -57,6 +58,11 @@ public class MainActivity extends AppBaseActivity {
         if (serverUrl.isEmpty())
             serverUrl=config().getServerUrl();
         config().setServerUrl(serverUrl);
+
+        imageUrl = dbHelper.getParameter("imageUrl");
+        if (imageUrl.isEmpty())
+            imageUrl=config().getImageUrl();
+        config().setImageUrl(imageUrl);
 
         connectionTimeout=dbHelper.getParameter("connectionTimeout").isEmpty() ? 0 :
                 Integer.parseInt(dbHelper.getParameter("connectionTimeout"));

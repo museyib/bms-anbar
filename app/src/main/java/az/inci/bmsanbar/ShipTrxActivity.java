@@ -187,6 +187,8 @@ public class ShipTrxActivity extends ScannerSupportActivity {
 
     public void setVehicleCode(String vehicleCode) {
         if (!vehicleCode.startsWith("PER")) {
+            if (vehicleCode.startsWith("VHC"))
+                vehicleCode=vehicleCode.substring(3);
             this.vehicleCode = vehicleCode;
             vehicleCodeEditText.setText(vehicleCode);
             playSound(SOUND_SUCCESS);
@@ -277,9 +279,12 @@ public class ShipTrxActivity extends ScannerSupportActivity {
                 activity.showMessageDialog(activity.getString(R.string.error),
                         activity.getString(R.string.doc_already_loaded),
                         android.R.drawable.ic_dialog_alert);
+                activity.playSound(SOUND_FAIL);
             }
-            else
+            else {
                 activity.addDoc(activity.barcode);
+                activity.playSound(SOUND_SUCCESS);
+            }
         }
     }
 

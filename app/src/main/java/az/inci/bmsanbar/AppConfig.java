@@ -13,6 +13,7 @@ class AppConfig {
 
     private User user;
     private String serverUrl ="http://192.168.0.5:8022";
+    private String imageUrl ="http://192.168.0.5:8025";
     private int connectionTimeout=5;
 
     User getUser() {
@@ -37,5 +38,13 @@ class AppConfig {
 
     public void setConnectionTimeout(int connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
