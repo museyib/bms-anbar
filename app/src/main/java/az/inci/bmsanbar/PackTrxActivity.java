@@ -52,6 +52,7 @@ public class PackTrxActivity extends ScannerSupportActivity
     String trxNo;
     String orderTrxNo;
     String bpName;
+    String notes;
     private boolean onFocus;
     private int focusPosition;
     private boolean packedAll;
@@ -94,6 +95,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         trxNo=intent.getStringExtra("trxNo");
         orderTrxNo=intent.getStringExtra("orderTrxNo");
         bpName=intent.getStringExtra("bpName");
+        notes=intent.getStringExtra("notes");
         setTitle(orderTrxNo+": "+bpName);
 
         trxListView.setOnItemClickListener((parent, view, position, id) -> {
@@ -178,6 +180,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         info+="\n\nÖlçü vahidi: "+trx.getUom();
         info+="\n\nBrend: "+trx.getInvBrand();
         info+="\n\nYığan: "+trx.getPickUser();
+        info+="\nKöməkçi yığan: "+notes;
         info+="\n\nBarkodlar: "+dbHelper.barcodeList(trx.getInvCode(), DBHelper.PACK_TRX);
         AlertDialog.Builder builder=new AlertDialog.Builder(PackTrxActivity.this);
         builder.setTitle("Məlumat");

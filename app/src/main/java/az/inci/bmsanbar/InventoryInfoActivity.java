@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -193,7 +192,6 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
         info=info.replaceAll("; ", "\n");
         info=info.replaceAll("\\\\n", "\n");
         invCode=info.substring(10, 17);
-        Log.e("INV", invCode);
         infoText.setText(info);
     }
 

@@ -14,6 +14,7 @@ class Doc {
     private String pickStatus;
     private String whsCode;
     private String description;
+    private String notes;
     private String pickArea;
     private String pickGroup;
     private String pickUser;
@@ -198,5 +199,13 @@ class Doc {
 
     public void setApproveUser(String approveUser) {
         this.approveUser = approveUser;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

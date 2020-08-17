@@ -463,7 +463,8 @@ public class DBHelper extends SQLiteOpenHelper {
                     .append(BP_NAME).append(" TEXT,")
                     .append(SBE_CODE).append(" TEXT,")
                     .append(SBE_NAME).append(" TEXT,")
-                    .append(APPROVE_USER).append(" TEXT")
+                    .append(APPROVE_USER).append(" TEXT,")
+                    .append(NOTES).append(" TEXT")
                     .append(")")
                     .toString());
         }
@@ -487,7 +488,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 "PD.BP_NAME,"+
                 "PD.SBE_CODE,"+
                 "PD.SBE_NAME,"+
-                "PD.APPROVE_USER"+
+                "PD.APPROVE_USER,"+
+                "PD.NOTES"+
                 " FROM PACK_DOC PD " +
                 "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
                     "FROM PACK_TRX GROUP BY TRX_NO) PT_ITEM ON PD.TRX_NO=PT_ITEM.TRX_NO " +
@@ -511,6 +513,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 doc.setSbeCode(cursor.getString(8));
                 doc.setSbeName(cursor.getString(9));
                 doc.setApproveUser(cursor.getString(10));
+                doc.setNotes(cursor.getString(11));
 
                 docList.add(doc);
             }
@@ -544,6 +547,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(SBE_CODE, doc.getSbeCode());
         values.put(SBE_NAME, doc.getSbeName());
         values.put(APPROVE_USER, doc.getApproveUser());
+        values.put(NOTES, doc.getNotes());
 
         db.delete(PACK_DOC, TRX_NO+"=?", new String[]{doc.getTrxNo()});
 

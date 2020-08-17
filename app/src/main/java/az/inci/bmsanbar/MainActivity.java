@@ -86,7 +86,7 @@ public class MainActivity extends AppBaseActivity {
                     .setTitle("Proqram versiyasını yenilə")
                     .setMessage("Dəyişiklikdən asılı olaraq məlumatlar silinə bilər. Yeniləmək istəyirsinizmi?")
                     .setNegativeButton("Bəli", (dialogInterface, i) -> {
-                        String url = url("download");
+                        String url = url("download", "BMSAnbar");
                         new Updater(this).execute(url);
                     })
                     .setPositiveButton("Xeyr", null)
@@ -328,6 +328,14 @@ public class MainActivity extends AppBaseActivity {
         @Override
         protected void onPostExecute(byte[] result) {
             MainActivity activity = reference.get();
+            if (result==null)
+            {
+                activity.showMessageDialog(activity.getString(R.string.info),
+                        activity.getString(R.string.no_new_version),
+                        android.R.drawable.ic_dialog_info);
+                activity.showProgressDialog(false);
+                return;
+            }
             File file=new File(Objects.requireNonNull(activity.getExternalFilesDir("/"))
                     .getPath()+"/BMSAnbar.apk");
             if (!file.exists()) {

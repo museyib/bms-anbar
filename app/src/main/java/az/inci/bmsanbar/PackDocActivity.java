@@ -54,6 +54,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             intent.putExtra("trxNo", doc.getTrxNo());
             intent.putExtra("orderTrxNo", doc.getPrevTrxNo());
             intent.putExtra("bpName", doc.getBpName());
+            intent.putExtra("notes", doc.getNotes());
             startActivity(intent);
         });
 

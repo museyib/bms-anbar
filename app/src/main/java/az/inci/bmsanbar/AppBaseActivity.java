@@ -22,7 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.lang.ref.WeakReference;
 import java.sql.Date;
 
-public abstract class AppBaseActivity extends AppCompatActivity {
+public class AppBaseActivity extends AppCompatActivity {
 
     protected static int SOUND_SUCCESS=R.raw.barcodebeep;
     protected static int SOUND_FAIL=R.raw.serror3;
