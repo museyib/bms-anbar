@@ -40,7 +40,7 @@
             android:drawableStart="@drawable/pack"
             android:drawableLeft="@drawable/pack"
             android:gravity="start|center_vertical"
-            android:onClick="openPickingDocsForPack"
+            android:onClick="openPackingDocs"
             android:text="@string/packing"
             android:textAllCaps="false"
             android:textSize="18sp" />
@@ -52,7 +52,7 @@
             android:drawableStart="@drawable/transport"
             android:drawableLeft="@drawable/transport"
             android:gravity="start|center_vertical"
-            android:onClick="checkDoc"
+            android:onClick="openShippingDocs"
             android:text="@string/shipping"
             android:textAllCaps="false"
             android:textSize="18sp" />

@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +31,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class MainActivity extends AppBaseActivity {
@@ -86,7 +89,10 @@ public class MainActivity extends AppBaseActivity {
                     .setTitle("Proqram versiyasını yenilə")
                     .setMessage("Dəyişiklikdən asılı olaraq məlumatlar silinə bilər. Yeniləmək istəyirsinizmi?")
                     .setNegativeButton("Bəli", (dialogInterface, i) -> {
-                        String url = url("download", "BMSAnbar");
+                        String url = url("download");
+                        Map<String, String> parameters=new HashMap<>();
+                        parameters.put("file-name", "BMSAnbar");
+                        url=addRequestParameters(url, parameters);
                         new Updater(this).execute(url);
                     })
                     .setPositiveButton("Xeyr", null)
@@ -112,12 +118,12 @@ public class MainActivity extends AppBaseActivity {
         showLoginDialog(AppConfig.PICK_MODE);
     }
 
-    public void openPickingDocsForPack(View view) {
+    public void openPackingDocs(View view) {
         showLoginDialog(AppConfig.PACK_MODE);
     }
 
-    public void checkDoc(View view) {
-        showLoginDialog(AppConfig.DLV_MODE);
+    public void openShippingDocs(View view) {
+        showLoginDialog(AppConfig.SHIP_MODE);
     }
 
     private void showLoginDialog(int mode)
@@ -154,7 +160,12 @@ public class MainActivity extends AppBaseActivity {
                             attemptLogin(user);
                         }
                         else {
-                            new ServerLoginExecutor(MainActivity.this).execute(url("user", id, password));
+                            String url = url("user","login");
+                            Map<String, String> parameters=new HashMap<>();
+                            parameters.put("id", id);
+                            parameters.put("password", password);
+                            url=addRequestParameters(url, parameters);
+                            new ServerLoginExecutor(MainActivity.this).execute(url);
                         }
 
                         dialog.dismiss();
@@ -185,11 +196,6 @@ public class MainActivity extends AppBaseActivity {
             String result;
             try {
                 result = template.postForObject(url[0], null, String.class);
-            }
-            catch (ResourceAccessException ex)
-            {
-                ex.printStackTrace();
-                return null;
             }
             catch (RuntimeException ex)
             {
@@ -239,7 +245,12 @@ public class MainActivity extends AppBaseActivity {
     {
         if (!user.getPassword().equals(password))
         {
-            new ServerLoginExecutor(MainActivity.this).execute(url("user", id, password));
+            String url = url("user","login");
+            Map<String, String> parameters=new HashMap<>();
+            parameters.put("id", id);
+            parameters.put("password", password);
+            url=addRequestParameters(url, parameters);
+            new ServerLoginExecutor(MainActivity.this).execute(url);
         }
         else
         {
@@ -267,7 +278,7 @@ public class MainActivity extends AppBaseActivity {
                     }
                     aClass= PackDocActivity.class;
                     break;
-                case AppConfig.DLV_MODE:
+                case AppConfig.SHIP_MODE:
                     if (!user.isLoading())
                     {
                         showMessageDialog(getString(R.string.warning),getString(R.string.not_allowed),
@@ -307,11 +318,6 @@ public class MainActivity extends AppBaseActivity {
                 if (result.length == 0)
                     return result;
             }
-            catch (ResourceAccessException ex)
-            {
-                ex.printStackTrace();
-                return null;
-            }
             catch (RuntimeException ex)
             {
                 ex.printStackTrace();
@@ -336,11 +342,10 @@ public class MainActivity extends AppBaseActivity {
                 activity.showProgressDialog(false);
                 return;
             }
-            File file=new File(Objects.requireNonNull(activity.getExternalFilesDir("/"))
-                    .getPath()+"/BMSAnbar.apk");
+            File file=new File(Environment.getExternalStorageDirectory().getPath()+"/BMSAnbar.apk");
             if (!file.exists()) {
                 try {
-                    file.createNewFile();
+                    boolean newFile = file.createNewFile();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -350,13 +355,7 @@ public class MainActivity extends AppBaseActivity {
             try {
                 stream = new FileOutputStream(file);
                 stream.write(result);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 

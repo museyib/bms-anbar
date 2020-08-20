@@ -31,8 +31,10 @@ import org.springframework.web.client.RestTemplate;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class PackDocActivity extends AppBaseActivity implements SearchView.OnQueryTextListener{
@@ -89,8 +91,12 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             findViewById(R.id.header).setVisibility(View.VISIBLE);
     }
 
-    public void getNewDocs(String pickUser) {
-        new TrxLoader(this).execute(url("trx", "pack", pickUser));
+    public void getNewDocs(String approveUser) {
+        String url=url("trx", "pack");
+        Map<String, String> parameters=new HashMap<>();
+        parameters.put("approve-user", approveUser);
+        url=addRequestParameters(url, parameters);
+        new TrxLoader(this).execute(url);
     }
 
     @Override
@@ -315,7 +321,11 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
                     }
 
                     for (String trxNo : trxSet) {
-                        new DocLoader(activity).execute(activity.url("doc","pack", trxNo));
+                        String url=activity.url("doc", "pack");
+                        Map<String, String> parameters=new HashMap<>();
+                        parameters.put("trx-no", trxNo);
+                        url=activity.addRequestParameters(url, parameters);
+                        new DocLoader(activity).execute(url);
                     }
                 }
             }
@@ -335,7 +345,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         MenuItem report=menu.findItem(R.id.pick_report);
 
         report.setOnMenuItemClickListener(item1 -> {
-            showPickDateDialog("packReport");
+            showPickDateDialog("pack-report");
             return false;
         });
 

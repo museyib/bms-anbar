@@ -28,8 +28,10 @@ import org.springframework.web.client.RestTemplate;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class PickDocActivity extends AppBaseActivity {
@@ -88,7 +90,11 @@ public class PickDocActivity extends AppBaseActivity {
 
     public void getNewDocs(String pickUser)
     {
-        new TrxLoader(this).execute(url("trx", "pick", pickUser));
+        String url=url("trx", "pick");
+        Map<String, String> parameters=new HashMap<>();
+        parameters.put("pick-user", pickUser);
+        url=addRequestParameters(url, parameters);
+        new TrxLoader(this).execute(url);
     }
 
     static class DocAdapter extends ArrayAdapter<Doc>
@@ -249,8 +255,12 @@ public class PickDocActivity extends AppBaseActivity {
 
                     for (String trxNo: trxSet)
                     {
-                        new DocLoader(activity).execute(activity.url("doc", "pick",trxNo,
-                                activity.config().getUser().getId()));
+                        String url=activity.url("doc", "pick");
+                        Map<String, String> parameters=new HashMap<>();
+                        parameters.put("trx-no", trxNo);
+                        parameters.put("pick-user", activity.config().getUser().getId());
+                        url=activity.addRequestParameters(url, parameters);
+                        new DocLoader(activity).execute(url);
                     }
                 }
             }
@@ -272,7 +282,7 @@ public class PickDocActivity extends AppBaseActivity {
         report.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         report.setOnMenuItemClickListener(item1 -> {
-            showPickDateDialog("pickReport");
+            showPickDateDialog("pick-report");
             return true;
         });
 

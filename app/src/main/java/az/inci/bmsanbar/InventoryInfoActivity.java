@@ -26,7 +26,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InventoryInfoActivity extends ScannerSupportActivity {
 
@@ -46,7 +48,10 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
     @Override
     public void onScanComplete(String barcode) {
         busy=false;
-        String url=url("inv", "info", "barcode", barcode);
+        String url=url("inv","info-by-barcode");
+        Map<String, String> parameters=new HashMap<>();
+        parameters.put("barcode", barcode);
+        url=addRequestParameters(url, parameters);
         new ShowInvAttributes(InventoryInfoActivity.this).execute(url);
     }
 
@@ -66,7 +71,10 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
         }
         else
         {
-            String url=url("inv", "search", keyword);
+            String url=url("inv","search");
+            Map<String, String> parameters=new HashMap<>();
+            parameters.put("keyword", keyword);
+            url=addRequestParameters(url, parameters);
             new SearchForKeyword(this).execute(url);
         }
     }
@@ -90,7 +98,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
             String result;
             try {
                 result = template.getForObject(url[0], String.class);
-            } catch (ResourceAccessException ex) {
+            } catch (RuntimeException ex) {
+                ex.printStackTrace();
                 return null;
             }
             return result;
@@ -100,9 +109,9 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
         protected void onPostExecute(String result) {
             InventoryInfoActivity activity=reference.get();
             if (result==null) {
-                activity.showMessageDialog(activity.getString(R.string.info),
-                        activity.getString(R.string.good_not_found),
-                        android.R.drawable.ic_dialog_info);
+                activity.showMessageDialog(activity.getString(R.string.error),
+                        activity.getString(R.string.connection_error),
+                        android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
             }
             else {
@@ -180,7 +189,10 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            String url=url("inv", "info", "invcode", invCode);
+            String url=url("inv","info-by-inv-code");
+            Map<String, String> parameters=new HashMap<>();
+            parameters.put("inv-code", invCode);
+            url=addRequestParameters(url, parameters);
             new ShowInvAttributes(this).execute(url);
 
             dialog.dismiss();

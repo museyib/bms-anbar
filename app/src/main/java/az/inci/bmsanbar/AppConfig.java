@@ -6,7 +6,7 @@ class AppConfig {
 
     static final int PICK_MODE=0;
     static final int PACK_MODE=1;
-    static final int DLV_MODE=2;
+    static final int SHIP_MODE =2;
 
     static final int VIEW_MODE=0;
     static final int NEW_MODE=1;

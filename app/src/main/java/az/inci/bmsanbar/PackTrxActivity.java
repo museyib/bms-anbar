@@ -33,7 +33,9 @@ import org.springframework.web.client.RestTemplate;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class PackTrxActivity extends ScannerSupportActivity
@@ -135,6 +137,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         equateAll.setOnClickListener(v -> {
+            playSound(SOUND_FAIL);
             AlertDialog dialog=new AlertDialog.Builder(this)
                 .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
                 .setNegativeButton("Bəli", (dialogInterface, i) ->
@@ -153,6 +156,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         reload.setOnClickListener(view -> {
+            playSound(SOUND_FAIL);
             AlertDialog dialog=new AlertDialog.Builder(this)
                     .setMessage("Sayları sıfırlamaq istəyirsiniz?")
                     .setNegativeButton("Bəli", (dialogInterface, i) ->
@@ -192,7 +196,11 @@ public class PackTrxActivity extends ScannerSupportActivity
             startActivity(photoIntent);
         });
         builder.setNeutralButton("Say", (dialog, which) -> {
-            String url=url("inv","qty",trx.getWhsCode(),trx.getInvCode());
+            String url=url("inv","qty");
+            Map<String, String> parameters=new HashMap<>();
+            parameters.put("whs-code", trx.getWhsCode());
+            parameters.put("inv-code", trx.getInvCode());
+            url=addRequestParameters(url, parameters);
             new ShowQuantity(PackTrxActivity.this).execute(url);
         });
         builder.show();
@@ -458,10 +466,13 @@ public class PackTrxActivity extends ScannerSupportActivity
             for (Object item : trxList)
             {
                 Trx trx=(Trx)item;
-                String url=activity.url("trx",
-                        String.valueOf(trx.getTrxId()),
-                        String.valueOf(trx.getPackedQty()), null,
-                        trx.getTrxNo());
+                String url=activity.url("trx", "collect");
+                Map<String, String> parameters=new HashMap<>();
+                parameters.put("trx-id", String.valueOf(trx.getTrxId()));
+                parameters.put("qty", String.valueOf(trx.getPickedQty()));
+                parameters.put("pick-status", null);
+                parameters.put("trx-no", trx.getTrxNo());
+                url=activity.addRequestParameters(url, parameters);
                 try {
                     result = template.postForObject(url, null, Boolean.class);
                 }

@@ -17,7 +17,9 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ShipTrxActivity extends ScannerSupportActivity {
 
@@ -216,7 +218,10 @@ public class ShipTrxActivity extends ScannerSupportActivity {
             playSound(SOUND_FAIL);
             return;
         }
-        String url=url("trx", "shipped", trxNo);
+        String url=url("trx", "shipped");
+        Map<String, String> parameters=new HashMap<>();;
+        parameters.put("trx-no", trxNo);
+        url=addRequestParameters(url, parameters);
         new ShippingCheck(this).execute(url);
     }
 
@@ -314,12 +319,15 @@ public class ShipTrxActivity extends ScannerSupportActivity {
             for (Object item : trxList)
             {
                 ShipTrx trx=(ShipTrx)item;
-                String url=activity.url("trx","ship",
-                        trx.getRegionCode(),
-                        trx.getDriverCode(),
-                        trx.getSrcTrxNo(),
-                        trx.getVehicleCode(),
-                        trx.getUserId());
+                String url=activity.url("trx","ship", "insert-details");
+                Map<String, String> parameters=new HashMap<>();
+                parameters.put("region-code", trx.getRegionCode());
+                parameters.put("driver-code", trx.getDriverCode());
+                parameters.put("src-trx-no", trx.getSrcTrxNo());
+                parameters.put("vehicle-code", trx.getVehicleCode());
+                parameters.put("user-id", trx.getUserId());
+                url=activity.addRequestParameters(url, parameters);
+
                 try {
                     result = template.postForObject(url, null, Boolean.class);
                 }
@@ -336,7 +344,10 @@ public class ShipTrxActivity extends ScannerSupportActivity {
 
             if (result)
             {
-                String url=activity.url("trx","ship", activity.config().getUser().getId());
+                String url=activity.url("trx","ship", "create-doc");
+                Map<String, String> parameters=new HashMap<>();;
+                parameters.put("user-id", activity.config().getUser().getId());
+                url=activity.addRequestParameters(url, parameters);
                 try {
                     result = template.postForObject(url, null, Boolean.class);
                 }

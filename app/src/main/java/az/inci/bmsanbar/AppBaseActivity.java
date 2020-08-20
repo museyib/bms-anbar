@@ -21,6 +21,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.lang.ref.WeakReference;
 import java.sql.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AppBaseActivity extends AppCompatActivity {
 
@@ -77,6 +79,23 @@ public class AppBaseActivity extends AppCompatActivity {
             sb.append("/").append(s);
         }
         return sb.toString();
+    }
+
+    public String addRequestParameters(String url, Map<String, String> requestParameters)
+    {
+        StringBuilder builder=new StringBuilder(url);
+        builder.append("?");
+
+        for (Map.Entry<String, String> entry : requestParameters.entrySet())
+        {
+            builder.append(entry.getKey())
+                    .append("=")
+                    .append(entry.getValue())
+                    .append("&");
+        }
+
+        builder.delete(builder.length()-1, builder.length());
+        return builder.toString();
     }
 
     public void loadUserInfo(User user, boolean newUser)
@@ -225,7 +244,12 @@ public class AppBaseActivity extends AppCompatActivity {
 
                     String startDate=fromText.getText().toString();
                     String endDate=toText.getText().toString();
-                    String url=url("inv", reportType, startDate, endDate, config().getUser().getId());
+                    String url=url("inv", reportType);
+                    Map<String, String> parameters=new HashMap<>();
+                    parameters.put("start-date", startDate);
+                    parameters.put("end-date", endDate);
+                    parameters.put("user-id", config().getUser().getId());
+                    url=addRequestParameters(url, parameters);
                     new GetPickReport(this).execute(url);
                 })
                 .create();
