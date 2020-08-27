@@ -25,7 +25,6 @@ import com.google.gson.reflect.TypeToken;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.ref.WeakReference;
@@ -220,12 +219,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             String result;
             try {
                 result = template.getForObject(url[0], String.class);
-            }
-            catch (ResourceAccessException ex) {
-                ex.printStackTrace();
-                return null;
-            }
-            catch (RuntimeException ex) {
+            } catch (RuntimeException ex) {
                 ex.printStackTrace();
                 return null;
             }
@@ -275,13 +269,8 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             String result;
             try {
                 result = template.getForObject(url[0], String.class);
-            }
-            catch (ResourceAccessException ex)
+            } catch (RuntimeException ex)
             {
-                ex.printStackTrace();
-                return null;
-            }
-            catch (RuntimeException ex) {
                 ex.printStackTrace();
                 return null;
             }
@@ -336,17 +325,23 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.pick_menu, menu);
+
         MenuItem item = menu.findItem(R.id.inv_attributes);
         item.setOnMenuItemClickListener(item1 -> {
             startActivity(new Intent(this, InventoryInfoActivity.class));
-            return false;
+            return true;
         });
 
         MenuItem report=menu.findItem(R.id.pick_report);
-
         report.setOnMenuItemClickListener(item1 -> {
             showPickDateDialog("pack-report");
-            return false;
+            return true;
+        });
+
+        MenuItem docList=menu.findItem(R.id.doc_list);
+        docList.setOnMenuItemClickListener(item1 -> {
+            startActivity(new Intent(this, OpenPackDocActivity.class));
+            return true;
         });
 
         MenuItem searchItem = menu.findItem(R.id.search);

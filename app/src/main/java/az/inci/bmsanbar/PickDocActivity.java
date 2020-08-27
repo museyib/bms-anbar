@@ -287,6 +287,7 @@ public class PickDocActivity extends AppBaseActivity {
         });
 
         menu.findItem(R.id.search).setVisible(false);
+        menu.findItem(R.id.doc_list).setVisible(false);
 
         return true;
     }

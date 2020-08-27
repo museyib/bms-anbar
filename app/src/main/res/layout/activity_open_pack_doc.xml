@@ -4,24 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageButton
-            android:id="@+id/newDocs"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription="@string/refresh"
-            android:src="@drawable/refresh" />
-    </LinearLayout>
-
 
     <HorizontalScrollView
         android:id="@+id/doc_list_scroll"
@@ -29,7 +11,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttons">
+        app:layout_constraintTop_toTopOf="parent">
 
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -39,7 +21,8 @@
                 android:id="@+id/header"
                 android:layout_width="match_parent"
                 android:layout_height="20dp"
-                android:background="#D3F6FA">
+                android:background="#D3F6FA"
+                android:visibility="gone">
 
                 <View
                     android:layout_width="3dp"
@@ -124,9 +107,9 @@
                 android:id="@+id/doc_list"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:divider="@android:color/black"
                 android:dividerHeight="2dp"
-                android:layout_marginTop="20dp"
                 android:paddingBottom="80dp" />
 
         </RelativeLayout>

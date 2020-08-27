@@ -86,4 +86,5 @@
     <string name="no_new_version">Yeni versiya yoxdur!</string>
     <string name="camera_scanner">Kamera skaner</string>
     <string name="image_url">Image URL</string>
+    <string name="waiting_docs">Gözləyən sənədlər</string>
 </resources>

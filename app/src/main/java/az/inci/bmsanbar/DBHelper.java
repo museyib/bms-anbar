@@ -214,9 +214,6 @@ public class DBHelper extends SQLiteOpenHelper {
     {
         List<Doc> docList=new ArrayList<>();
 
-        String[] columns=new String[]{TRX_NO, TRX_DATE, ITEM_COUNT, PICK_GROUP, PICK_AREA, DOC_DESC,
-                PICK_USER, PREV_TRX_NO};
-
         String query="SELECT PD.TRX_NO," +
                 "PD.TRX_DATE," +
                 "PT_ITEM.ITEM_COUNT," +

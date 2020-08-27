@@ -16,6 +16,14 @@
         android:title="@string/pick_report"
         app:showAsAction="withText"
         tools:ignore="AppCompatResource" />
+
+    <item
+        android:id="@+id/doc_list"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="@string/waiting_docs"
+        app:showAsAction="withText"
+        tools:ignore="AppCompatResource" />
+
     <item
         android:id="@+id/search"
         app:showAsAction="ifRoom"

@@ -469,7 +469,7 @@ public class PackTrxActivity extends ScannerSupportActivity
                 String url=activity.url("trx", "collect");
                 Map<String, String> parameters=new HashMap<>();
                 parameters.put("trx-id", String.valueOf(trx.getTrxId()));
-                parameters.put("qty", String.valueOf(trx.getPickedQty()));
+                parameters.put("qty", String.valueOf(trx.getPackedQty()));
                 parameters.put("pick-status", null);
                 parameters.put("trx-no", trx.getTrxNo());
                 url=activity.addRequestParameters(url, parameters);

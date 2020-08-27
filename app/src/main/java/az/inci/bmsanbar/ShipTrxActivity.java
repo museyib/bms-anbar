@@ -13,7 +13,6 @@ import android.widget.ListView;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.ref.WeakReference;
@@ -129,7 +128,7 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         }
         else
         {
-            if (barcode.startsWith("ITO") || barcode.startsWith("DLV")) {
+            if (barcode.startsWith("ITO") || barcode.startsWith("DLV") || barcode.startsWith("ITD")) {
                 showMessageDialog(getString(R.string.info), getString(R.string.driver_or_vehicle_not_defined),
                         android.R.drawable.ic_dialog_info);
                 playSound(SOUND_FAIL);
@@ -204,7 +203,7 @@ public class ShipTrxActivity extends ScannerSupportActivity {
 
     public void checkShipping(String trxNo)
     {
-        if (!trxNo.startsWith("ITO") && !trxNo.startsWith("DLV")) {
+        if (!trxNo.startsWith("ITO") && !trxNo.startsWith("DLV") && !trxNo.startsWith("ITD")) {
             showMessageDialog(getString(R.string.info), getString(R.string.not_valid_doc_for_shipping),
                     android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
@@ -262,13 +261,7 @@ public class ShipTrxActivity extends ScannerSupportActivity {
             boolean result;
             try {
                 result = template.getForObject(url[0], Boolean.class);
-            }
-            catch (ResourceAccessException e)
-            {
-                e.printStackTrace();
-                return false;
-            }
-            catch (RuntimeException e)
+            } catch (RuntimeException e)
             {
                 e.printStackTrace();
                 return false;
@@ -330,13 +323,8 @@ public class ShipTrxActivity extends ScannerSupportActivity {
 
                 try {
                     result = template.postForObject(url, null, Boolean.class);
-                }
-                catch (ResourceAccessException ex)
+                } catch (RuntimeException ex)
                 {
-                    ex.printStackTrace();
-                    result=false;
-                }
-                catch (RuntimeException ex) {
                     ex.printStackTrace();
                     result=false;
                 }
@@ -350,13 +338,8 @@ public class ShipTrxActivity extends ScannerSupportActivity {
                 url=activity.addRequestParameters(url, parameters);
                 try {
                     result = template.postForObject(url, null, Boolean.class);
-                }
-                catch (ResourceAccessException ex)
+                } catch (RuntimeException ex)
                 {
-                    ex.printStackTrace();
-                    result=false;
-                }
-                catch (RuntimeException ex) {
                     ex.printStackTrace();
                     result=false;
                 }
