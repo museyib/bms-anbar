@@ -19,14 +19,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:autofillHints="@string/from_date"
         android:ems="10"
+        android:hint="@string/from_date"
         android:inputType="date"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/from_date_label"
-        android:autofillHints="@string/from_date"
-        android:hint="@string/from_date"/>
+        app:layout_constraintTop_toBottomOf="@+id/from_date_label" />
 
     <TextView
         android:id="@+id/to_date_label"
@@ -43,12 +43,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:autofillHints="@string/to_date"
         android:ems="10"
+        android:hint="@string/to_date"
         android:inputType="date"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/to_date_label"
-        android:autofillHints="@string/to_date"
-        android:hint="@string/to_date"/>
+        app:layout_constraintTop_toBottomOf="@id/to_date_label" />
 </androidx.constraintlayout.widget.ConstraintLayout>

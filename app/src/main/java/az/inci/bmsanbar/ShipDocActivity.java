@@ -30,28 +30,28 @@ public class ShipDocActivity extends AppBaseActivity {
         setContentView(R.layout.ship_doc_layout);
         setTitle("Yükləmə sənədləri");
 
-        docListView=findViewById(R.id.ship_doc_list_view);
-        add=findViewById(R.id.add);
+        docListView = findViewById(R.id.ship_doc_list_view);
+        add = findViewById(R.id.add);
 
         add.setOnClickListener(v -> {
-            Intent intent=new Intent(ShipDocActivity.this, ShipTrxActivity.class);
+            Intent intent = new Intent(ShipDocActivity.this, ShipTrxActivity.class);
             intent.putExtra("mode", AppConfig.NEW_MODE);
             startActivity(intent);
         });
 
         docListView.setOnItemClickListener((parent, view, position, id) -> {
-            ShipDoc doc= (ShipDoc) parent.getItemAtPosition(position);
-            Intent intent=new Intent(ShipDocActivity.this, ShipTrxActivity.class);
+            ShipDoc doc = (ShipDoc) parent.getItemAtPosition(position);
+            Intent intent = new Intent(ShipDocActivity.this, ShipTrxActivity.class);
             intent.putExtra("driverCode", doc.getDriverCode());
             intent.putExtra("vehicleCode", doc.getVehicleCode());
             startActivity(intent);
         });
 
         docListView.setOnItemLongClickListener((parent, view, position, id) -> {
-            AlertDialog dialog=new AlertDialog.Builder(this)
+            AlertDialog dialog = new AlertDialog.Builder(this)
                     .setMessage("Silmək istəyirsinizmi?")
                     .setPositiveButton("Sil", (dialogInterface, i) -> {
-                        ShipDoc doc= (ShipDoc) parent.getItemAtPosition(position);
+                        ShipDoc doc = (ShipDoc) parent.getItemAtPosition(position);
                         dbHelper.deleteShipTrxByDriver(doc.getDriverCode());
                         loadDocs();
                     })
@@ -72,8 +72,13 @@ public class ShipDocActivity extends AppBaseActivity {
         loadDocs();
     }
 
-    private static class DocAdapter extends ArrayAdapter<ShipDoc>
-    {
+    void loadDocs() {
+        docList = dbHelper.getShipDocs(config().getUser().getId());
+        DocAdapter adapter = new DocAdapter(this, R.layout.ship_doc_item_layout, docList);
+        docListView.setAdapter(adapter);
+    }
+
+    private static class DocAdapter extends ArrayAdapter<ShipDoc> {
         public DocAdapter(@NonNull Context context, int resource, @NonNull List<ShipDoc> objects) {
             super(context, resource, objects);
         }
@@ -81,16 +86,15 @@ public class ShipDocActivity extends AppBaseActivity {
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            if (convertView==null)
-            {
+            if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.ship_doc_item_layout, parent, false);
             }
 
-            ShipDoc doc=getItem(position);
+            ShipDoc doc = getItem(position);
 
-            TextView driverTextView=convertView.findViewById(R.id.driver);
-            TextView vehicleTextView=convertView.findViewById(R.id.vehicle);
-            TextView countTextView=convertView.findViewById(R.id.count);
+            TextView driverTextView = convertView.findViewById(R.id.driver);
+            TextView vehicleTextView = convertView.findViewById(R.id.vehicle);
+            TextView countTextView = convertView.findViewById(R.id.count);
 
             assert doc != null;
             driverTextView.setText(doc.getDriverCode());
@@ -99,12 +103,5 @@ public class ShipDocActivity extends AppBaseActivity {
 
             return convertView;
         }
-    }
-
-    void loadDocs()
-    {
-        docList=dbHelper.getShipDocs(config().getUser().getId());
-        DocAdapter adapter=new DocAdapter(this, R.layout.ship_doc_item_layout, docList);
-        docListView.setAdapter(adapter);
     }
 }

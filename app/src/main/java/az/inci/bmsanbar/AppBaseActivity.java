@@ -26,8 +26,8 @@ import java.util.Map;
 
 public class AppBaseActivity extends AppCompatActivity {
 
-    protected static int SOUND_SUCCESS=R.raw.barcodebeep;
-    protected static int SOUND_FAIL=R.raw.serror3;
+    protected static int SOUND_SUCCESS = R.raw.barcodebeep;
+    protected static int SOUND_FAIL = R.raw.serror3;
 
     protected SoundPool soundPool;
     protected AudioManager audioManager;
@@ -40,16 +40,40 @@ public class AppBaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dbHelper=new DBHelper(this);
+        dbHelper = new DBHelper(this);
         dbHelper.open();
 
-        soundPool =new SoundPool(10, 3, 5);
-        audioManager=(AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        soundPool = new SoundPool(10, 3, 5);
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
     }
 
-    public void loadFooter()
-    {
-        TextView userId=findViewById(R.id.user_info_id);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        dbHelper = new DBHelper(this);
+        dbHelper.open();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        dbHelper.close();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        dbHelper.close();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        dbHelper.close();
+    }
+
+    public void loadFooter() {
+        TextView userId = findViewById(R.id.user_info_id);
         userId.setText(config().getUser().getId());
         userId.append(" - ");
         userId.append(config().getUser().getName());
@@ -71,9 +95,8 @@ public class AppBaseActivity extends AppCompatActivity {
         }
     }
 
-    public String url(String... value)
-    {
-        StringBuilder sb=new StringBuilder();
+    public String url(String... value) {
+        StringBuilder sb = new StringBuilder();
         sb.append(config().getServerUrl());
         for (String s : value) {
             sb.append("/").append(s);
@@ -81,56 +104,84 @@ public class AppBaseActivity extends AppCompatActivity {
         return sb.toString();
     }
 
-    public String addRequestParameters(String url, Map<String, String> requestParameters)
-    {
-        StringBuilder builder=new StringBuilder(url);
+    public String addRequestParameters(String url, Map<String, String> requestParameters) {
+        StringBuilder builder = new StringBuilder(url);
         builder.append("?");
 
-        for (Map.Entry<String, String> entry : requestParameters.entrySet())
-        {
+        for (Map.Entry<String, String> entry : requestParameters.entrySet()) {
             builder.append(entry.getKey())
                     .append("=")
                     .append(entry.getValue())
                     .append("&");
         }
 
-        builder.delete(builder.length()-1, builder.length());
+        builder.delete(builder.length() - 1, builder.length());
         return builder.toString();
     }
 
-    public void loadUserInfo(User user, boolean newUser)
-    {
+    public void loadUserInfo(User user, boolean newUser) {
         if (newUser) {
             dbHelper.addUser(user);
         }
         config().setUser(user);
     }
 
-    public AppConfig config()
-    {
+    public AppConfig config() {
         return ((App) getApplication()).getConfig();
     }
 
-    protected void showToastMessage(String message)
-    {
+    protected void showToastMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
-    protected void showMessageDialog(String title, String message, int icon)
-    {
+    protected void showMessageDialog(String title, String message, int icon) {
         new android.app.AlertDialog.Builder(this)
                 .setIcon(icon)
                 .setTitle(title)
                 .setMessage(message).show();
     }
 
-    protected static class ShowQuantity extends AsyncTask<String, Void, String>
-    {
+    protected void showPickDateDialog(String reportType) {
+        View view = getLayoutInflater().inflate(R.layout.pick_date_dialog,
+                findViewById(android.R.id.content), false);
+
+        EditText fromText = view.findViewById(R.id.from_date);
+        EditText toText = view.findViewById(R.id.to_date);
+
+        fromText.setText(new Date(System.currentTimeMillis()).toString());
+        toText.setText(new Date(System.currentTimeMillis()).toString());
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .setTitle("Tarix intervalı")
+                .setPositiveButton("OK", (dialogInterface, i) -> {
+
+                    String startDate = fromText.getText().toString();
+                    String endDate = toText.getText().toString();
+                    String url = url("inv", reportType);
+                    Map<String, String> parameters = new HashMap<>();
+                    parameters.put("start-date", startDate);
+                    parameters.put("end-date", endDate);
+                    parameters.put("user-id", config().getUser().getId());
+                    url = addRequestParameters(url, parameters);
+                    new GetPickReport(this).execute(url);
+                })
+                .create();
+        dialog.show();
+    }
+
+    protected void playSound(int resourceId) {
+        int volume = audioManager.getStreamMaxVolume(3);
+        sound = soundPool.load(this, resourceId, 1);
+        soundPool.setOnLoadCompleteListener((soundPool1, i, i1) ->
+                soundPool.play(sound, volume, volume, 1, 0, 1));
+    }
+
+    protected static class ShowQuantity extends AsyncTask<String, Void, String> {
         WeakReference<AppBaseActivity> reference;
 
-        ShowQuantity(AppBaseActivity activity)
-        {
-            reference=new WeakReference<>(activity);
+        ShowQuantity(AppBaseActivity activity) {
+            reference = new WeakReference<>(activity);
         }
 
         @Override
@@ -141,9 +192,9 @@ public class AppBaseActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... url) {
             RestTemplate template = new RestTemplate();
-            AppBaseActivity activity=reference.get();
-            ((SimpleClientHttpRequestFactory)template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout()*1000);
+            AppBaseActivity activity = reference.get();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
             try {
@@ -156,13 +207,13 @@ public class AppBaseActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            AppBaseActivity activity=reference.get();
-            String title="Anbarda say";
-            int type=android.R.drawable.ic_dialog_info;
-            if (result==null) {
-                title=activity.getString(R.string.error);
+            AppBaseActivity activity = reference.get();
+            String title = "Anbarda say";
+            int type = android.R.drawable.ic_dialog_info;
+            if (result == null) {
+                title = activity.getString(R.string.error);
                 result = activity.getString(R.string.connection_error);
-                type=android.R.drawable.ic_dialog_alert;
+                type = android.R.drawable.ic_dialog_alert;
                 activity.playSound(SOUND_FAIL);
             }
             activity.showMessageDialog(title, result, type);
@@ -170,13 +221,11 @@ public class AppBaseActivity extends AppCompatActivity {
         }
     }
 
-    protected static class GetPickReport extends AsyncTask<String, Boolean, String>
-    {
+    protected static class GetPickReport extends AsyncTask<String, Boolean, String> {
         WeakReference<AppBaseActivity> reference;
 
-        public GetPickReport(AppBaseActivity activity)
-        {
-            reference=new WeakReference<>(activity);
+        public GetPickReport(AppBaseActivity activity) {
+            reference = new WeakReference<>(activity);
         }
 
         @Override
@@ -187,20 +236,14 @@ public class AppBaseActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... url) {
             publishProgress(true);
-            RestTemplate template=new RestTemplate();
-            AppBaseActivity activity=reference.get();
-            ((SimpleClientHttpRequestFactory)template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout()*1000);
+            RestTemplate template = new RestTemplate();
+            AppBaseActivity activity = reference.get();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
             try {
                 result = template.getForObject(url[0], String.class);
-            }
-            catch (ResourceAccessException ex)
-            {
-                ex.printStackTrace();
-                return null;
-            }
-            catch (RuntimeException ex) {
+            } catch (RuntimeException ex) {
                 ex.printStackTrace();
                 return null;
             }
@@ -216,51 +259,11 @@ public class AppBaseActivity extends AppCompatActivity {
                         activity.getString(R.string.connection_error),
                         android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
-            }
-            else
-            {
+            } else {
                 activity.showMessageDialog(activity.getString(R.string.info),
-                        "Yığım hesabatı: "+result, android.R.drawable.ic_dialog_info);
+                        "Yığım hesabatı: " + result, android.R.drawable.ic_dialog_info);
             }
             activity.showProgressDialog(false);
         }
-    }
-
-    protected void showPickDateDialog(String reportType)
-    {
-        View view = getLayoutInflater().inflate(R.layout.pick_date_dialog,
-                findViewById(android.R.id.content), false);
-
-        EditText fromText=view.findViewById(R.id.from_date);
-        EditText toText=view.findViewById(R.id.to_date);
-
-        fromText.setText(new Date(System.currentTimeMillis()).toString());
-        toText.setText(new Date(System.currentTimeMillis()).toString());
-
-        AlertDialog dialog=new AlertDialog.Builder(this)
-                .setView(view)
-                .setTitle("Tarix intervalı")
-                .setPositiveButton("OK", (dialogInterface, i) -> {
-
-                    String startDate=fromText.getText().toString();
-                    String endDate=toText.getText().toString();
-                    String url=url("inv", reportType);
-                    Map<String, String> parameters=new HashMap<>();
-                    parameters.put("start-date", startDate);
-                    parameters.put("end-date", endDate);
-                    parameters.put("user-id", config().getUser().getId());
-                    url=addRequestParameters(url, parameters);
-                    new GetPickReport(this).execute(url);
-                })
-                .create();
-        dialog.show();
-    }
-
-    protected void playSound(int resourceId) {
-        int volume = audioManager.getStreamMaxVolume(3);
-        sound = soundPool.load(this, resourceId, 1);
-        soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> {
-            soundPool.play(sound, volume, volume, 1, 0, 1);
-        });
     }
 }

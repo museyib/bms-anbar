@@ -41,59 +41,90 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventar_info);
-        infoText=findViewById(R.id.good_info);
-        keywordEdit=findViewById(R.id.keyword_edit);
+        infoText = findViewById(R.id.good_info);
+        keywordEdit = findViewById(R.id.keyword_edit);
     }
 
     @Override
     public void onScanComplete(String barcode) {
-        busy=false;
-        String url=url("inv","info-by-barcode");
-        Map<String, String> parameters=new HashMap<>();
+        String url = url("inv", "info-by-barcode");
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("barcode", barcode);
-        url=addRequestParameters(url, parameters);
+        url = addRequestParameters(url, parameters);
         new ShowInvAttributes(InventoryInfoActivity.this).execute(url);
     }
 
     public void viewImage(View view) {
-        Intent intent=new Intent(this, PhotoActivity.class);
+        Intent intent = new Intent(this, PhotoActivity.class);
         intent.putExtra("invCode", invCode);
         startActivity(intent);
     }
 
     public void searchKeyword(View view) {
-        keyword=keywordEdit.getText().toString();
+        keyword = keywordEdit.getText().toString();
 
-        if (keyword.isEmpty())
-        {
+        if (keyword.isEmpty()) {
             showMessageDialog(getString(R.string.info), getString(R.string.keyword_not_entered), android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
-        }
-        else
-        {
-            String url=url("inv","search");
-            Map<String, String> parameters=new HashMap<>();
+        } else {
+            String url = url("inv", "search");
+            Map<String, String> parameters = new HashMap<>();
             parameters.put("keyword", keyword);
-            url=addRequestParameters(url, parameters);
+            url = addRequestParameters(url, parameters);
             new SearchForKeyword(this).execute(url);
         }
     }
 
-    protected static class ShowInvAttributes extends AsyncTask<String, Void, String>
-    {
+    private void showResultListDialog(List<JSONObject> list) {
+        View view = LayoutInflater.from(this).inflate(R.layout.result_list_dialog,
+                findViewById(android.R.id.content), false);
+
+        ListView listView = view.findViewById(R.id.result_list);
+        listView.setAdapter(new ResultListAdapter(this, R.layout.result_list_item, list));
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Axtarışın nəticəsi")
+                .setView(view)
+                .create();
+        dialog.show();
+
+        listView.setOnItemClickListener((adapterView, view1, i, l) -> {
+            JSONObject jsonObject = list.get(i);
+            try {
+                invCode = jsonObject.getString("invCode");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String url = url("inv", "info-by-inv-code");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("inv-code", invCode);
+            url = addRequestParameters(url, parameters);
+            new ShowInvAttributes(this).execute(url);
+
+            dialog.dismiss();
+        });
+    }
+
+    private void printInfo(String info) {
+        info = info.replaceAll("; ", "\n");
+        info = info.replaceAll("\\\\n", "\n");
+        invCode = info.substring(10, 17);
+        infoText.setText(info);
+    }
+
+    protected static class ShowInvAttributes extends AsyncTask<String, Void, String> {
         WeakReference<InventoryInfoActivity> reference;
 
-        ShowInvAttributes(InventoryInfoActivity activity)
-        {
-            reference=new WeakReference<>(activity);
+        ShowInvAttributes(InventoryInfoActivity activity) {
+            reference = new WeakReference<>(activity);
         }
 
         @Override
         protected String doInBackground(String... url) {
             RestTemplate template = new RestTemplate();
-            AppBaseActivity activity=reference.get();
-            ((SimpleClientHttpRequestFactory)template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout()*1000);
+            AppBaseActivity activity = reference.get();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
             try {
@@ -107,37 +138,38 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            InventoryInfoActivity activity=reference.get();
-            if (result==null) {
+            InventoryInfoActivity activity = reference.get();
+            if (result == null) {
                 activity.showMessageDialog(activity.getString(R.string.error),
                         activity.getString(R.string.connection_error),
                         android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
-            }
-            else {
+            } else {
                 activity.printInfo(result);
                 activity.playSound(SOUND_SUCCESS);
             }
         }
     }
 
-
-
-    protected static class SearchForKeyword extends AsyncTask<String, Void, String>
-    {
+    protected static class SearchForKeyword extends AsyncTask<String, Void, String> {
         WeakReference<InventoryInfoActivity> reference;
 
-        SearchForKeyword(InventoryInfoActivity activity)
-        {
-            reference=new WeakReference<>(activity);
+        SearchForKeyword(InventoryInfoActivity activity) {
+            reference = new WeakReference<>(activity);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            reference.get().showProgressDialog(true);
         }
 
         @Override
         protected String doInBackground(String... url) {
             RestTemplate template = new RestTemplate();
-            AppBaseActivity activity=reference.get();
-            ((SimpleClientHttpRequestFactory)template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout()*1000);
+            AppBaseActivity activity = reference.get();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
             try {
@@ -150,17 +182,17 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            InventoryInfoActivity activity=reference.get();
+            reference.get().showProgressDialog(false);
+            InventoryInfoActivity activity = reference.get();
             JSONArray jsonArray;
-            List<JSONObject> jsonObjectList=new ArrayList<>();
+            List<JSONObject> jsonObjectList = new ArrayList<>();
             try {
                 jsonArray = new JSONArray(result);
 
-                for (int i=0; i<jsonArray.length(); i++)
-                {
+                for (int i = 0; i < jsonArray.length(); i++) {
                     jsonObjectList.add(jsonArray.getJSONObject(i));
                 }
-            } catch (JSONException e) {
+            } catch (RuntimeException | JSONException e) {
                 e.printStackTrace();
             }
 
@@ -168,64 +200,23 @@ public class InventoryInfoActivity extends ScannerSupportActivity {
         }
     }
 
-    private void showResultListDialog(List<JSONObject> list)
-    {
-        View view= LayoutInflater.from(this).inflate(R.layout.result_list_dialog,
-                findViewById(android.R.id.content), false);
-
-        ListView listView=view.findViewById(R.id.result_list);
-        listView.setAdapter(new ResultListAdapter(this, R.layout.result_list_item, list));
-
-        AlertDialog dialog=new AlertDialog.Builder(this)
-                .setTitle("Axtarışın nəticəsi")
-                .setView(view)
-                .create();
-        dialog.show();
-
-        listView.setOnItemClickListener((adapterView, view1, i, l) -> {
-            JSONObject jsonObject=list.get(i);
-            try {
-                invCode=jsonObject.getString("invCode");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            String url=url("inv","info-by-inv-code");
-            Map<String, String> parameters=new HashMap<>();
-            parameters.put("inv-code", invCode);
-            url=addRequestParameters(url, parameters);
-            new ShowInvAttributes(this).execute(url);
-
-            dialog.dismiss();
-        });
-    }
-
-    private void printInfo(String info)
-    {
-        info=info.replaceAll("; ", "\n");
-        info=info.replaceAll("\\\\n", "\n");
-        invCode=info.substring(10, 17);
-        infoText.setText(info);
-    }
-
-    private static class ResultListAdapter extends ArrayAdapter<JSONObject>
-    {
+    private static class ResultListAdapter extends ArrayAdapter<JSONObject> {
         List<JSONObject> list;
         Context context;
 
         public ResultListAdapter(@NonNull Context context, int resource, List<JSONObject> list) {
             super(context, resource, list);
-            this.list=list;
-            this.context=context;
+            this.list = list;
+            this.context = context;
         }
 
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            JSONObject item=list.get(position);
+            JSONObject item = list.get(position);
 
-            if (convertView==null)
-            {
-                convertView=LayoutInflater.from(context).inflate(R.layout.result_list_item,
+            if (convertView == null) {
+                convertView = LayoutInflater.from(context).inflate(R.layout.result_list_item,
                         parent, false);
             }
 

@@ -19,12 +19,11 @@ public class SettingsActivity extends AppBaseActivity {
         loadComponents();
     }
 
-    private void loadComponents()
-    {
-        serverUrlEdit=findViewById(R.id.server_url);
-        imageUrlEdit=findViewById(R.id.image_url);
-        connectionTimeoutEdit=findViewById(R.id.connection_timeout);
-        update=findViewById(R.id.update);
+    private void loadComponents() {
+        serverUrlEdit = findViewById(R.id.server_url);
+        imageUrlEdit = findViewById(R.id.image_url);
+        connectionTimeoutEdit = findViewById(R.id.connection_timeout);
+        update = findViewById(R.id.update);
 
         serverUrlEdit.setText(config().getServerUrl());
         imageUrlEdit.setText(config().getImageUrl());
@@ -33,25 +32,21 @@ public class SettingsActivity extends AppBaseActivity {
         update.setOnClickListener(v -> updateParameters());
     }
 
-    private void updateParameters()
-    {
-        String serverUrl=serverUrlEdit.getText().toString();
-        String imageUrl=imageUrlEdit.getText().toString();
-        String connectionTimeout=connectionTimeoutEdit.getText().toString();
+    private void updateParameters() {
+        String serverUrl = serverUrlEdit.getText().toString();
+        String imageUrl = imageUrlEdit.getText().toString();
+        String connectionTimeout = connectionTimeoutEdit.getText().toString();
 
-        if (!serverUrl.isEmpty())
-        {
+        if (!serverUrl.isEmpty()) {
             config().setServerUrl(serverUrl);
             dbHelper.updateParameter("serverUrl", serverUrl);
         }
-        if (!imageUrl.isEmpty())
-        {
+        if (!imageUrl.isEmpty()) {
             config().setImageUrl(imageUrl);
             dbHelper.updateParameter("imageUrl", imageUrl);
         }
 
-        if (!connectionTimeout.isEmpty())
-        {
+        if (!connectionTimeout.isEmpty()) {
             config().setConnectionTimeout(Integer.parseInt(connectionTimeout));
             dbHelper.updateParameter("connectionTimeout", connectionTimeout);
         }

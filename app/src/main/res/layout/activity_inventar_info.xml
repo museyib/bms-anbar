@@ -10,9 +10,9 @@
         android:id="@+id/top"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" >
+        app:layout_constraintTop_toTopOf="parent">
 
         <EditText
             android:id="@+id/keyword_edit"
@@ -28,8 +28,8 @@
             android:id="@+id/search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/search"
-            android:onClick="searchKeyword"/>
+            android:onClick="searchKeyword"
+            android:text="@string/search" />
     </LinearLayout>
 
     <TextView

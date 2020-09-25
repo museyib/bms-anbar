@@ -124,9 +124,9 @@
                 android:id="@+id/doc_list"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:divider="@android:color/black"
                 android:dividerHeight="2dp"
-                android:layout_marginTop="20dp"
                 android:paddingBottom="80dp" />
 
         </RelativeLayout>

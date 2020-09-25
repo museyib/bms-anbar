@@ -15,7 +15,7 @@
 
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="true" />
+        android:required="false" />
     <uses-feature android:name="android.hardware.usb.accessory" />
 
     <application
@@ -32,8 +32,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
 
-        <activity android:name=".OpenPackDocActivity"
-            android:label="@string/waiting_docs"/>
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
+        <activity
+            android:name=".OpenPackDocActivity"
+            android:label="@string/waiting_docs" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

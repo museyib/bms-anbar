@@ -13,9 +13,9 @@
         android:id="@+id/trx_no"
         android:layout_width="110dp"
         android:layout_height="wrap_content"
-        android:paddingBottom="4dp"
         android:paddingTop="4dp"
-        android:textColor="#BA0000"  />
+        android:paddingBottom="4dp"
+        android:textColor="#BA0000" />
 
     <View
         android:layout_width="3dp"
@@ -25,11 +25,11 @@
 
     <TextView
         android:id="@+id/pick_area"
-        android:paddingBottom="4dp"
-        android:paddingTop="4dp"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/black"/>
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:textColor="@android:color/black" />
 
     <View
         android:layout_width="3dp"
@@ -39,10 +39,10 @@
 
     <TextView
         android:id="@+id/item_count"
-        android:paddingBottom="4dp"
-        android:paddingTop="4dp"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
         android:textColor="@android:color/black" />
 
     <View
@@ -53,10 +53,10 @@
 
     <TextView
         android:id="@+id/picked_item_count"
-        android:paddingBottom="4dp"
-        android:paddingTop="4dp"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
         android:textColor="@android:color/black" />
 
     <View
@@ -69,9 +69,9 @@
         android:id="@+id/doc_description"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:paddingBottom="4dp"
         android:paddingTop="4dp"
-        android:textColor="@android:color/black"/>
+        android:paddingBottom="4dp"
+        android:textColor="@android:color/black" />
 
     <View
         android:layout_width="3dp"

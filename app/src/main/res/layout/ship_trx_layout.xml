@@ -28,46 +28,48 @@
         android:hint="@string/vehicle"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/driver" />
+        app:layout_constraintTop_toBottomOf="@id/driver" />
 
     <Button
         android:id="@+id/scan_driver_code"
-        android:layout_margin="5dp"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        app:layout_constraintStart_toEndOf="@+id/driver"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_margin="5dp"
+        android:contentDescription="@string/driver"
         android:text="@string/scan"
-        android:contentDescription="@string/driver" />
+        app:layout_constraintStart_toEndOf="@id/driver"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/scan_vehicle_code"
-        android:layout_margin="5dp"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        app:layout_constraintStart_toEndOf="@+id/vehicle"
-        app:layout_constraintTop_toBottomOf="@+id/scan_driver_code"
+        android:layout_margin="5dp"
+        android:contentDescription="@string/vehicle"
         android:text="@string/scan"
-        android:contentDescription="@string/vehicle" />
+        app:layout_constraintStart_toEndOf="@id/vehicle"
+        app:layout_constraintTop_toBottomOf="@id/scan_driver_code" />
 
     <Button
         android:id="@+id/scan_new_doc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/add_new_doc"
-        app:layout_constraintEnd_toEndOf="@+id/ship_trx_list_view"
+        app:layout_constraintEnd_toEndOf="@id/ship_trx_list_view"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/vehicle" />
+        app:layout_constraintTop_toBottomOf="@id/vehicle" />
 
     <ImageButton
         android:id="@+id/send"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_menu_upload"
-        android:contentDescription="@string/send" />
+        android:contentDescription="@string/send"
+        app:layout_constraintEnd_toStartOf="@+id/scan_new_doc"
+        app:layout_constraintHorizontal_bias="0.06"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/vehicle"
+        app:srcCompat="@android:drawable/ic_menu_upload" />
 
     <ListView
         android:id="@+id/ship_trx_list_view"
@@ -76,11 +78,11 @@
         android:paddingBottom="180dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scan_new_doc" />
+        app:layout_constraintTop_toBottomOf="@id/scan_new_doc" />
 
     <include
         layout="@layout/footer_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/doc_list" />
+        app:layout_constraintTop_toBottomOf="@id/doc_list" />
 </androidx.constraintlayout.widget.ConstraintLayout>

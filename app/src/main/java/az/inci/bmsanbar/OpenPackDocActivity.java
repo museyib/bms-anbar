@@ -32,13 +32,16 @@ public class OpenPackDocActivity extends AppBaseActivity {
         setContentView(R.layout.activity_open_pack_doc);
 
         docListView = findViewById(R.id.doc_list);
+        docListView.setOnItemClickListener((adapterView, view, i, l) -> {
+            Doc doc = (Doc) view.getTag();
+        });
         loadFooter();
     }
 
     public void loadDocs() {
-        DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout,  docList);
+        DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
-        if (docList.size()==0)
+        if (docList.size() == 0)
             findViewById(R.id.header).setVisibility(View.GONE);
         else
             findViewById(R.id.header).setVisibility(View.VISIBLE);
@@ -47,21 +50,20 @@ public class OpenPackDocActivity extends AppBaseActivity {
     public void getNewDocs() {
         showProgressDialog(true);
         new Thread(() -> {
-            String url=url("doc", "pack", "all");
-            Map<String, String> parameters=new HashMap<>();
+            String url = url("doc", "pack", "all");
+            Map<String, String> parameters = new HashMap<>();
             parameters.put("user-id", config().getUser().getId());
-            url=addRequestParameters(url, parameters);
+            url = addRequestParameters(url, parameters);
             RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory)template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout()*1000);
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             try {
                 docList = Arrays.asList(template.getForObject(url, Doc[].class));
                 runOnUiThread(this::loadDocs);
             } catch (RuntimeException ex) {
                 ex.printStackTrace();
-            }
-            finally {
+            } finally {
                 showProgressDialog(false);
             }
         }).start();
