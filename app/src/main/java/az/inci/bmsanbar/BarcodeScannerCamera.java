@@ -27,7 +27,8 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import java.lang.reflect.Field;
 
-public class BarcodeScannerCamera extends AppBaseActivity {
+public class BarcodeScannerCamera extends AppBaseActivity
+{
 
     private static final int REQUEST_CAMERA_PERMISSION = 201;
     Camera camera;
@@ -36,7 +37,8 @@ public class BarcodeScannerCamera extends AppBaseActivity {
     TextView goodInfo;
     String trxType;
     boolean isContinuous;
-    Camera.AutoFocusCallback myAutoFocusCallback = (arg0, arg1) -> {
+    Camera.AutoFocusCallback myAutoFocusCallback = (arg0, arg1) ->
+    {
 
     };
     private SurfaceView surfaceView;
@@ -46,7 +48,8 @@ public class BarcodeScannerCamera extends AppBaseActivity {
     private String trxNo;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcode_scanner_camera);
         add = findViewById(R.id.increase);
@@ -54,7 +57,8 @@ public class BarcodeScannerCamera extends AppBaseActivity {
 
         isContinuous = getIntent().getBooleanExtra("serialScan", false);
 
-        if (isContinuous) {
+        if (isContinuous)
+        {
             trxNo = getIntent().getStringExtra("trxNo");
             trxType = getIntent().getStringExtra("trxType");
             soundPool = new SoundPool(10, 3, 5);
@@ -68,7 +72,8 @@ public class BarcodeScannerCamera extends AppBaseActivity {
         surfaceView = findViewById(R.id.surface_view);
         surfaceHolder = surfaceView.getHolder();
 
-        surfaceView.setOnClickListener(v -> {
+        surfaceView.setOnClickListener(v ->
+        {
             if (setCamera(cameraSource))
                 camera.autoFocus(myAutoFocusCallback);
         });
@@ -76,29 +81,40 @@ public class BarcodeScannerCamera extends AppBaseActivity {
         initialiseDetectorsAndSources();
     }
 
-    public void onScanComplete(String barcode) {
-        if (!isContinuous) {
+    public void onScanComplete(String barcode)
+    {
+        if (!isContinuous)
+        {
             getAndClose(barcode);
-        } else {
-            runOnUiThread(() -> {
+        }
+        else
+        {
+            runOnUiThread(() ->
+            {
                 add.setEnabled(true);
                 add.setOnClickListener(view -> getAndContinue(barcode));
             });
         }
     }
 
-    private boolean setCamera(CameraSource cameraSource) {
+    private boolean setCamera(CameraSource cameraSource)
+    {
         Field[] declaredFields = CameraSource.class.getDeclaredFields();
 
-        for (Field field : declaredFields) {
-            if (field.getType() == Camera.class) {
+        for (Field field : declaredFields)
+        {
+            if (field.getType() == Camera.class)
+            {
                 field.setAccessible(true);
 
-                try {
+                try
+                {
                     camera = (Camera) field.get(cameraSource);
                     if (camera != null)
                         return true;
-                } catch (IllegalAccessException e) {
+                }
+                catch (IllegalAccessException e)
+                {
                     e.printStackTrace();
                 }
             }
@@ -107,7 +123,8 @@ public class BarcodeScannerCamera extends AppBaseActivity {
         return false;
     }
 
-    private void initialiseDetectorsAndSources() {
+    private void initialiseDetectorsAndSources()
+    {
 
         barcodeDetector = new BarcodeDetector.Builder(this)
                 .setBarcodeFormats(Barcode.ALL_FORMATS)
@@ -119,45 +136,59 @@ public class BarcodeScannerCamera extends AppBaseActivity {
                 .build();
 
 
-        surfaceHolder.addCallback(new SurfaceHolder.Callback() {
+        surfaceHolder.addCallback(new SurfaceHolder.Callback()
+        {
             @Override
-            public void surfaceCreated(@NonNull SurfaceHolder holder) {
-                try {
+            public void surfaceCreated(@NonNull SurfaceHolder holder)
+            {
+                try
+                {
                     if (ActivityCompat.checkSelfPermission(BarcodeScannerCamera.this,
-                            Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                            Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+                    {
                         cameraSource.start(surfaceView.getHolder());
-                    } else {
+                    }
+                    else
+                    {
                         ActivityCompat.requestPermissions(BarcodeScannerCamera.this, new
                                 String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
                     }
 
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     e.printStackTrace();
                 }
 
             }
 
             @Override
-            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
+            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height)
+            {
 
             }
 
             @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+            public void surfaceDestroyed(@NonNull SurfaceHolder holder)
+            {
                 cameraSource.stop();
             }
         });
 
 
-        barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
+        barcodeDetector.setProcessor(new Detector.Processor<Barcode>()
+        {
             @Override
-            public void release() {
+            public void release()
+            {
             }
 
             @Override
-            public void receiveDetections(Detector.Detections<Barcode> detections) {
+            public void receiveDetections(Detector.Detections<Barcode> detections)
+            {
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
-                if (barcodes.size() != 0) {
+                if (barcodes.size() != 0)
+                {
                     String barcode = barcodes.valueAt(0).displayValue;
                     onScanComplete(barcode);
                 }
@@ -165,7 +196,8 @@ public class BarcodeScannerCamera extends AppBaseActivity {
         });
     }
 
-    private void getAndClose(String barcode) {
+    private void getAndClose(String barcode)
+    {
         toneGenerator.startTone(ToneGenerator.TONE_CDMA_PIP, 150);
         Intent intent = new Intent();
         intent.putExtra("barcode", barcode);
@@ -173,8 +205,10 @@ public class BarcodeScannerCamera extends AppBaseActivity {
         finish();
     }
 
-    private void getAndContinue(String barcode) {
-        switch (trxType) {
+    private void getAndContinue(String barcode)
+    {
+        switch (trxType)
+        {
             case "pick":
                 getPickTrx(barcode);
                 break;
@@ -185,48 +219,63 @@ public class BarcodeScannerCamera extends AppBaseActivity {
         add.setEnabled(false);
     }
 
-    private void getPickTrx(String barcode) {
+    private void getPickTrx(String barcode)
+    {
         Trx trx = dbHelper.getPickTrxByBarcode(barcode, trxNo);
-        if (trx != null) {
-            if (trx.getPickedQty() < trx.getQty()) {
+        if (trx != null)
+        {
+            if (trx.getPickedQty() < trx.getQty())
+            {
                 trx.setPickedQty(trx.getPickedQty() + 1);
                 dbHelper.updatePickTrx(trx);
                 playSound(SOUND_SUCCESS);
-            } else {
+            }
+            else
+            {
                 showMessageDialog(getString(R.string.info),
                         getString(R.string.already_picked),
                         android.R.drawable.ic_dialog_info);
                 playSound(SOUND_FAIL);
             }
             goodInfo.setText(trx.getInvName() + ": " + trx.getPickedQty());
-        } else {
+        }
+        else
+        {
             Toast.makeText(this, R.string.good_not_found, Toast.LENGTH_LONG).show();
             playSound(R.raw.serror2);
         }
     }
 
-    private void getPackTrx(String barcode) {
+    private void getPackTrx(String barcode)
+    {
         Trx trx = dbHelper.getPackTrxByBarcode(barcode, trxNo);
-        if (trx != null) {
-            if (trx.getPackedQty() < trx.getQty()) {
+        if (trx != null)
+        {
+            if (trx.getPackedQty() < trx.getQty())
+            {
                 trx.setPackedQty(trx.getPackedQty() + 1);
                 dbHelper.updatePackTrx(trx);
                 playSound(SOUND_SUCCESS);
-            } else {
+            }
+            else
+            {
                 showMessageDialog(getString(R.string.info),
                         getString(R.string.already_packed),
                         android.R.drawable.ic_dialog_info);
                 playSound(SOUND_FAIL);
             }
             goodInfo.setText(trx.getInvName() + ": " + trx.getPackedQty());
-        } else {
+        }
+        else
+        {
             Toast.makeText(this, R.string.good_not_found, Toast.LENGTH_LONG).show();
             playSound(R.raw.serror2);
         }
     }
 
     @Override
-    public void onBackPressed() {
+    public void onBackPressed()
+    {
         setResult(-1, new Intent());
         finish();
     }

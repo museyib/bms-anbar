@@ -3,10 +3,12 @@ package az.inci.bmsanbar;
 import android.os.Bundle;
 import android.webkit.WebView;
 
-public class PhotoActivity extends AppBaseActivity {
+public class PhotoActivity extends AppBaseActivity
+{
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory_info);
         WebView webView = findViewById(R.id.photo_view);

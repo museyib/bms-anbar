@@ -34,19 +34,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class PickDocActivity extends AppBaseActivity {
+public class PickDocActivity extends AppBaseActivity
+{
 
     List<Doc> docList;
     ListView docListView;
     ImageButton newDocs;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pick_doc_layout);
 
         docListView = findViewById(R.id.doc_list);
-        docListView.setOnItemClickListener((parent, view, position, id1) -> {
+        docListView.setOnItemClickListener((parent, view, position, id1) ->
+        {
             Intent intent = new Intent(this, PickTrxActivity.class);
             Doc doc = (Doc) parent.getItemAtPosition(position);
             intent.putExtra("trxNo", doc.getTrxNo());
@@ -60,24 +63,28 @@ public class PickDocActivity extends AppBaseActivity {
         loadDocs();
 
         newDocs = findViewById(R.id.newDocs);
-        newDocs.setOnClickListener(v -> {
+        newDocs.setOnClickListener(v ->
+        {
             getNewDocs(config().getUser().getId());
             loadDocs();
         });
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         loadDocs();
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState)
+    {
         super.onSaveInstanceState(outState);
     }
 
-    public void loadDocs() {
+    public void loadDocs()
+    {
         docList = dbHelper.getPickDocsByPickUser(config().getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, docList);
         docListView.setAdapter(docAdapter);
@@ -87,7 +94,8 @@ public class PickDocActivity extends AppBaseActivity {
             findViewById(R.id.header).setVisibility(View.VISIBLE);
     }
 
-    public void getNewDocs(String pickUser) {
+    public void getNewDocs(String pickUser)
+    {
         String url = url("trx", "pick");
         Map<String, String> parameters = new HashMap<>();
         parameters.put("pick-user", pickUser);
@@ -95,12 +103,14 @@ public class PickDocActivity extends AppBaseActivity {
         new TrxLoader(this).execute(url);
     }
 
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.pick_menu, menu);
         MenuItem attributes = menu.findItem(R.id.inv_attributes);
         attributes.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        attributes.setOnMenuItemClickListener(item1 -> {
+        attributes.setOnMenuItemClickListener(item1 ->
+        {
             startActivity(new Intent(this, InventoryInfoActivity.class));
             return true;
         });
@@ -108,7 +118,8 @@ public class PickDocActivity extends AppBaseActivity {
         MenuItem report = menu.findItem(R.id.pick_report);
         report.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        report.setOnMenuItemClickListener(item1 -> {
+        report.setOnMenuItemClickListener(item1 ->
+        {
             showPickDateDialog("pick-report");
             return true;
         });
@@ -119,18 +130,22 @@ public class PickDocActivity extends AppBaseActivity {
         return true;
     }
 
-    static class DocAdapter extends ArrayAdapter<Doc> {
+    static class DocAdapter extends ArrayAdapter<Doc>
+    {
 
-        DocAdapter(@NonNull Context context, @NonNull List<Doc> objects) {
+        DocAdapter(@NonNull Context context, @NonNull List<Doc> objects)
+        {
             super(context, 0, objects);
         }
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
+        {
             Doc doc = getItem(position);
 
-            if (convertView == null) {
+            if (convertView == null)
+            {
                 convertView = LayoutInflater.from(getContext())
                         .inflate(R.layout.pick_doc_item_layout, parent, false);
             }
@@ -152,28 +167,36 @@ public class PickDocActivity extends AppBaseActivity {
         }
     }
 
-    private static class DocLoader extends AsyncTask<String, Boolean, String> {
+    private static class DocLoader extends AsyncTask<String, Boolean, String>
+    {
 
         private WeakReference<PickDocActivity> reference;
 
-        DocLoader(PickDocActivity activity) {
+        DocLoader(PickDocActivity activity)
+        {
             reference = new WeakReference<>(activity);
         }
 
         @Override
-        protected String doInBackground(String... url) {
+        protected String doInBackground(String... url)
+        {
             publishProgress(true);
             RestTemplate template = new RestTemplate();
             AppBaseActivity activity = reference.get();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
-            try {
+            try
+            {
                 result = template.getForObject(url[0], String.class);
-            } catch (ResourceAccessException ex) {
+            }
+            catch (ResourceAccessException ex)
+            {
                 ex.printStackTrace();
                 return null;
-            } catch (RuntimeException ex) {
+            }
+            catch (RuntimeException ex)
+            {
                 ex.printStackTrace();
                 return null;
             }
@@ -181,21 +204,27 @@ public class PickDocActivity extends AppBaseActivity {
         }
 
         @Override
-        protected void onProgressUpdate(Boolean... b) {
+        protected void onProgressUpdate(Boolean... b)
+        {
             reference.get().showProgressDialog(true);
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String result)
+        {
             PickDocActivity activity = reference.get();
-            if (result == null) {
+            if (result == null)
+            {
                 activity.showMessageDialog(activity.getString(R.string.error),
                         activity.getString(R.string.connection_error),
                         android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
-            } else {
+            }
+            else
+            {
                 Gson gson = new Gson();
-                Type type = new TypeToken<Doc>() {
+                Type type = new TypeToken<Doc>()
+                {
                 }.getType();
                 Doc doc = gson.fromJson(result, type);
                 activity.dbHelper.addPickDoc(doc);
@@ -205,27 +234,35 @@ public class PickDocActivity extends AppBaseActivity {
         }
     }
 
-    private static class TrxLoader extends AsyncTask<String, Boolean, String> {
+    private static class TrxLoader extends AsyncTask<String, Boolean, String>
+    {
         private WeakReference<PickDocActivity> reference;
 
-        TrxLoader(PickDocActivity activity) {
+        TrxLoader(PickDocActivity activity)
+        {
             reference = new WeakReference<>(activity);
         }
 
         @Override
-        protected String doInBackground(String... url) {
+        protected String doInBackground(String... url)
+        {
             publishProgress(true);
             RestTemplate template = new RestTemplate();
             AppBaseActivity activity = reference.get();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
-            try {
+            try
+            {
                 result = template.getForObject(url[0], String.class);
-            } catch (ResourceAccessException ex) {
+            }
+            catch (ResourceAccessException ex)
+            {
                 ex.printStackTrace();
                 return null;
-            } catch (RuntimeException ex) {
+            }
+            catch (RuntimeException ex)
+            {
                 ex.printStackTrace();
                 return null;
             }
@@ -233,35 +270,46 @@ public class PickDocActivity extends AppBaseActivity {
         }
 
         @Override
-        protected void onProgressUpdate(Boolean... b) {
+        protected void onProgressUpdate(Boolean... b)
+        {
             reference.get().showProgressDialog(true);
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String result)
+        {
             PickDocActivity activity = reference.get();
-            if (result == null) {
+            if (result == null)
+            {
                 activity.showMessageDialog(activity.getString(R.string.error),
                         activity.getString(R.string.connection_error),
                         android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
-            } else {
+            }
+            else
+            {
                 Gson gson = new Gson();
-                Type type = new TypeToken<ArrayList<Trx>>() {
+                Type type = new TypeToken<ArrayList<Trx>>()
+                {
                 }.getType();
                 List<Trx> trxList = new ArrayList<>(gson.fromJson(result, type));
-                if (trxList.isEmpty()) {
+                if (trxList.isEmpty())
+                {
                     activity.showMessageDialog(activity.getString(R.string.info),
                             activity.getString(R.string.no_data), android.R.drawable.ic_dialog_info);
                     activity.playSound(SOUND_FAIL);
-                } else {
+                }
+                else
+                {
                     Set<String> trxSet = new HashSet<>();
-                    for (Trx trx : trxList) {
+                    for (Trx trx : trxList)
+                    {
                         activity.dbHelper.addPickTrx(trx);
                         trxSet.add(trx.getTrxNo());
                     }
 
-                    for (String trxNo : trxSet) {
+                    for (String trxNo : trxSet)
+                    {
                         String url = activity.url("doc", "pick");
                         Map<String, String> parameters = new HashMap<>();
                         parameters.put("trx-no", trxNo);

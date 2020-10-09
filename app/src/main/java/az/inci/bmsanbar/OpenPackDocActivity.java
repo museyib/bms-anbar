@@ -21,24 +21,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class OpenPackDocActivity extends AppBaseActivity {
+public class OpenPackDocActivity extends AppBaseActivity
+{
 
     List<Doc> docList;
     ListView docListView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open_pack_doc);
 
         docListView = findViewById(R.id.doc_list);
-        docListView.setOnItemClickListener((adapterView, view, i, l) -> {
+        docListView.setOnItemClickListener((adapterView, view, i, l) ->
+        {
             Doc doc = (Doc) view.getTag();
         });
         loadFooter();
     }
 
-    public void loadDocs() {
+    public void loadDocs()
+    {
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
         if (docList.size() == 0)
@@ -47,9 +51,11 @@ public class OpenPackDocActivity extends AppBaseActivity {
             findViewById(R.id.header).setVisibility(View.VISIBLE);
     }
 
-    public void getNewDocs() {
+    public void getNewDocs()
+    {
         showProgressDialog(true);
-        new Thread(() -> {
+        new Thread(() ->
+        {
             String url = url("doc", "pack", "all");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("user-id", config().getUser().getId());
@@ -58,42 +64,53 @@ public class OpenPackDocActivity extends AppBaseActivity {
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
                     .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
-            try {
+            try
+            {
                 docList = Arrays.asList(template.getForObject(url, Doc[].class));
                 runOnUiThread(this::loadDocs);
-            } catch (RuntimeException ex) {
+            }
+            catch (RuntimeException ex)
+            {
                 ex.printStackTrace();
-            } finally {
+            }
+            finally
+            {
                 showProgressDialog(false);
             }
         }).start();
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         getNewDocs();
     }
 
-    static class DocAdapter extends ArrayAdapter<Doc> {
+    static class DocAdapter extends ArrayAdapter<Doc>
+    {
         List<Doc> list;
 
-        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects) {
+        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects)
+        {
             super(context, resourceId, objects);
             list = objects;
         }
 
         @Override
-        public int getCount() {
+        public int getCount()
+        {
             return list.size();
         }
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
+        {
             Doc doc = list.get(position);
 
-            if (convertView == null) {
+            if (convertView == null)
+            {
                 convertView = LayoutInflater.from(getContext())
                         .inflate(R.layout.pack_doc_item_layout, parent, false);
             }

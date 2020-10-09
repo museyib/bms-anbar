@@ -27,23 +27,29 @@
             android:id="@+id/barcode"
             android:layout_width="70dp"
             android:layout_height="50dp"
+            android:layout_gravity="center"
             android:contentDescription="@string/barcode_search"
+            android:visibility="gone"
             app:srcCompat="@drawable/barcode" />
 
-
-        <CheckBox
-            android:id="@+id/continuous_check"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/serial_scan" />
+            android:orientation="vertical">
 
-        <CheckBox
-            android:id="@+id/readyToSend"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/ready" />
+            <CheckBox
+                android:id="@+id/continuous_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/serial_scan" />
+
+            <CheckBox
+                android:id="@+id/readyToSend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ready" />
+        </LinearLayout>
+
     </LinearLayout>
 
     <ImageButton

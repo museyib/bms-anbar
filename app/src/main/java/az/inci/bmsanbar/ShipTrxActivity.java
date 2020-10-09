@@ -20,7 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ShipTrxActivity extends ScannerSupportActivity {
+public class ShipTrxActivity extends ScannerSupportActivity
+{
 
     static final int SCAN_DRIVER_CODE = 0;
     static final int SCAN_VEHICLE_CODE = 1;
@@ -40,7 +41,8 @@ public class ShipTrxActivity extends ScannerSupportActivity {
     private boolean docCreated = false;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ship_trx_layout);
         mode = getIntent().getIntExtra("mode", AppConfig.VIEW_MODE);
@@ -53,10 +55,11 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         trxListView = findViewById(R.id.ship_trx_list_view);
         send = findViewById(R.id.send);
 
-        if (model.equals("C4000_6582")) {
-            scanDriverCode.setVisibility(View.GONE);
-            scanVehicleCode.setVisibility(View.GONE);
-            scanNewDoc.setVisibility(View.GONE);
+        if (config().isCameraScanning())
+        {
+            scanDriverCode.setVisibility(View.VISIBLE);
+            scanVehicleCode.setVisibility(View.VISIBLE);
+            scanNewDoc.setVisibility(View.VISIBLE);
         }
 
         send.setOnClickListener(v ->
@@ -65,10 +68,12 @@ public class ShipTrxActivity extends ScannerSupportActivity {
                 new SendSipping(ShipTrxActivity.this).execute();
         });
 
-        trxListView.setOnItemLongClickListener((parent, view, position, id) -> {
+        trxListView.setOnItemLongClickListener((parent, view, position, id) ->
+        {
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setMessage(R.string.want_to_delete)
-                    .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
+                    .setPositiveButton(R.string.delete, (dialogInterface, i) ->
+                    {
                         ShipTrx trx = (ShipTrx) parent.getItemAtPosition(position);
                         dbHelper.deleteShipTrxBySrc(trx.getSrcTrxNo());
                         loadTrx();
@@ -79,7 +84,8 @@ public class ShipTrxActivity extends ScannerSupportActivity {
             return true;
         });
 
-        if (mode == AppConfig.VIEW_MODE) {
+        if (mode == AppConfig.VIEW_MODE)
+        {
             docCreated = true;
             driverCode = getIntent().getStringExtra("driverCode");
             vehicleCode = getIntent().getStringExtra("vehicleCode");
@@ -91,18 +97,22 @@ public class ShipTrxActivity extends ScannerSupportActivity {
             loadTrx();
         }
 
-        scanDriverCode.setOnClickListener(v -> {
+        scanDriverCode.setOnClickListener(v ->
+        {
             Intent intent = new Intent(ShipTrxActivity.this, BarcodeScannerCamera.class);
             startActivityForResult(intent, SCAN_DRIVER_CODE);
         });
 
-        scanVehicleCode.setOnClickListener(v -> {
+        scanVehicleCode.setOnClickListener(v ->
+        {
             Intent intent = new Intent(ShipTrxActivity.this, BarcodeScannerCamera.class);
             startActivityForResult(intent, SCAN_VEHICLE_CODE);
         });
 
-        scanNewDoc.setOnClickListener(v -> {
-            if (driverCode == null || vehicleCode == null) {
+        scanNewDoc.setOnClickListener(v ->
+        {
+            if (driverCode == null || vehicleCode == null)
+            {
                 showMessageDialog(getString(R.string.info),
                         getString(R.string.driver_or_vehicle_not_defined),
                         android.R.drawable.ic_dialog_info);
@@ -116,21 +126,29 @@ public class ShipTrxActivity extends ScannerSupportActivity {
     }
 
     @Override
-    public void onScanComplete(String barcode) {
+    public void onScanComplete(String barcode)
+    {
         this.barcode = barcode;
-        if (docCreated) {
+        if (docCreated)
+        {
             checkShipping(this.barcode);
-        } else {
-            if (barcode.startsWith("ITO") || barcode.startsWith("DLV") || barcode.startsWith("ITD")) {
+        }
+        else
+        {
+            if (barcode.startsWith("ITO") || barcode.startsWith("DLV") || barcode.startsWith("ITD"))
+            {
                 showMessageDialog(getString(R.string.info), getString(R.string.driver_or_vehicle_not_defined),
                         android.R.drawable.ic_dialog_info);
                 playSound(SOUND_FAIL);
                 return;
             }
 
-            if (this.barcode.startsWith("PER")) {
+            if (this.barcode.startsWith("PER"))
+            {
                 setDriverCode(this.barcode);
-            } else {
+            }
+            else
+            {
                 setVehicleCode(this.barcode);
             }
 
@@ -140,13 +158,16 @@ public class ShipTrxActivity extends ScannerSupportActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
 
         barcode = data.getStringExtra("barcode");
 
-        if (resultCode == 1 && barcode != null) {
-            switch (requestCode) {
+        if (resultCode == 1 && barcode != null)
+        {
+            switch (requestCode)
+            {
                 case SCAN_DRIVER_CODE:
                     setDriverCode(barcode);
                     break;
@@ -160,41 +181,52 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         }
     }
 
-    public void setDriverCode(String driverCode) {
-        if (driverCode.startsWith("PER")) {
+    public void setDriverCode(String driverCode)
+    {
+        if (driverCode.startsWith("PER"))
+        {
             this.driverCode = driverCode;
             driverCodeEditText.setText(driverCode);
             playSound(SOUND_SUCCESS);
-        } else {
+        }
+        else
+        {
             showMessageDialog(getString(R.string.error), getString(R.string.driver_code_incorrect),
                     android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
         }
     }
 
-    public void setVehicleCode(String vehicleCode) {
-        if (!vehicleCode.startsWith("PER")) {
+    public void setVehicleCode(String vehicleCode)
+    {
+        if (!vehicleCode.startsWith("PER"))
+        {
             if (vehicleCode.startsWith("VHC"))
                 vehicleCode = vehicleCode.substring(3);
             this.vehicleCode = vehicleCode;
             vehicleCodeEditText.setText(vehicleCode);
             playSound(SOUND_SUCCESS);
-        } else {
+        }
+        else
+        {
             showMessageDialog(getString(R.string.error), getString(R.string.vehicle_code_incorrect),
                     android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
         }
     }
 
-    public void checkShipping(String trxNo) {
-        if (!trxNo.startsWith("ITO") && !trxNo.startsWith("DLV") && !trxNo.startsWith("ITD")) {
+    public void checkShipping(String trxNo)
+    {
+        if (!trxNo.startsWith("ITO") && !trxNo.startsWith("DLV") && !trxNo.startsWith("ITD"))
+        {
             showMessageDialog(getString(R.string.info), getString(R.string.not_valid_doc_for_shipping),
                     android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
             return;
         }
 
-        if (dbHelper.isShipped(trxNo)) {
+        if (dbHelper.isShipped(trxNo))
+        {
             showMessageDialog(getString(R.string.error), getString(R.string.doc_already_loaded),
                     android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
@@ -208,7 +240,8 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         new ShippingCheck(this).execute(url);
     }
 
-    public void addDoc(String trxNo) {
+    public void addDoc(String trxNo)
+    {
         ShipTrx trx = new ShipTrx();
         trx.setSrcTrxNo(trxNo);
         trx.setDriverCode(driverCode);
@@ -221,27 +254,34 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         loadTrx();
     }
 
-    void loadTrx() {
+    void loadTrx()
+    {
         trxList = dbHelper.getShipTrx(driverCode);
         ArrayAdapter<ShipTrx> adapter = new ArrayAdapter<>(this, R.layout.ship_trx_item_layout, trxList);
         trxListView.setAdapter(adapter);
     }
 
-    private static class ShippingCheck extends AsyncTask<String, Void, Boolean> {
+    private static class ShippingCheck extends AsyncTask<String, Void, Boolean>
+    {
         WeakReference<ShipTrxActivity> reference;
 
-        public ShippingCheck(ShipTrxActivity activity) {
+        public ShippingCheck(ShipTrxActivity activity)
+        {
             reference = new WeakReference<>(activity);
         }
 
         @Override
-        protected Boolean doInBackground(String... url) {
+        protected Boolean doInBackground(String... url)
+        {
             RestTemplate template = new RestTemplate();
             template.getMessageConverters().add(new StringHttpMessageConverter());
             boolean result;
-            try {
+            try
+            {
                 result = template.getForObject(url[0], Boolean.class);
-            } catch (RuntimeException e) {
+            }
+            catch (RuntimeException e)
+            {
                 e.printStackTrace();
                 return false;
             }
@@ -249,42 +289,51 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         }
 
         @Override
-        protected void onPostExecute(Boolean aBoolean) {
+        protected void onPostExecute(Boolean aBoolean)
+        {
             ShipTrxActivity activity = reference.get();
-            if (aBoolean) {
+            if (aBoolean)
+            {
                 activity.showMessageDialog(activity.getString(R.string.error),
                         activity.getString(R.string.doc_already_loaded),
                         android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
-            } else {
+            }
+            else
+            {
                 activity.addDoc(activity.barcode);
                 activity.playSound(SOUND_SUCCESS);
             }
         }
     }
 
-    private static class SendSipping extends AsyncTask<Void, Void, Boolean> {
+    private static class SendSipping extends AsyncTask<Void, Void, Boolean>
+    {
         WeakReference<ShipTrxActivity> reference;
         List<ShipTrx> trxList;
 
-        public SendSipping(ShipTrxActivity activity) {
+        public SendSipping(ShipTrxActivity activity)
+        {
             reference = new WeakReference<>(activity);
             trxList = reference.get().trxList;
         }
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             reference.get().showProgressDialog(true);
         }
 
         @Override
-        protected Boolean doInBackground(Void... aVoid) {
+        protected Boolean doInBackground(Void... aVoid)
+        {
             ShipTrxActivity activity = reference.get();
             RestTemplate template = new RestTemplate();
             template.getMessageConverters().add(new StringHttpMessageConverter());
             ((SimpleClientHttpRequestFactory) template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             boolean result = false;
-            for (Object item : trxList) {
+            for (Object item : trxList)
+            {
                 ShipTrx trx = (ShipTrx) item;
                 String url = activity.url("trx", "ship", "insert-details");
                 Map<String, String> parameters = new HashMap<>();
@@ -295,23 +344,30 @@ public class ShipTrxActivity extends ScannerSupportActivity {
                 parameters.put("user-id", trx.getUserId());
                 url = activity.addRequestParameters(url, parameters);
 
-                try {
+                try
+                {
                     result = template.postForObject(url, null, Boolean.class);
-                } catch (RuntimeException ex) {
+                }
+                catch (RuntimeException ex)
+                {
                     ex.printStackTrace();
                     result = false;
                 }
             }
 
-            if (result) {
+            if (result)
+            {
                 String url = activity.url("trx", "ship", "create-doc");
                 Map<String, String> parameters = new HashMap<>();
                 ;
                 parameters.put("user-id", activity.config().getUser().getId());
                 url = activity.addRequestParameters(url, parameters);
-                try {
+                try
+                {
                     result = template.postForObject(url, null, Boolean.class);
-                } catch (RuntimeException ex) {
+                }
+                catch (RuntimeException ex)
+                {
                     ex.printStackTrace();
                     result = false;
                 }
@@ -320,7 +376,8 @@ public class ShipTrxActivity extends ScannerSupportActivity {
         }
 
         @Override
-        protected void onPostExecute(Boolean aBoolean) {
+        protected void onPostExecute(Boolean aBoolean)
+        {
             ShipTrxActivity activity = reference.get();
             if (aBoolean)
                 activity.dbHelper.deleteShipTrxByDriver(activity.driverCode);

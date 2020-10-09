@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class DBHelper extends SQLiteOpenHelper {
+public class DBHelper extends SQLiteOpenHelper
+{
 
     public static final String TERMINAL_USER = "TERMINAL_USER";
     public static final String PICK_DOC = "PICK_DOC";
@@ -72,13 +73,15 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private SQLiteDatabase db;
 
-    DBHelper(Context context) {
+    DBHelper(Context context)
+    {
         super(context, Objects.requireNonNull(context.getExternalFilesDir("/"))
                 .getPath() + "/" + AppConfig.DB_NAME, null, AppConfig.DB_VERSION);
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {
+    public void onCreate(SQLiteDatabase db)
+    {
         createUserTable(db);
         createPickDocTable(db);
         createPickTrxTable(db);
@@ -90,25 +93,30 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
         onCreate(db);
     }
 
     @Override
-    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    {
         onCreate(db);
     }
 
-    void open() throws SQLException {
+    void open() throws SQLException
+    {
         db = getWritableDatabase();
     }
 
     @Override
-    public synchronized void close() {
+    public synchronized void close()
+    {
         super.close();
     }
 
-    private void createUserTable(SQLiteDatabase db) {
+    private void createUserTable(SQLiteDatabase db)
+    {
         StringBuilder sb = new StringBuilder();
 
         db.execSQL("DROP TABLE IF EXISTS " + TERMINAL_USER);
@@ -131,7 +139,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 .toString());
     }
 
-    void addUser(User user) {
+    void addUser(User user)
+    {
         db.delete(TERMINAL_USER, USER_ID + "=?", new String[]{user.getId()});
 
         ContentValues values = new ContentValues();
@@ -151,14 +160,17 @@ public class DBHelper extends SQLiteOpenHelper {
         db.insert(TERMINAL_USER, null, values);
     }
 
-    User getUser(String id) {
+    User getUser(String id)
+    {
         String[] columns = new String[]{USER_ID, USER_NAME, PASS_WORD, PICK_GROUP, COLLECT_FLAG,
                 PICK_FLAG, CHECK_FLAG, COUNT_FLAG, LOCATION_FLAG, PACK_FLAG, DOC_FLAG, LOADING_FLAG};
         User user = null;
 
         try (Cursor cursor = db.query(TERMINAL_USER, columns,
-                "USER_ID=?", new String[]{id.toUpperCase()}, null, null, null)) {
-            if (cursor.moveToNext()) {
+                "USER_ID=?", new String[]{id.toUpperCase()}, null, null, null))
+        {
+            if (cursor.moveToNext())
+            {
                 user = new User();
                 user.setId(cursor.getString(0));
                 user.setName(cursor.getString(1));
@@ -177,11 +189,13 @@ public class DBHelper extends SQLiteOpenHelper {
         return user;
     }
 
-    private void createPickDocTable(SQLiteDatabase db) {
+    private void createPickDocTable(SQLiteDatabase db)
+    {
         db.execSQL("DROP TABLE IF EXISTS " + PICK_DOC);
 
         StringBuilder sb = new StringBuilder();
-        try {
+        try
+        {
 
             db.execSQL(sb.append("CREATE TABLE ")
                     .append(PICK_DOC).append("(")
@@ -198,12 +212,15 @@ public class DBHelper extends SQLiteOpenHelper {
                     .append(PREV_TRX_NO).append(" TEXT")
                     .append(")")
                     .toString());
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
 
-    List<Doc> getPickDocsByPickUser(String pickUser) {
+    List<Doc> getPickDocsByPickUser(String pickUser)
+    {
         List<Doc> docList = new ArrayList<>();
 
         String query = "SELECT PD.TRX_NO," +
@@ -222,9 +239,11 @@ public class DBHelper extends SQLiteOpenHelper {
                 "FROM PICK_TRX WHERE PICKED_QTY>0 GROUP BY TRX_NO) PT_PICKED_ITEM " +
                 "ON PD.TRX_NO=PT_PICKED_ITEM.TRX_NO WHERE PD.PICK_USER=?";
 
-        try {
+        try
+        {
             Cursor cursor = db.rawQuery(query, new String[]{pickUser});
-            while (cursor.moveToNext()) {
+            while (cursor.moveToNext())
+            {
                 Doc doc = new Doc();
                 doc.setTrxNo(cursor.getString(0));
                 doc.setTrxDate(cursor.getString(1));
@@ -239,14 +258,17 @@ public class DBHelper extends SQLiteOpenHelper {
                 docList.add(doc);
             }
             cursor.close();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
 
         return docList;
     }
 
-    void addPickDoc(Doc doc) {
+    void addPickDoc(Doc doc)
+    {
         ContentValues values = new ContentValues();
         values.put(TRX_NO, doc.getTrxNo());
         values.put(TRX_DATE, doc.getTrxDate());
@@ -263,7 +285,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.insert(PICK_DOC, null, values);
     }
 
-    private void createPickTrxTable(SQLiteDatabase db) {
+    private void createPickTrxTable(SQLiteDatabase db)
+    {
         db.execSQL("DROP TABLE IF EXISTS " + PICK_TRX);
         StringBuilder sb = new StringBuilder();
 
@@ -295,7 +318,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 .toString());
     }
 
-    void addPickTrx(Trx trx) {
+    void addPickTrx(Trx trx)
+    {
         ContentValues values = new ContentValues();
         values.put(TRX_ID, trx.getTrxId());
         values.put(TRX_NO, trx.getTrxNo());
@@ -323,7 +347,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.insert(PICK_TRX, null, values);
     }
 
-    List<Trx> getPickTrx(String trxNo) {
+    List<Trx> getPickTrx(String trxNo)
+    {
 
         List<Trx> trxList = new ArrayList<>();
 
@@ -333,7 +358,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
         int position = 0;
 
-        while (cursor.moveToNext()) {
+        while (cursor.moveToNext())
+        {
             Trx trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
             trx.setTrxNo(cursor.getString(1));
@@ -359,7 +385,8 @@ public class DBHelper extends SQLiteOpenHelper {
             trx.setPriority(cursor.getInt(21));
             trx.setPosition(position);
 
-            if (!trxList.contains(trx)) {
+            if (!trxList.contains(trx))
+            {
                 trxList.add(trx);
                 position++;
             }
@@ -368,7 +395,8 @@ public class DBHelper extends SQLiteOpenHelper {
         return trxList;
     }
 
-    Trx getPickTrxByBarcode(String barcode, String trxNo) {
+    Trx getPickTrxByBarcode(String barcode, String trxNo)
+    {
 
         String sql = "SELECT * FROM PICK_TRX WHERE BARCODE=? AND TRX_NO=?";
 
@@ -376,7 +404,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Trx trx = null;
 
-        if (cursor.moveToFirst()) {
+        if (cursor.moveToFirst())
+        {
             trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
             trx.setTrxNo(cursor.getString(1));
@@ -405,23 +434,27 @@ public class DBHelper extends SQLiteOpenHelper {
         return trx;
     }
 
-    public void updatePickTrx(Trx trx) {
+    public void updatePickTrx(Trx trx)
+    {
         ContentValues values = new ContentValues();
         values.put(PICKED_QTY, trx.getPickedQty());
 
         db.update(PICK_TRX, values, TRX_ID + "=?", new String[]{String.valueOf(trx.getTrxId())});
     }
 
-    public void deletePickTrx(String trxNo) {
+    public void deletePickTrx(String trxNo)
+    {
         db.delete(PICK_TRX, TRX_NO + "=?", new String[]{trxNo});
         db.delete(PICK_DOC, TRX_NO + "=?", new String[]{trxNo});
     }
 
-    private void createPackDocTable(SQLiteDatabase db) {
+    private void createPackDocTable(SQLiteDatabase db)
+    {
         db.execSQL("DROP TABLE IF EXISTS " + PACK_DOC);
 
         StringBuilder sb = new StringBuilder();
-        try {
+        try
+        {
 
             db.execSQL(sb.append("CREATE TABLE ")
                     .append(PACK_DOC).append("(")
@@ -445,12 +478,15 @@ public class DBHelper extends SQLiteOpenHelper {
                     .append(NOTES).append(" TEXT")
                     .append(")")
                     .toString());
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
 
-    List<Doc> getPackDocsByApproveUser(String approveUser) {
+    List<Doc> getPackDocsByApproveUser(String approveUser)
+    {
         List<Doc> docList = new ArrayList<>();
 
         String query = "SELECT PD.TRX_NO," +
@@ -472,9 +508,11 @@ public class DBHelper extends SQLiteOpenHelper {
                 "FROM PACK_TRX WHERE PICKED_QTY>0 GROUP BY TRX_NO) PT_PICKED_ITEM " +
                 "ON PD.TRX_NO=PT_PICKED_ITEM.TRX_NO WHERE PD.APPROVE_USER=? ORDER BY PD.PREV_TRX_NO";
 
-        try {
+        try
+        {
             Cursor cursor = db.rawQuery(query, new String[]{approveUser});
-            while (cursor.moveToNext()) {
+            while (cursor.moveToNext())
+            {
                 Doc doc = new Doc();
                 doc.setTrxNo(cursor.getString(0));
                 doc.setTrxDate(cursor.getString(1));
@@ -492,14 +530,17 @@ public class DBHelper extends SQLiteOpenHelper {
                 docList.add(doc);
             }
             cursor.close();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
 
         return docList;
     }
 
-    void addPackDoc(Doc doc) {
+    void addPackDoc(Doc doc)
+    {
         ContentValues values = new ContentValues();
         values.put(TRX_NO, doc.getTrxNo());
         values.put(TRX_DATE, doc.getTrxDate());
@@ -525,7 +566,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.insert(PACK_DOC, null, values);
     }
 
-    private void createPackTrxTable(SQLiteDatabase db) {
+    private void createPackTrxTable(SQLiteDatabase db)
+    {
         db.execSQL("DROP TABLE IF EXISTS " + PACK_TRX);
         StringBuilder sb = new StringBuilder();
 
@@ -558,7 +600,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 .toString());
     }
 
-    void addPackTrx(Trx trx) {
+    void addPackTrx(Trx trx)
+    {
         ContentValues values = new ContentValues();
         values.put(TRX_ID, trx.getTrxId());
         values.put(TRX_NO, trx.getTrxNo());
@@ -587,7 +630,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.insert(PACK_TRX, null, values);
     }
 
-    List<Trx> getPackTrxByApproveUser(String trxNo) {
+    List<Trx> getPackTrxByApproveUser(String trxNo)
+    {
 
         List<Trx> trxList = new ArrayList<>();
 
@@ -597,7 +641,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
         int position = 0;
 
-        while (cursor.moveToNext()) {
+        while (cursor.moveToNext())
+        {
             Trx trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
             trx.setTrxNo(cursor.getString(1));
@@ -624,7 +669,8 @@ public class DBHelper extends SQLiteOpenHelper {
             trx.setPriority(cursor.getInt(22));
             trx.setPosition(position);
 
-            if (!trxList.contains(trx)) {
+            if (!trxList.contains(trx))
+            {
                 trxList.add(trx);
                 position++;
             }
@@ -633,7 +679,8 @@ public class DBHelper extends SQLiteOpenHelper {
         return trxList;
     }
 
-    Trx getPackTrxByBarcode(String barcode, String trxNo) {
+    Trx getPackTrxByBarcode(String barcode, String trxNo)
+    {
 
         String sql = "SELECT * FROM PACK_TRX WHERE BARCODE=? AND TRX_NO=?";
 
@@ -641,7 +688,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Trx trx = null;
 
-        if (cursor.moveToFirst()) {
+        if (cursor.moveToFirst())
+        {
             trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
             trx.setTrxNo(cursor.getString(1));
@@ -671,19 +719,22 @@ public class DBHelper extends SQLiteOpenHelper {
         return trx;
     }
 
-    public void updatePackTrx(Trx trx) {
+    public void updatePackTrx(Trx trx)
+    {
         ContentValues values = new ContentValues();
         values.put(PACKED_QTY, trx.getPackedQty());
 
         db.update(PACK_TRX, values, TRX_ID + "=?", new String[]{String.valueOf(trx.getTrxId())});
     }
 
-    public void deletePackTrx(String trxNo) {
+    public void deletePackTrx(String trxNo)
+    {
         db.delete(PACK_TRX, TRX_NO + "=?", new String[]{trxNo});
         db.delete(PACK_DOC, TRX_NO + "=?", new String[]{trxNo});
     }
 
-    public void createShipTrxTable(SQLiteDatabase db) {
+    public void createShipTrxTable(SQLiteDatabase db)
+    {
         db.execSQL("DROP TABLE IF EXISTS " + SHIP_TRX);
         StringBuilder sb = new StringBuilder();
 
@@ -698,7 +749,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 .toString());
     }
 
-    public void addShipTrx(ShipTrx shipTrx) {
+    public void addShipTrx(ShipTrx shipTrx)
+    {
         ContentValues values = new ContentValues();
 
         values.put(REGION_CODE, shipTrx.getRegionCode());
@@ -710,14 +762,16 @@ public class DBHelper extends SQLiteOpenHelper {
         db.insert(SHIP_TRX, null, values);
     }
 
-    public List<ShipDoc> getShipDocs(String userId) {
+    public List<ShipDoc> getShipDocs(String userId)
+    {
         List<ShipDoc> shipDocList = new ArrayList<>();
         ShipDoc doc;
 
         Cursor cursor = db.rawQuery("SELECT REGION_CODE, DRIVER_CODE, VEHICLE_CODE, USER_ID, COUNT(*)" +
                         " FROM SHIP_TRX WHERE USER_ID=? GROUP BY REGION_CODE, DRIVER_CODE, VEHICLE_CODE, USER_ID",
                 new String[]{userId});
-        while (cursor.moveToNext()) {
+        while (cursor.moveToNext())
+        {
             doc = new ShipDoc();
             doc.setRegionCode(cursor.getString(0));
             doc.setDriverCode(cursor.getString(1));
@@ -731,12 +785,14 @@ public class DBHelper extends SQLiteOpenHelper {
         return shipDocList;
     }
 
-    public List<ShipTrx> getShipTrx(String driver) {
+    public List<ShipTrx> getShipTrx(String driver)
+    {
         List<ShipTrx> shipTrxList = new ArrayList<>();
         ShipTrx trx;
 
         Cursor cursor = db.rawQuery("SELECT * FROM SHIP_TRX WHERE DRIVER_CODE=?", new String[]{driver});
-        while (cursor.moveToNext()) {
+        while (cursor.moveToNext())
+        {
             trx = new ShipTrx();
             trx.setRegionCode(cursor.getString(0));
             trx.setDriverCode(cursor.getString(1));
@@ -751,15 +807,18 @@ public class DBHelper extends SQLiteOpenHelper {
         return shipTrxList;
     }
 
-    public void deleteShipTrxByDriver(String driverCode) {
+    public void deleteShipTrxByDriver(String driverCode)
+    {
         db.delete(SHIP_TRX, DRIVER_CODE + "=?", new String[]{driverCode});
     }
 
-    public void deleteShipTrxBySrc(String srcTrxNo) {
+    public void deleteShipTrxBySrc(String srcTrxNo)
+    {
         db.delete(SHIP_TRX, SRC_TRX_NO + "=?", new String[]{srcTrxNo});
     }
 
-    public boolean isShipped(String trxNo) {
+    public boolean isShipped(String trxNo)
+    {
         boolean shipped = false;
         Cursor cursor = db.rawQuery("SELECT * FROM SHIP_TRX WHERE SRC_TRX_NO=?", new String[]{trxNo});
         if (cursor.moveToFirst())
@@ -768,7 +827,8 @@ public class DBHelper extends SQLiteOpenHelper {
         return shipped;
     }
 
-    public String barcodeList(String invCode, String tableName) {
+    public String barcodeList(String invCode, String tableName)
+    {
         StringBuilder barcodeList = new StringBuilder();
         Cursor cursor = db.query(tableName,
                 new String[]{BARCODE},
@@ -781,12 +841,14 @@ public class DBHelper extends SQLiteOpenHelper {
         return barcodeList.toString();
     }
 
-    private void createLastLoginTable(SQLiteDatabase db) {
+    private void createLastLoginTable(SQLiteDatabase db)
+    {
         db.execSQL("DROP TABLE IF EXISTS " + LAST_LOGIN);
         db.execSQL("CREATE TABLE LAST_LOGIN (USER_ID TEXT, PASS_WORD TEXT)");
     }
 
-    public void updateLastLogin(String userId, String password) {
+    public void updateLastLogin(String userId, String password)
+    {
         db.delete(LAST_LOGIN, USER_ID + "=?", new String[]{userId});
 
         ContentValues values = new ContentValues();
@@ -796,11 +858,13 @@ public class DBHelper extends SQLiteOpenHelper {
         db.insert(LAST_LOGIN, null, values);
     }
 
-    public String[] getLastLogin() {
+    public String[] getLastLogin()
+    {
         String[] result = new String[2];
         Cursor cursor = db.rawQuery("SELECT * FROM LAST_LOGIN", null);
 
-        if (cursor.moveToLast()) {
+        if (cursor.moveToLast())
+        {
             result[0] = cursor.getString(0);
             result[1] = cursor.getString(1);
         }
@@ -810,16 +874,19 @@ public class DBHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    private void createConfigTable(SQLiteDatabase db) {
+    private void createConfigTable(SQLiteDatabase db)
+    {
         db.execSQL("DROP TABLE IF EXISTS " + CONFIG);
         db.execSQL("CREATE TABLE CONFIG (NAME TEXT, VALUE TEXT)");
     }
 
-    public String getParameter(String name) {
+    public String getParameter(String name)
+    {
         String value = "";
 
         Cursor cursor = db.rawQuery("SELECT VALUE FROM CONFIG WHERE NAME=?", new String[]{name});
-        if (cursor.moveToFirst()) {
+        if (cursor.moveToFirst())
+        {
             value = cursor.getString(0);
         }
 
@@ -828,14 +895,18 @@ public class DBHelper extends SQLiteOpenHelper {
         return value;
     }
 
-    public void updateParameter(String name, String value) {
+    public void updateParameter(String name, String value)
+    {
         ContentValues values = new ContentValues();
         values.put(NAME, name);
         values.put(VALUE, value);
-        try {
+        try
+        {
             db.delete(CONFIG, NAME + "=?", new String[]{name});
             db.insert(CONFIG, null, values);
-        } catch (SQLException e) {
+        }
+        catch (SQLException e)
+        {
             e.printStackTrace();
         }
 

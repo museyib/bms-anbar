@@ -33,7 +33,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class MainActivity extends AppBaseActivity {
+public class MainActivity extends AppBaseActivity
+{
 
     String id;
     String password;
@@ -42,7 +43,8 @@ public class MainActivity extends AppBaseActivity {
     int connectionTimeout;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         enableStorageAccess();
@@ -53,7 +55,8 @@ public class MainActivity extends AppBaseActivity {
         password = lastLogin[1];
     }
 
-    private void loadConfig() {
+    private void loadConfig()
+    {
         serverUrl = dbHelper.getParameter("serverUrl");
         if (serverUrl.isEmpty())
             serverUrl = config().getServerUrl();
@@ -71,21 +74,25 @@ public class MainActivity extends AppBaseActivity {
         config().setConnectionTimeout(connectionTimeout);
     }
 
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.settings_menu, menu);
         MenuItem itemSettings = menu.findItem(R.id.settings);
-        itemSettings.setOnMenuItemClickListener(item1 -> {
+        itemSettings.setOnMenuItemClickListener(item1 ->
+        {
             startActivity(new Intent(MainActivity.this, SettingsActivity.class));
             return true;
         });
 
         MenuItem itemUpdate = menu.findItem(R.id.update);
-        itemUpdate.setOnMenuItemClickListener(item1 -> {
+        itemUpdate.setOnMenuItemClickListener(item1 ->
+        {
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle("Proqram versiyasını yenilə")
                     .setMessage("Dəyişiklikdən asılı olaraq məlumatlar silinə bilər. Yeniləmək istəyirsinizmi?")
-                    .setNegativeButton("Bəli", (dialogInterface, i) -> {
+                    .setNegativeButton("Bəli", (dialogInterface, i) ->
+                    {
                         String url = url("download");
                         Map<String, String> parameters = new HashMap<>();
                         parameters.put("file-name", "BMSAnbar");
@@ -101,27 +108,33 @@ public class MainActivity extends AppBaseActivity {
         return true;
     }
 
-    protected void enableStorageAccess() {
+    protected void enableStorageAccess()
+    {
         if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED)
+        {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
     }
 
-    public void openPickingDocs(View view) {
+    public void openPickingDocs(View view)
+    {
         showLoginDialog(AppConfig.PICK_MODE);
     }
 
-    public void openPackingDocs(View view) {
+    public void openPackingDocs(View view)
+    {
         showLoginDialog(AppConfig.PACK_MODE);
     }
 
-    public void openShippingDocs(View view) {
+    public void openShippingDocs(View view)
+    {
         showLoginDialog(AppConfig.SHIP_MODE);
     }
 
-    private void showLoginDialog(int mode) {
+    private void showLoginDialog(int mode)
+    {
         this.mode = mode;
         View view = getLayoutInflater().inflate(R.layout.login_page,
                 findViewById(android.R.id.content), false);
@@ -136,20 +149,27 @@ public class MainActivity extends AppBaseActivity {
         AlertDialog loginDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.enter)
                 .setView(view)
-                .setPositiveButton(R.string.enter, (dialog, which) -> {
+                .setPositiveButton(R.string.enter, (dialog, which) ->
+                {
                     id = idEdit.getText().toString().toUpperCase();
                     password = passwordEdit.getText().toString();
 
-                    if (id.isEmpty() || password.isEmpty()) {
+                    if (id.isEmpty() || password.isEmpty())
+                    {
                         showToastMessage(getString(R.string.username_or_password_not_entered));
                         showLoginDialog(mode);
                         playSound(SOUND_FAIL);
-                    } else {
+                    }
+                    else
+                    {
                         User user = dbHelper.getUser(id);
-                        if (user != null) {
+                        if (user != null)
+                        {
                             loadUserInfo(user, false);
                             attemptLogin(user);
-                        } else {
+                        }
+                        else
+                        {
                             String url = url("user", "login");
                             Map<String, String> parameters = new HashMap<>();
                             parameters.put("id", id);
@@ -166,20 +186,26 @@ public class MainActivity extends AppBaseActivity {
         loginDialog.show();
     }
 
-    private void attemptLogin(User user) {
-        if (!user.getPassword().equals(password)) {
+    private void attemptLogin(User user)
+    {
+        if (!user.getPassword().equals(password))
+        {
             String url = url("user", "login");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("id", id);
             parameters.put("password", password);
             url = addRequestParameters(url, parameters);
             new ServerLoginExecutor(MainActivity.this).execute(url);
-        } else {
+        }
+        else
+        {
             dbHelper.updateLastLogin(id, password);
             Class<?> aClass;
-            switch (mode) {
+            switch (mode)
+            {
                 case AppConfig.PICK_MODE:
-                    if (!user.isPick()) {
+                    if (!user.isPick())
+                    {
                         showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                                 android.R.drawable.ic_dialog_alert);
                         playSound(SOUND_FAIL);
@@ -188,7 +214,8 @@ public class MainActivity extends AppBaseActivity {
                     aClass = PickDocActivity.class;
                     break;
                 case AppConfig.PACK_MODE:
-                    if (!user.isPack()) {
+                    if (!user.isPack())
+                    {
                         showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                                 android.R.drawable.ic_dialog_alert);
                         playSound(SOUND_FAIL);
@@ -197,7 +224,8 @@ public class MainActivity extends AppBaseActivity {
                     aClass = PackDocActivity.class;
                     break;
                 case AppConfig.SHIP_MODE:
-                    if (!user.isLoading()) {
+                    if (!user.isLoading())
+                    {
                         showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                                 android.R.drawable.ic_dialog_alert);
                         playSound(SOUND_FAIL);
@@ -213,15 +241,18 @@ public class MainActivity extends AppBaseActivity {
         }
     }
 
-    static class ServerLoginExecutor extends AsyncTask<String, Boolean, String> {
+    static class ServerLoginExecutor extends AsyncTask<String, Boolean, String>
+    {
         private WeakReference<MainActivity> reference;
 
-        ServerLoginExecutor(MainActivity activity) {
+        ServerLoginExecutor(MainActivity activity)
+        {
             reference = new WeakReference<>(activity);
         }
 
         @Override
-        protected String doInBackground(String... url) {
+        protected String doInBackground(String... url)
+        {
             MainActivity activity = reference.get();
             publishProgress(true);
             RestTemplate template = new RestTemplate();
@@ -229,9 +260,12 @@ public class MainActivity extends AppBaseActivity {
                     .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
-            try {
+            try
+            {
                 result = template.postForObject(url[0], null, String.class);
-            } catch (RuntimeException ex) {
+            }
+            catch (RuntimeException ex)
+            {
                 ex.printStackTrace();
                 return null;
             }
@@ -239,27 +273,35 @@ public class MainActivity extends AppBaseActivity {
         }
 
         @Override
-        protected void onProgressUpdate(Boolean... b) {
+        protected void onProgressUpdate(Boolean... b)
+        {
             reference.get().showProgressDialog(true);
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String result)
+        {
             MainActivity activity = reference.get();
-            if (result == null) {
+            if (result == null)
+            {
                 activity.showMessageDialog(activity.getString(R.string.error),
                         activity.getString(R.string.connection_error),
                         android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
-            } else {
+            }
+            else
+            {
                 Gson gson = new Gson();
                 User user = gson.fromJson(result, User.class);
-                if (user.getId() == null) {
+                if (user.getId() == null)
+                {
                     activity.showMessageDialog(activity.getString(R.string.error),
                             activity.getString(R.string.username_or_password_incorrect),
                             android.R.drawable.ic_dialog_alert);
                     activity.playSound(SOUND_FAIL);
-                } else {
+                }
+                else
+                {
                     user.setId(user.getId().toUpperCase());
                     activity.loadUserInfo(user, true);
                     activity.attemptLogin(user);
@@ -269,15 +311,18 @@ public class MainActivity extends AppBaseActivity {
         }
     }
 
-    static class Updater extends AsyncTask<String, Boolean, byte[]> {
+    static class Updater extends AsyncTask<String, Boolean, byte[]>
+    {
         private WeakReference<MainActivity> reference;
 
-        Updater(MainActivity activity) {
+        Updater(MainActivity activity)
+        {
             reference = new WeakReference<>(activity);
         }
 
         @Override
-        protected byte[] doInBackground(String... url) {
+        protected byte[] doInBackground(String... url)
+        {
             MainActivity activity = reference.get();
             publishProgress(true);
             RestTemplate template = new RestTemplate();
@@ -285,11 +330,14 @@ public class MainActivity extends AppBaseActivity {
                     .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             byte[] result;
-            try {
+            try
+            {
                 result = template.getForObject(url[0], byte[].class);
                 if (result.length == 0)
                     return result;
-            } catch (RuntimeException ex) {
+            }
+            catch (RuntimeException ex)
+            {
                 ex.printStackTrace();
                 return null;
             }
@@ -297,14 +345,17 @@ public class MainActivity extends AppBaseActivity {
         }
 
         @Override
-        protected void onProgressUpdate(Boolean... b) {
+        protected void onProgressUpdate(Boolean... b)
+        {
             reference.get().showProgressDialog(true);
         }
 
         @Override
-        protected void onPostExecute(byte[] result) {
+        protected void onPostExecute(byte[] result)
+        {
             MainActivity activity = reference.get();
-            if (result == null) {
+            if (result == null)
+            {
                 activity.showMessageDialog(activity.getString(R.string.info),
                         activity.getString(R.string.no_new_version),
                         android.R.drawable.ic_dialog_info);
@@ -312,47 +363,63 @@ public class MainActivity extends AppBaseActivity {
                 return;
             }
             File file = new File(Environment.getExternalStorageDirectory().getPath() + "/BMSAnbar.apk");
-            if (!file.exists()) {
-                try {
+            if (!file.exists())
+            {
+                try
+                {
                     boolean newFile = file.createNewFile();
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     e.printStackTrace();
                 }
             }
 
             FileOutputStream stream;
-            try {
+            try
+            {
                 stream = new FileOutputStream(file);
                 stream.write(result);
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 e.printStackTrace();
             }
 
             PackageManager pm = activity.getPackageManager();
             PackageInfo info = pm.getPackageArchiveInfo(file.getAbsolutePath(), 0);
             int version = 0;
-            try {
+            try
+            {
                 version = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionCode;
-            } catch (PackageManager.NameNotFoundException e) {
+            }
+            catch (PackageManager.NameNotFoundException e)
+            {
                 e.printStackTrace();
             }
-            if (file.length() > 0 && info.versionCode > version) {
+            if (file.length() > 0 && info.versionCode > version)
+            {
 
                 Intent installIntent;
                 Uri uri;
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+                {
                     installIntent = new Intent(Intent.ACTION_VIEW);
                     uri = Uri.fromFile(file);
                     installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     installIntent.setDataAndType(uri, "application/vnd.android.package-archive");
-                } else {
+                }
+                else
+                {
                     installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
                     uri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file);
                     installIntent.setData(uri);
                     installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 }
                 activity.startActivity(installIntent);
-            } else {
+            }
+            else
+            {
                 activity.showMessageDialog(activity.getString(R.string.info),
                         activity.getString(R.string.no_new_version),
                         android.R.drawable.ic_dialog_info);

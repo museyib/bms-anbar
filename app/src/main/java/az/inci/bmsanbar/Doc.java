@@ -7,7 +7,8 @@ import androidx.annotation.RequiresApi;
 
 import java.util.Objects;
 
-class Doc {
+class Doc
+{
     private String trxNo;
     private String trxDate;
     private int recStatus;
@@ -27,89 +28,110 @@ class Doc {
     private String sbeCode;
     private String approveUser;
 
-    String getTrxNo() {
+    String getTrxNo()
+    {
         return trxNo;
     }
 
-    void setTrxNo(String trxNo) {
+    void setTrxNo(String trxNo)
+    {
         this.trxNo = trxNo;
     }
 
-    String getTrxDate() {
+    String getTrxDate()
+    {
         return trxDate;
     }
 
-    void setTrxDate(String trxDate) {
+    void setTrxDate(String trxDate)
+    {
         this.trxDate = trxDate;
     }
 
-    int getRecStatus() {
+    int getRecStatus()
+    {
         return recStatus;
     }
 
-    void setRecStatus(int recStatus) {
+    void setRecStatus(int recStatus)
+    {
         this.recStatus = recStatus;
     }
 
-    String getPickStatus() {
+    String getPickStatus()
+    {
         return pickStatus;
     }
 
-    void setPickStatus(String pickStatus) {
+    void setPickStatus(String pickStatus)
+    {
         this.pickStatus = pickStatus;
     }
 
-    String getWhsCode() {
+    String getWhsCode()
+    {
         return whsCode;
     }
 
-    void setWhsCode(String whsCode) {
+    void setWhsCode(String whsCode)
+    {
         this.whsCode = whsCode;
     }
 
-    String getPickArea() {
+    String getPickArea()
+    {
         return pickArea;
     }
 
-    void setPickArea(String pickArea) {
+    void setPickArea(String pickArea)
+    {
         this.pickArea = pickArea;
     }
 
-    String getPickGroup() {
+    String getPickGroup()
+    {
         return pickGroup;
     }
 
-    void setPickGroup(String pickGroup) {
+    void setPickGroup(String pickGroup)
+    {
         this.pickGroup = pickGroup;
     }
 
-    String getPickUser() {
+    String getPickUser()
+    {
         return pickUser;
     }
 
-    void setPickUser(String pickUser) {
+    void setPickUser(String pickUser)
+    {
         this.pickUser = pickUser;
     }
 
-    String getDescription() {
+    String getDescription()
+    {
         return description;
     }
 
-    void setDescription(String description) {
+    void setDescription(String description)
+    {
         this.description = description;
     }
 
-    int getItemCount() {
+    int getItemCount()
+    {
         return itemCount;
     }
 
-    void setItemCount(int itemCount) {
+    void setItemCount(int itemCount)
+    {
         this.itemCount = itemCount;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Doc doc = (Doc) o;
@@ -118,61 +140,75 @@ class Doc {
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(trxNo);
     }
 
-    public String getPrevTrxNo() {
+    public String getPrevTrxNo()
+    {
         return prevTrxNo;
     }
 
-    public void setPrevTrxNo(String prevTrxNo) {
+    public void setPrevTrxNo(String prevTrxNo)
+    {
         this.prevTrxNo = prevTrxNo;
     }
 
-    public int getPickedItemCount() {
+    public int getPickedItemCount()
+    {
         return pickedItemCount;
     }
 
-    public void setPickedItemCount(int pickedItemCount) {
+    public void setPickedItemCount(int pickedItemCount)
+    {
         this.pickedItemCount = pickedItemCount;
     }
 
-    public String getBpName() {
+    public String getBpName()
+    {
         return bpName;
     }
 
-    public void setBpName(String bpName) {
+    public void setBpName(String bpName)
+    {
         this.bpName = bpName;
     }
 
-    public String getSbeName() {
+    public String getSbeName()
+    {
         return sbeName;
     }
 
-    public void setSbeName(String sbeName) {
+    public void setSbeName(String sbeName)
+    {
         this.sbeName = sbeName;
     }
 
-    public String getBpCode() {
+    public String getBpCode()
+    {
         return bpCode;
     }
 
-    public void setBpCode(String bpCode) {
+    public void setBpCode(String bpCode)
+    {
         this.bpCode = bpCode;
     }
 
-    public String getSbeCode() {
+    public String getSbeCode()
+    {
         return sbeCode;
     }
 
-    public void setSbeCode(String sbeCode) {
+    public void setSbeCode(String sbeCode)
+    {
         this.sbeCode = sbeCode;
     }
 
     @NonNull
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "Doc{" +
                 "trxNo='" + trxNo + '\'' +
                 ", trxDate='" + trxDate + '\'' +
@@ -193,19 +229,23 @@ class Doc {
                 '}';
     }
 
-    public String getApproveUser() {
+    public String getApproveUser()
+    {
         return approveUser;
     }
 
-    public void setApproveUser(String approveUser) {
+    public void setApproveUser(String approveUser)
+    {
         this.approveUser = approveUser;
     }
 
-    public String getNotes() {
+    public String getNotes()
+    {
         return notes;
     }
 
-    public void setNotes(String notes) {
+    public void setNotes(String notes)
+    {
         this.notes = notes;
     }
 }

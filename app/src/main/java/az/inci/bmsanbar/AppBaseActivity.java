@@ -24,7 +24,8 @@ import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AppBaseActivity extends AppCompatActivity {
+public class AppBaseActivity extends AppCompatActivity
+{
 
     protected static int SOUND_SUCCESS = R.raw.barcodebeep;
     protected static int SOUND_FAIL = R.raw.serror3;
@@ -38,7 +39,8 @@ public class AppBaseActivity extends AppCompatActivity {
     DBHelper dbHelper;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         dbHelper = new DBHelper(this);
         dbHelper.open();
@@ -48,67 +50,81 @@ public class AppBaseActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         dbHelper = new DBHelper(this);
         dbHelper.open();
     }
 
     @Override
-    protected void onStop() {
+    protected void onStop()
+    {
         super.onStop();
         dbHelper.close();
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         super.onDestroy();
         dbHelper.close();
     }
 
     @Override
-    protected void onPause() {
+    protected void onPause()
+    {
         super.onPause();
         dbHelper.close();
     }
 
-    public void loadFooter() {
+    public void loadFooter()
+    {
         TextView userId = findViewById(R.id.user_info_id);
         userId.setText(config().getUser().getId());
         userId.append(" - ");
         userId.append(config().getUser().getName());
     }
 
-    public void showProgressDialog(boolean b) {
+    public void showProgressDialog(boolean b)
+    {
         View view = getLayoutInflater().inflate(R.layout.progress_dialog_layout,
                 findViewById(android.R.id.content), false);
-        if (progressDialog == null) {
+        if (progressDialog == null)
+        {
             progressDialog = new AlertDialog.Builder(this)
                     .setView(view)
                     .setCancelable(false)
                     .create();
         }
-        if (b) {
+        if (b)
+        {
             progressDialog.show();
-        } else {
+        }
+        else
+        {
             progressDialog.dismiss();
         }
     }
 
-    public String url(String... value) {
+    public String url(String... value)
+    {
         StringBuilder sb = new StringBuilder();
         sb.append(config().getServerUrl());
-        for (String s : value) {
+        for (String s : value)
+        {
             sb.append("/").append(s);
         }
         return sb.toString();
     }
 
-    public String addRequestParameters(String url, Map<String, String> requestParameters) {
+    public String addRequestParameters(String url, Map<String, String> requestParameters)
+    {
         StringBuilder builder = new StringBuilder(url);
         builder.append("?");
 
-        for (Map.Entry<String, String> entry : requestParameters.entrySet()) {
+        for (Map.Entry<String, String> entry : requestParameters.entrySet())
+        {
             builder.append(entry.getKey())
                     .append("=")
                     .append(entry.getValue())
@@ -119,29 +135,35 @@ public class AppBaseActivity extends AppCompatActivity {
         return builder.toString();
     }
 
-    public void loadUserInfo(User user, boolean newUser) {
-        if (newUser) {
+    public void loadUserInfo(User user, boolean newUser)
+    {
+        if (newUser)
+        {
             dbHelper.addUser(user);
         }
         config().setUser(user);
     }
 
-    public AppConfig config() {
+    public AppConfig config()
+    {
         return ((App) getApplication()).getConfig();
     }
 
-    protected void showToastMessage(String message) {
+    protected void showToastMessage(String message)
+    {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
-    protected void showMessageDialog(String title, String message, int icon) {
+    protected void showMessageDialog(String title, String message, int icon)
+    {
         new android.app.AlertDialog.Builder(this)
                 .setIcon(icon)
                 .setTitle(title)
                 .setMessage(message).show();
     }
 
-    protected void showPickDateDialog(String reportType) {
+    protected void showPickDateDialog(String reportType)
+    {
         View view = getLayoutInflater().inflate(R.layout.pick_date_dialog,
                 findViewById(android.R.id.content), false);
 
@@ -154,7 +176,8 @@ public class AppBaseActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .setTitle("Tarix intervalı")
-                .setPositiveButton("OK", (dialogInterface, i) -> {
+                .setPositiveButton("OK", (dialogInterface, i) ->
+                {
 
                     String startDate = fromText.getText().toString();
                     String endDate = toText.getText().toString();
@@ -170,47 +193,57 @@ public class AppBaseActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    protected void playSound(int resourceId) {
+    protected void playSound(int resourceId)
+    {
         int volume = audioManager.getStreamMaxVolume(3);
         sound = soundPool.load(this, resourceId, 1);
         soundPool.setOnLoadCompleteListener((soundPool1, i, i1) ->
                 soundPool.play(sound, volume, volume, 1, 0, 1));
     }
 
-    protected static class ShowQuantity extends AsyncTask<String, Void, String> {
+    protected static class ShowQuantity extends AsyncTask<String, Void, String>
+    {
         WeakReference<AppBaseActivity> reference;
 
-        ShowQuantity(AppBaseActivity activity) {
+        ShowQuantity(AppBaseActivity activity)
+        {
             reference = new WeakReference<>(activity);
         }
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             reference.get().showProgressDialog(true);
         }
 
         @Override
-        protected String doInBackground(String... url) {
+        protected String doInBackground(String... url)
+        {
             RestTemplate template = new RestTemplate();
             AppBaseActivity activity = reference.get();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
                     .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
-            try {
+            try
+            {
                 result = template.getForObject(url[0], String.class);
-            } catch (ResourceAccessException ex) {
+            }
+            catch (ResourceAccessException ex)
+            {
                 return null;
             }
             return result;
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String result)
+        {
             AppBaseActivity activity = reference.get();
             String title = "Anbarda say";
             int type = android.R.drawable.ic_dialog_info;
-            if (result == null) {
+            if (result == null)
+            {
                 title = activity.getString(R.string.error);
                 result = activity.getString(R.string.connection_error);
                 type = android.R.drawable.ic_dialog_alert;
@@ -221,29 +254,36 @@ public class AppBaseActivity extends AppCompatActivity {
         }
     }
 
-    protected static class GetPickReport extends AsyncTask<String, Boolean, String> {
+    protected static class GetPickReport extends AsyncTask<String, Boolean, String>
+    {
         WeakReference<AppBaseActivity> reference;
 
-        public GetPickReport(AppBaseActivity activity) {
+        public GetPickReport(AppBaseActivity activity)
+        {
             reference = new WeakReference<>(activity);
         }
 
         @Override
-        protected void onProgressUpdate(Boolean... b) {
+        protected void onProgressUpdate(Boolean... b)
+        {
             reference.get().showProgressDialog(true);
         }
 
         @Override
-        protected String doInBackground(String... url) {
+        protected String doInBackground(String... url)
+        {
             publishProgress(true);
             RestTemplate template = new RestTemplate();
             AppBaseActivity activity = reference.get();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
-            try {
+            try
+            {
                 result = template.getForObject(url[0], String.class);
-            } catch (RuntimeException ex) {
+            }
+            catch (RuntimeException ex)
+            {
                 ex.printStackTrace();
                 return null;
             }
@@ -251,15 +291,19 @@ public class AppBaseActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String result)
+        {
 
             AppBaseActivity activity = reference.get();
-            if (result == null) {
+            if (result == null)
+            {
                 activity.showMessageDialog(activity.getString(R.string.error),
                         activity.getString(R.string.connection_error),
                         android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
-            } else {
+            }
+            else
+            {
                 activity.showMessageDialog(activity.getString(R.string.info),
                         "Yığım hesabatı: " + result, android.R.drawable.ic_dialog_info);
             }
