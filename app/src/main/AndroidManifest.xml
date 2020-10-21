@@ -31,13 +31,14 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
+        <activity android:name=".WaitingPackTrxActivity"></activity>
 
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
 
         <activity
-            android:name=".OpenPackDocActivity"
+            android:name=".WaitingPackDocActivity"
             android:label="@string/waiting_docs" />
 
         <provider

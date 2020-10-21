@@ -1,6 +1,7 @@
 package az.inci.bmsanbar;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class OpenPackDocActivity extends AppBaseActivity
+public class WaitingPackDocActivity extends AppBaseActivity
 {
 
     List<Doc> docList;
@@ -37,6 +38,11 @@ public class OpenPackDocActivity extends AppBaseActivity
         docListView.setOnItemClickListener((adapterView, view, i, l) ->
         {
             Doc doc = (Doc) view.getTag();
+            Intent intent=new Intent(this, WaitingPackTrxActivity.class);
+            intent.putExtra("trxNo", doc.getTrxNo());
+            intent.putExtra("orderTrxNo", doc.getPrevTrxNo());
+            intent.putExtra("bpName", doc.getBpName());
+            startActivity(intent);
         });
         loadFooter();
     }

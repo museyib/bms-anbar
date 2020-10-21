@@ -87,4 +87,5 @@
     <string name="camera_scanner">Kamera skaner</string>
     <string name="image_url">Image URL</string>
     <string name="waiting_docs">Gözləyən sənədlər</string>
+    <string name="status">Status</string>
 </resources>

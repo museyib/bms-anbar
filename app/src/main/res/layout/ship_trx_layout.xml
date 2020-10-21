@@ -81,7 +81,7 @@
         android:paddingBottom="180dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scan_new_doc" />
+        app:layout_constraintTop_toBottomOf="@id/send" />
 
     <include
         layout="@layout/footer_layout"

@@ -4,14 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
     <HorizontalScrollView
-        android:id="@+id/doc_list_scroll"
+        android:id="@+id/trx_list_scroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/user_info"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
 
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -21,11 +22,22 @@
                 android:id="@+id/header"
                 android:layout_width="match_parent"
                 android:layout_height="20dp"
-                android:background="#D3F6FA"
-                android:visibility="gone">
+                android:background="#D3F6FA">
 
                 <View
                     android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
+
+                <TextView
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/inv_code"
+                    android:textColor="@android:color/black" />
+
+                <View
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
@@ -33,67 +45,56 @@
                 <TextView
                     android:layout_width="110dp"
                     android:layout_height="match_parent"
-                    android:text="@string/trx_no_label"
+                    android:text="@string/inv_name"
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="35dp"
+                    android:layout_width="45dp"
                     android:layout_height="match_parent"
-                    android:text="@string/item_count"
+                    android:text="@string/qty"
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="40dp"
+                    android:layout_width="45dp"
                     android:layout_height="match_parent"
                     android:text="@string/picked"
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="100dp"
+                    android:layout_width="45dp"
                     android:layout_height="match_parent"
-                    android:text="@string/customer_label"
+                    android:text="@string/status"
+                    android:gravity="center"
                     android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
+                    android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider"
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="250dp"
+                    android:layout_width="80dp"
                     android:layout_height="match_parent"
-                    android:text="@string/description"
-                    android:textColor="@android:color/black" />
-
-                <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
-
-                <TextView
-                    android:layout_width="250dp"
-                    android:layout_height="match_parent"
-                    android:text="@string/sbe_name"
+                    android:text="@string/brand"
                     android:textColor="@android:color/black" />
 
                 <View
@@ -104,21 +105,23 @@
             </TableRow>
 
             <ListView
-                android:id="@+id/doc_list"
+                android:id="@+id/trx_list"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:divider="@android:color/black"
                 android:dividerHeight="2dp"
                 android:paddingBottom="20dp" />
-
         </RelativeLayout>
 
     </HorizontalScrollView>
 
     <include
         layout="@layout/footer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/doc_list_scroll" />
+        app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

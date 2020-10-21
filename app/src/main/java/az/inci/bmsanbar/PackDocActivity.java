@@ -152,7 +152,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         MenuItem docList = menu.findItem(R.id.doc_list);
         docList.setOnMenuItemClickListener(item1 ->
         {
-            startActivity(new Intent(this, OpenPackDocActivity.class));
+            startActivity(new Intent(this, WaitingPackDocActivity.class));
             return true;
         });
 
@@ -256,7 +256,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     private static class DocLoader extends AsyncTask<String, Boolean, String>
     {
 
-        private WeakReference<PackDocActivity> reference;
+        private final WeakReference<PackDocActivity> reference;
 
         DocLoader(PackDocActivity activity)
         {
@@ -318,7 +318,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
 
     private static class TrxLoader extends AsyncTask<String, Boolean, String>
     {
-        private WeakReference<PackDocActivity> reference;
+        private final WeakReference<PackDocActivity> reference;
 
         TrxLoader(PackDocActivity activity)
         {

@@ -135,7 +135,8 @@ public class ShipTrxActivity extends ScannerSupportActivity
         }
         else
         {
-            if (barcode.startsWith("ITO") || barcode.startsWith("DLV") || barcode.startsWith("ITD"))
+            if (barcode.startsWith("ITO") || barcode.startsWith("DLV") || barcode.startsWith("ITD")
+                    || barcode.startsWith("SIN") || barcode.startsWith("ITI"))
             {
                 showMessageDialog(getString(R.string.info), getString(R.string.driver_or_vehicle_not_defined),
                         android.R.drawable.ic_dialog_info);
@@ -217,7 +218,8 @@ public class ShipTrxActivity extends ScannerSupportActivity
 
     public void checkShipping(String trxNo)
     {
-        if (!trxNo.startsWith("ITO") && !trxNo.startsWith("DLV") && !trxNo.startsWith("ITD"))
+        if (!trxNo.startsWith("ITO") && !trxNo.startsWith("DLV") && !trxNo.startsWith("ITD")
+                && !trxNo.startsWith("SIN") && !trxNo.startsWith("ITI"))
         {
             showMessageDialog(getString(R.string.info), getString(R.string.not_valid_doc_for_shipping),
                     android.R.drawable.ic_dialog_info);
