@@ -139,7 +139,7 @@ public class WaitingPackTrxActivity extends AppBaseActivity {
             if (convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
-                        .inflate(R.layout.pack_trx_item_layout, parent, false);
+                        .inflate(R.layout.waiting_pack_trx_item_layout, parent, false);
             }
 
             switch (trx.getPickStatus()) {
@@ -149,13 +149,13 @@ public class WaitingPackTrxActivity extends AppBaseActivity {
                 case "C":
                     convertView.setBackgroundColor(Color.RED);
                     break;
-                case "R":
+                case "I":
                     convertView.setBackgroundColor(Color.YELLOW);
                     break;
                 case "A":
                     convertView.setBackgroundColor(Color.CYAN);
                     break;
-                case "I":
+                case "R":
                     convertView.setBackgroundColor(Color.LTGRAY);
                     break;
             }
