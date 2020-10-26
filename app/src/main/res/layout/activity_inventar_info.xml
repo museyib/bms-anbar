@@ -42,6 +42,33 @@
         app:layout_constraintTop_toBottomOf="@+id/top" />
 
     <Button
+        android:id="@+id/camera_scanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/camera_scanner"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/edit_attributes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/good_info"
+        app:layout_constraintVertical_bias="1.0"
+        android:onClick="scanWithCamera"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/edit_attributes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="editAttributes"
+        android:text="@string/edit_attributes"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/photo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/good_info"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
         android:id="@+id/photo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -50,7 +77,5 @@
         android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/good_info"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

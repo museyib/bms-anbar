@@ -88,4 +88,7 @@
     <string name="image_url">Image URL</string>
     <string name="waiting_docs">Gözləyən sənədlər</string>
     <string name="status">Status</string>
+    <string name="edit_attributes">Attributlara düzəliş</string>
+    <string name="save">Yadda saxla</string>
+    <string name="attribute_value">Atribut dəyəri</string>
 </resources>

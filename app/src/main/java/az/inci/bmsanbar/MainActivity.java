@@ -40,6 +40,7 @@ public class MainActivity extends AppBaseActivity
     String password;
     String serverUrl;
     String imageUrl;
+    boolean cameraScanning;
     int connectionTimeout;
 
     @Override
@@ -72,6 +73,9 @@ public class MainActivity extends AppBaseActivity
         if (connectionTimeout == 0)
             connectionTimeout = config().getConnectionTimeout();
         config().setConnectionTimeout(connectionTimeout);
+
+        cameraScanning = Boolean.parseBoolean(dbHelper.getParameter("cameraScanning"));
+        config().setCameraScanning(cameraScanning);
     }
 
     public boolean onCreateOptionsMenu(Menu menu)

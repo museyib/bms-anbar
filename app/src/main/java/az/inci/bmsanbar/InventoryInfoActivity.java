@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +36,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     TextView infoText;
     String invCode;
+    String invName;
     EditText keywordEdit;
     String keyword;
 
@@ -45,6 +47,11 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         setContentView(R.layout.activity_inventar_info);
         infoText = findViewById(R.id.good_info);
         keywordEdit = findViewById(R.id.keyword_edit);
+
+        if (config().isCameraScanning())
+        {
+            findViewById(R.id.camera_scanner).setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -120,10 +127,27 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     private void printInfo(String info)
     {
+        int firstIndex=info.indexOf(';');
+        invCode = info.substring(10, firstIndex);
+        invName = info.substring(firstIndex+invCode.length()+4,
+                info.indexOf(';', firstIndex+invCode.length()+4));
         info = info.replaceAll("; ", "\n");
         info = info.replaceAll("\\\\n", "\n");
-        invCode = info.substring(10, 17);
         infoText.setText(info);
+    }
+
+    public void scanWithCamera(View view) {
+        Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
+        startActivityForResult(barcodeIntent, 1);
+    }
+
+    public void editAttributes(View view) {
+        if (invCode!=null) {
+            Intent intent = new Intent(this, EditAttributesActivity.class);
+            intent.putExtra("invCode", invCode);
+            intent.putExtra("invName", invName);
+            startActivity(intent);
+        }
     }
 
     protected static class ShowInvAttributes extends AsyncTask<String, Void, String>
@@ -163,7 +187,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             if (result == null)
             {
                 activity.showMessageDialog(activity.getString(R.string.error),
-                        activity.getString(R.string.connection_error),
+                        activity.getString(R.string.good_not_found),
                         android.R.drawable.ic_dialog_alert);
                 activity.playSound(SOUND_FAIL);
             }
@@ -273,6 +297,19 @@ public class InventoryInfoActivity extends ScannerSupportActivity
                 e.printStackTrace();
             }
             return convertView;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != -1 && data != null)
+        {
+            String barcode = data.getStringExtra("barcode");
+            if (barcode != null)
+            {
+                onScanComplete(barcode);
+            }
         }
     }
 }
