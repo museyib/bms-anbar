@@ -121,6 +121,6 @@
         layout="@layout/footer_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/doc_list" />
+        app:layout_constraintTop_toBottomOf="@id/trx_list_scroll" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

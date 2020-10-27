@@ -1,11 +1,14 @@
 package az.inci.bmsanbar;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -16,6 +19,12 @@ import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -42,7 +51,11 @@ public class EditAttributesActivity extends AppBaseActivity {
         invCode=getIntent().getStringExtra("invCode");
         invName=getIntent().getStringExtra("invName");
         setTitle(invName);
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
         getData();
     }
 
@@ -58,8 +71,34 @@ public class EditAttributesActivity extends AppBaseActivity {
     private void loadData()
     {
         showProgressDialog(false);
+        if (attributeList.size()>0)
+        {
+            findViewById(R.id.save).setOnClickListener(v -> updateAttributes());
+        }
         AttributeAdapter adapter=new AttributeAdapter(this, attributeList);
         attributeListView.setAdapter(adapter);
+        attributeListView.setOnItemClickListener((parent, view, position, id) -> {
+            View dialog=LayoutInflater.from(this)
+                    .inflate(R.layout.edit_attribute_dialog, parent, false);
+            InvAttribute attribute=attributeList.get(position);
+            showEditAttributeDialog(attribute, dialog);
+        });
+    }
+
+    private void showEditAttributeDialog(InvAttribute attribute, View dialog)
+    {
+        TextView nameText=dialog.findViewById(R.id.attribute_name);
+        EditText valueEdit=dialog.findViewById(R.id.attribute_value);
+        nameText.setText(attribute.getAttributeName());
+        valueEdit.setText(attribute.getAttributeValue());
+        AlertDialog alertDialog=new AlertDialog.Builder(this)
+                .setView(dialog)
+                .setPositiveButton("OK", (dialog1, which) -> {
+                    attribute.setAttributeValue(valueEdit.getText().toString());
+                    loadData();
+                })
+                .create();
+        alertDialog.show();
     }
 
     private List<InvAttribute> getAttributeList()
@@ -88,6 +127,54 @@ public class EditAttributesActivity extends AppBaseActivity {
         return result;
     }
 
+    private void updateAttributes()
+    {
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("inv", "update-attributes");
+            JSONArray jsonArray=new JSONArray();
+            try {
+                for (InvAttribute attribute : attributeList) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("attributeId", attribute.getAttributeId());
+                    jsonObject.put("invCode", attribute.getInvCode());
+                    jsonObject.put("attributeValue", attribute.getAttributeValue());
+                    jsonObject.put("attributeType", attribute.getAttributeType());
+                    jsonObject.put("defined", attribute.isDefined());
+                    jsonArray.put(jsonObject);
+                }
+            }
+            catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+
+            HttpHeaders headers=new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> entity=new HttpEntity<>(jsonArray.toString(), headers);
+            RestTemplate template = new RestTemplate();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+            Boolean result;
+            try
+            {
+                result = template.postForObject(url, entity, Boolean.class);
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+                result = false;
+            }
+            runOnUiThread(() ->
+            {
+                showProgressDialog(false);
+                finish();
+            });
+        }).start();
+    }
+
     private static class AttributeAdapter extends ArrayAdapter<InvAttribute>
     {
         Context context;
@@ -109,11 +196,24 @@ public class EditAttributesActivity extends AppBaseActivity {
             }
 
             ViewHolder holder=new ViewHolder();
-
-            holder.nameEdit=convertView.findViewById(R.id.attribute_name);
-            holder.valueEdit=convertView.findViewById(R.id.attribute_value);
+            holder.nameEdit = convertView.findViewById(R.id.attribute_name);
+            holder.valueCheck = convertView.findViewById(R.id.attribute_value_check);
+            holder.valueEdit = convertView.findViewById(R.id.attribute_value);
             holder.nameEdit.setText(attribute.getAttributeName());
-            holder.valueEdit.setText(attribute.getAttributeValue());
+
+            if (attribute.getAttributeType().equals("BIT")) {
+                holder.valueCheck.setChecked(attribute.getAttributeValue().equals("1"));
+                holder.valueCheck.setOnCheckedChangeListener((buttonView, isChecked) ->
+                        attribute.setAttributeValue(String.valueOf(isChecked ? 1 : 0)));
+                holder.valueCheck.setVisibility(View.VISIBLE);
+                holder.valueEdit.setVisibility(View.GONE);
+            }
+            else
+            {
+                holder.valueEdit.setText(attribute.getAttributeValue());
+                holder.valueEdit.setVisibility(View.VISIBLE);
+                holder.valueCheck.setVisibility(View.GONE);
+            }
 
             return convertView;
         }
@@ -121,7 +221,8 @@ public class EditAttributesActivity extends AppBaseActivity {
         private static class ViewHolder
         {
             TextView nameEdit;
-            EditText valueEdit;
+            TextView valueEdit;
+            CheckBox valueCheck;
         }
     }
 }

@@ -91,4 +91,5 @@
     <string name="edit_attributes">Attributlara düzəliş</string>
     <string name="save">Yadda saxla</string>
     <string name="attribute_value">Atribut dəyəri</string>
+    <string name="not_defined">&lt;Təyin edilməyib&gt;</string>
 </resources>

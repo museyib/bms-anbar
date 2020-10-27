@@ -3,9 +3,7 @@ package az.inci.bmsanbar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +23,6 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +36,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     String invName;
     EditText keywordEdit;
     String keyword;
+    String result = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -55,13 +53,16 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (invCode!=null)
+            getDataByInvCode(invCode);
+    }
+
+    @Override
     public void onScanComplete(String barcode)
     {
-        String url = url("inv", "info-by-barcode");
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("barcode", barcode);
-        url = addRequestParameters(url, parameters);
-        new ShowInvAttributes(InventoryInfoActivity.this).execute(url);
+        getDataByBarcode(barcode);
     }
 
     public void viewImage(View view)
@@ -82,11 +83,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }
         else
         {
-            String url = url("inv", "search");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("keyword", keyword);
-            url = addRequestParameters(url, parameters);
-            new SearchForKeyword(this).execute(url);
+            searchForKeyword(keyword);
         }
     }
 
@@ -115,11 +112,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             {
                 e.printStackTrace();
             }
-            String url = url("inv", "info-by-inv-code");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("inv-code", invCode);
-            url = addRequestParameters(url, parameters);
-            new ShowInvAttributes(this).execute(url);
+            getDataByInvCode(invCode);
 
             dialog.dismiss();
         });
@@ -150,114 +143,128 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }
     }
 
-    protected static class ShowInvAttributes extends AsyncTask<String, Void, String>
+    private void getDataByInvCode(String invCode)
     {
-        WeakReference<InventoryInfoActivity> reference;
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("inv", "info-by-inv-code");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("inv-code", invCode);
+            url = addRequestParameters(url, parameters);
 
-        ShowInvAttributes(InventoryInfoActivity activity)
-        {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected String doInBackground(String... url)
-        {
             RestTemplate template = new RestTemplate();
-            AppBaseActivity activity = reference.get();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
-            String result;
             try
             {
-                result = template.getForObject(url[0], String.class);
+                result = template.getForObject(url, String.class);
             }
             catch (RuntimeException ex)
             {
                 ex.printStackTrace();
-                return null;
             }
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(String result)
-        {
-            InventoryInfoActivity activity = reference.get();
-            if (result == null)
+            runOnUiThread(() ->
             {
-                activity.showMessageDialog(activity.getString(R.string.error),
-                        activity.getString(R.string.good_not_found),
-                        android.R.drawable.ic_dialog_alert);
-                activity.playSound(SOUND_FAIL);
-            }
-            else
-            {
-                activity.printInfo(result);
-                activity.playSound(SOUND_SUCCESS);
-            }
-        }
+                showProgressDialog(false);
+                if (result == null)
+                {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.good_not_found),
+                            android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                }
+                else
+                {
+                    printInfo(result);
+                    playSound(SOUND_SUCCESS);
+                }
+            });
+        }).start();
     }
 
-    protected static class SearchForKeyword extends AsyncTask<String, Void, String>
+    private void getDataByBarcode(String barcode)
     {
-        WeakReference<InventoryInfoActivity> reference;
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("inv", "info-by-barcode");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("barcode", barcode);
+            url = addRequestParameters(url, parameters);
 
-        SearchForKeyword(InventoryInfoActivity activity)
-        {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-            reference.get().showProgressDialog(true);
-        }
-
-        @Override
-        protected String doInBackground(String... url)
-        {
             RestTemplate template = new RestTemplate();
-            AppBaseActivity activity = reference.get();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
-            String result;
             try
             {
-                result = template.getForObject(url[0], String.class);
+                result = template.getForObject(url, String.class);
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+            }
+            runOnUiThread(() ->
+            {
+                showProgressDialog(false);
+                if (result == null)
+                {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.good_not_found),
+                            android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                }
+                else
+                {
+                    printInfo(result);
+                    playSound(SOUND_SUCCESS);
+                }
+            });
+        }).start();
+    }
+
+    private void searchForKeyword(String keyword)
+    {
+        showProgressDialog(true);
+        new Thread(() -> {
+
+            String url = url("inv", "search");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("keyword", keyword);
+            url = addRequestParameters(url, parameters);
+            RestTemplate template = new RestTemplate();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+            try
+            {
+                result = template.getForObject(url, String.class);
             }
             catch (ResourceAccessException ex)
             {
-                return null;
+                ex.printStackTrace();
             }
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(String result)
-        {
-            reference.get().showProgressDialog(false);
-            InventoryInfoActivity activity = reference.get();
-            JSONArray jsonArray;
-            List<JSONObject> jsonObjectList = new ArrayList<>();
-            try
-            {
-                jsonArray = new JSONArray(result);
-
-                for (int i = 0; i < jsonArray.length(); i++)
+            runOnUiThread(() -> {
+                showProgressDialog(false);
+                JSONArray jsonArray;
+                List<JSONObject> jsonObjectList = new ArrayList<>();
+                try
                 {
-                    jsonObjectList.add(jsonArray.getJSONObject(i));
-                }
-            }
-            catch (RuntimeException | JSONException e)
-            {
-                e.printStackTrace();
-            }
+                    jsonArray = new JSONArray(result);
 
-            activity.showResultListDialog(jsonObjectList);
-        }
+                    for (int i = 0; i < jsonArray.length(); i++)
+                    {
+                        jsonObjectList.add(jsonArray.getJSONObject(i));
+                    }
+                }
+                catch (RuntimeException | JSONException e)
+                {
+                    e.printStackTrace();
+                }
+
+                showResultListDialog(jsonObjectList);
+            });
+        }).start();
     }
 
     private static class ResultListAdapter extends ArrayAdapter<JSONObject>
