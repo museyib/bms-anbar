@@ -7,8 +7,12 @@ android {
         applicationId "az.inci.bmsanbar"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 15
+        versionCode 16
         versionName "1.0"
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -45,11 +49,12 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation files('libs/cw-deviceapi20191022.jar')
     implementation 'com.google.android.material:material:1.2.1'
     implementation('org.springframework.android:spring-android-rest-template:2.0.0.M3')
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.google.android.gms:play-services-vision:20.1.2'
     implementation files('libs/platform_sdk_v4.1.0326.jar')
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 }

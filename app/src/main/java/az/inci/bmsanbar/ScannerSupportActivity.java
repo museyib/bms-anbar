@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.device.ScanManager;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.view.KeyEvent;
 
 import com.rscja.deviceapi.DeviceConfiguration;
@@ -22,10 +21,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
     protected Barcode2DWithSoft barcode2DWithSoft;
     protected ScanTask scanTask;
     protected boolean busy = false;
-    protected boolean isUrovoOpen = false;
-    protected Barcode2DWithSoft.ScanCallback s98ScanCallback;
-
-    private BroadcastReceiver urovoScanReceiver = new BroadcastReceiver()
+    private final BroadcastReceiver urovoScanReceiver = new BroadcastReceiver()
     {
         public void onReceive(Context context, Intent intent)
         {
@@ -36,11 +32,13 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
             busy = false;
         }
     };
+    protected boolean isUrovoOpen = false;
+    protected Barcode2DWithSoft.ScanCallback s98ScanCallback;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    protected void onResume()
     {
-        super.onCreate(savedInstanceState);
+        super.onResume();
         initS98Scanner();
     }
 

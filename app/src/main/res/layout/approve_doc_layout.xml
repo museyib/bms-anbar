@@ -10,17 +10,17 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
-            android:id="@+id/newDocs"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription="@string/refresh"
-            android:src="@drawable/refresh" />
+            android:id="@+id/add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/add"
+            app:srcCompat="@android:drawable/ic_menu_add" />
     </LinearLayout>
+
 
     <HorizontalScrollView
         android:id="@+id/doc_list_scroll"
@@ -47,7 +47,7 @@
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="110dp"
+                    android:layout_width="120dp"
                     android:layout_height="match_parent"
                     android:text="@string/trx_no_label"
                     android:textColor="@android:color/black" />
@@ -59,21 +59,9 @@
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="35dp"
-                    android:layout_height="match_parent"
-                    android:text="@string/item_count"
-                    android:textColor="@android:color/black" />
-
-                <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
-
-                <TextView
                     android:layout_width="40dp"
                     android:layout_height="match_parent"
-                    android:text="@string/picked"
+                    android:text="@string/whs"
                     android:textColor="@android:color/black" />
 
                 <View
@@ -83,7 +71,19 @@
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="100dp"
+                    android:layout_width="150dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/src_whs"
+                    android:textColor="@android:color/black" />
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
+
+                <TextView
+                    android:layout_width="150dp"
                     android:layout_height="match_parent"
                     android:text="@string/customer_label"
                     android:textColor="@android:color/black" />
@@ -95,9 +95,9 @@
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="250dp"
+                    android:layout_width="150dp"
                     android:layout_height="match_parent"
-                    android:text="@string/description"
+                    android:text="@string/sbe_name"
                     android:textColor="@android:color/black" />
 
                 <View
@@ -107,9 +107,9 @@
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="250dp"
+                    android:layout_width="70dp"
                     android:layout_height="match_parent"
-                    android:text="@string/sbe_name"
+                    android:text="@string/amount"
                     android:textColor="@android:color/black" />
 
                 <View
@@ -136,5 +136,6 @@
         layout="@layout/footer_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/doc_list_scroll" />
+        app:layout_constraintTop_toBottomOf="@+id/doc_list_scroll" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

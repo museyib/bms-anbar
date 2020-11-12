@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
@@ -28,10 +28,10 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppBaseActivity
 {
@@ -42,6 +42,9 @@ public class MainActivity extends AppBaseActivity
     String imageUrl;
     boolean cameraScanning;
     int connectionTimeout;
+
+    private String result;
+    private byte[] fileBytes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,13 +99,7 @@ public class MainActivity extends AppBaseActivity
                     .setTitle("Proqram versiyasını yenilə")
                     .setMessage("Dəyişiklikdən asılı olaraq məlumatlar silinə bilər. Yeniləmək istəyirsinizmi?")
                     .setNegativeButton("Bəli", (dialogInterface, i) ->
-                    {
-                        String url = url("download");
-                        Map<String, String> parameters = new HashMap<>();
-                        parameters.put("file-name", "BMSAnbar");
-                        url = addRequestParameters(url, parameters);
-                        new Updater(this).execute(url);
-                    })
+                            checkForNewVersion())
                     .setPositiveButton("Xeyr", null)
                     .create();
 
@@ -137,6 +134,11 @@ public class MainActivity extends AppBaseActivity
         showLoginDialog(AppConfig.SHIP_MODE);
     }
 
+    public void openInvApproving(View view)
+    {
+        showLoginDialog(AppConfig.APPROVE_MODE);
+    }
+
     private void showLoginDialog(int mode)
     {
         this.mode = mode;
@@ -145,6 +147,10 @@ public class MainActivity extends AppBaseActivity
 
         EditText idEdit = view.findViewById(R.id.id_edit);
         EditText passwordEdit = view.findViewById(R.id.password_edit);
+        CheckBox fromServerCheck = view.findViewById(R.id.from_server_check);
+
+        AtomicBoolean loginViaServer = new AtomicBoolean(false);
+        fromServerCheck.setOnCheckedChangeListener((buttonView, isChecked) -> loginViaServer.set(isChecked));
 
         idEdit.setText(id);
         idEdit.selectAll();
@@ -167,19 +173,14 @@ public class MainActivity extends AppBaseActivity
                     else
                     {
                         User user = dbHelper.getUser(id);
-                        if (user != null)
+                        if (user == null || loginViaServer.get())
                         {
-                            loadUserInfo(user, false);
-                            attemptLogin(user);
+                            loginViaServer();
                         }
                         else
                         {
-                            String url = url("user", "login");
-                            Map<String, String> parameters = new HashMap<>();
-                            parameters.put("id", id);
-                            parameters.put("password", password);
-                            url = addRequestParameters(url, parameters);
-                            new ServerLoginExecutor(MainActivity.this).execute(url);
+                            loadUserInfo(user, false);
+                            attemptLogin(user);
                         }
 
                         dialog.dismiss();
@@ -194,12 +195,7 @@ public class MainActivity extends AppBaseActivity
     {
         if (!user.getPassword().equals(password))
         {
-            String url = url("user", "login");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("id", id);
-            parameters.put("password", password);
-            url = addRequestParameters(url, parameters);
-            new ServerLoginExecutor(MainActivity.this).execute(url);
+            loginViaServer();
         }
         else
         {
@@ -237,198 +233,185 @@ public class MainActivity extends AppBaseActivity
                     }
                     aClass = ShipDocActivity.class;
                     break;
+                case AppConfig.APPROVE_MODE:
+                    if (!user.isApproveFlag())
+                    {
+                        showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
+                                android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                        return;
+                    }
+                    aClass = ApproveDocActivity.class;
+                    break;
                 default:
-                    aClass = null;
+                    throw new IllegalStateException("Unexpected value: " + mode);
             }
             Intent intent = new Intent(MainActivity.this, aClass);
             startActivity(intent);
         }
     }
 
-    static class ServerLoginExecutor extends AsyncTask<String, Boolean, String>
+    private void loginViaServer()
     {
-        private WeakReference<MainActivity> reference;
-
-        ServerLoginExecutor(MainActivity activity)
+        showProgressDialog(true);
+        new Thread(() ->
         {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected String doInBackground(String... url)
-        {
-            MainActivity activity = reference.get();
-            publishProgress(true);
+            String url = url("user", "login");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("id", id);
+            parameters.put("password", password);
+            url = addRequestParameters(url, parameters);
             RestTemplate template = new RestTemplate();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
-            String result;
             try
             {
-                result = template.postForObject(url[0], null, String.class);
+                result = template.postForObject(url, null, String.class);
             }
             catch (RuntimeException ex)
             {
                 ex.printStackTrace();
-                return null;
             }
-            return result;
-        }
-
-        @Override
-        protected void onProgressUpdate(Boolean... b)
-        {
-            reference.get().showProgressDialog(true);
-        }
-
-        @Override
-        protected void onPostExecute(String result)
-        {
-            MainActivity activity = reference.get();
-            if (result == null)
+            runOnUiThread(() ->
             {
-                activity.showMessageDialog(activity.getString(R.string.error),
-                        activity.getString(R.string.connection_error),
-                        android.R.drawable.ic_dialog_alert);
-                activity.playSound(SOUND_FAIL);
-            }
-            else
-            {
-                Gson gson = new Gson();
-                User user = gson.fromJson(result, User.class);
-                if (user.getId() == null)
+                showProgressDialog(false);
+                if (result == null)
                 {
-                    activity.showMessageDialog(activity.getString(R.string.error),
-                            activity.getString(R.string.username_or_password_incorrect),
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
                             android.R.drawable.ic_dialog_alert);
-                    activity.playSound(SOUND_FAIL);
+                    playSound(SOUND_FAIL);
                 }
                 else
                 {
-                    user.setId(user.getId().toUpperCase());
-                    activity.loadUserInfo(user, true);
-                    activity.attemptLogin(user);
+                    Gson gson = new Gson();
+                    User user = gson.fromJson(result, User.class);
+                    if (user.getId() == null)
+                    {
+                        showMessageDialog(getString(R.string.error),
+                                getString(R.string.username_or_password_incorrect),
+                                android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                    }
+                    else
+                    {
+                        user.setId(user.getId().toUpperCase());
+                        loadUserInfo(user, true);
+                        attemptLogin(user);
+                    }
                 }
-            }
-            activity.showProgressDialog(false);
-        }
+            });
+        }).start();
     }
 
-    static class Updater extends AsyncTask<String, Boolean, byte[]>
+    private void checkForNewVersion()
     {
-        private WeakReference<MainActivity> reference;
-
-        Updater(MainActivity activity)
+        showProgressDialog(true);
+        new Thread(() ->
         {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected byte[] doInBackground(String... url)
-        {
-            MainActivity activity = reference.get();
-            publishProgress(true);
+            String url = url("download");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("file-name", "BMSAnbar");
+            url = addRequestParameters(url, parameters);
             RestTemplate template = new RestTemplate();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
-            byte[] result;
             try
             {
-                result = template.getForObject(url[0], byte[].class);
-                if (result.length == 0)
-                    return result;
+                fileBytes = template.getForObject(url, byte[].class);
             }
             catch (RuntimeException ex)
             {
                 ex.printStackTrace();
-                return null;
             }
-            return result;
-        }
-
-        @Override
-        protected void onProgressUpdate(Boolean... b)
-        {
-            reference.get().showProgressDialog(true);
-        }
-
-        @Override
-        protected void onPostExecute(byte[] result)
-        {
-            MainActivity activity = reference.get();
-            if (result == null)
+            runOnUiThread(() ->
             {
-                activity.showMessageDialog(activity.getString(R.string.info),
-                        activity.getString(R.string.no_new_version),
-                        android.R.drawable.ic_dialog_info);
-                activity.showProgressDialog(false);
-                return;
-            }
-            File file = new File(Environment.getExternalStorageDirectory().getPath() + "/BMSAnbar.apk");
-            if (!file.exists())
-            {
-                try
-                {
-                    boolean newFile = file.createNewFile();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
+                showProgressDialog(false);
+                updateVersion(fileBytes);
+            });
+        }).start();
 
-            FileOutputStream stream;
+    }
+
+    private void updateVersion(byte[] result)
+    {
+        if (result == null)
+        {
+            showMessageDialog(getString(R.string.info),
+                    getString(R.string.no_new_version),
+                    android.R.drawable.ic_dialog_info);
+            return;
+        }
+        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/BMSAnbar.apk");
+        if (!file.exists())
+        {
             try
             {
-                stream = new FileOutputStream(file);
-                stream.write(result);
+                boolean newFile = file.createNewFile();
+                if (!newFile)
+                {
+                    showMessageDialog(getString(R.string.info),
+                            getString(R.string.error_occurred),
+                            android.R.drawable.ic_dialog_info);
+                    return;
+                }
             }
-            catch (Exception e)
+            catch (IOException e)
             {
                 e.printStackTrace();
             }
+        }
 
-            PackageManager pm = activity.getPackageManager();
-            PackageInfo info = pm.getPackageArchiveInfo(file.getAbsolutePath(), 0);
-            int version = 0;
-            try
-            {
-                version = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionCode;
-            }
-            catch (PackageManager.NameNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-            if (file.length() > 0 && info.versionCode > version)
-            {
+        FileOutputStream stream;
+        try
+        {
+            stream = new FileOutputStream(file);
+            stream.write(result);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
-                Intent installIntent;
-                Uri uri;
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
-                {
-                    installIntent = new Intent(Intent.ACTION_VIEW);
-                    uri = Uri.fromFile(file);
-                    installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    installIntent.setDataAndType(uri, "application/vnd.android.package-archive");
-                }
-                else
-                {
-                    installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-                    uri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file);
-                    installIntent.setData(uri);
-                    installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                }
-                activity.startActivity(installIntent);
+        PackageManager pm = getPackageManager();
+        PackageInfo info = pm.getPackageArchiveInfo(file.getAbsolutePath(), 0);
+        int version = 0;
+        try
+        {
+            version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        if (file.length() > 0 && info != null && info.versionCode > version)
+        {
+
+            Intent installIntent;
+            Uri uri;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+            {
+                installIntent = new Intent(Intent.ACTION_VIEW);
+                uri = Uri.fromFile(file);
+                installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                installIntent.setDataAndType(uri, "application/vnd.android.package-archive");
             }
             else
             {
-                activity.showMessageDialog(activity.getString(R.string.info),
-                        activity.getString(R.string.no_new_version),
-                        android.R.drawable.ic_dialog_info);
+                installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", file);
+                installIntent.setData(uri);
+                installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             }
-            activity.showProgressDialog(false);
+            startActivity(installIntent);
+        }
+        else
+        {
+            showMessageDialog(getString(R.string.info),
+                    getString(R.string.no_new_version),
+                    android.R.drawable.ic_dialog_info);
         }
     }
 }

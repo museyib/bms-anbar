@@ -28,7 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WaitingPackTrxActivity extends AppBaseActivity {
+public class WaitingPackTrxActivity extends AppBaseActivity
+{
 
     List<Trx> trxList;
     ListView trxListView;
@@ -37,8 +38,10 @@ public class WaitingPackTrxActivity extends AppBaseActivity {
     String orderTrxNo;
     String bpName;
     private DecimalFormat decimalFormat;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waiting_pack_trx);
         decimalFormat = new DecimalFormat();
@@ -97,8 +100,9 @@ public class WaitingPackTrxActivity extends AppBaseActivity {
     public void getData()
     {
         showProgressDialog(true);
-        new Thread(() -> {
-            trxList=getTrxList();
+        new Thread(() ->
+        {
+            trxList = getTrxList();
             runOnUiThread(this::loadData);
         }).start();
     }
@@ -106,10 +110,39 @@ public class WaitingPackTrxActivity extends AppBaseActivity {
     private void loadData()
     {
         showProgressDialog(false);
-        if (trxList.size()>0) {
+        if (trxList.size() > 0)
+        {
             TrxAdapter trxAdapter = new TrxAdapter(this, R.layout.pack_trx_item_layout, trxList);
             trxListView.setAdapter(trxAdapter);
         }
+    }
+
+    private List<Trx> getTrxList()
+    {
+        List<Trx> result;
+
+        String url = url("trx", "pack-waiting");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("trx-no", trxNo);
+        url = addRequestParameters(url, parameters);
+        RestTemplate template = new RestTemplate();
+        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                .setConnectTimeout(config().getConnectionTimeout() * 1000);
+        template.getMessageConverters().add(new StringHttpMessageConverter());
+        try
+        {
+            String content = template.getForObject(url, String.class);
+            Gson gson = new Gson();
+            result = new ArrayList<>(gson.fromJson(content, new TypeToken<ArrayList<Trx>>()
+            {
+            }.getType()));
+        }
+        catch (RuntimeException ex)
+        {
+            ex.printStackTrace();
+            return new ArrayList<>();
+        }
+        return result;
     }
 
     static class TrxAdapter extends ArrayAdapter<Trx>
@@ -142,7 +175,8 @@ public class WaitingPackTrxActivity extends AppBaseActivity {
                         .inflate(R.layout.waiting_pack_trx_item_layout, parent, false);
             }
 
-            switch (trx.getPickStatus()) {
+            switch (trx.getPickStatus())
+            {
                 case "P":
                     convertView.setBackgroundColor(Color.GREEN);
                     break;
@@ -177,31 +211,5 @@ public class WaitingPackTrxActivity extends AppBaseActivity {
 
             return convertView;
         }
-    }
-
-    private List<Trx> getTrxList()
-    {
-        List<Trx> result;
-
-        String url = url("trx", "pack-waiting");
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("trx-no", trxNo);
-        url = addRequestParameters(url, parameters);
-        RestTemplate template = new RestTemplate();
-        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                .setConnectTimeout(config().getConnectionTimeout() * 1000);
-        template.getMessageConverters().add(new StringHttpMessageConverter());
-        try
-        {
-            String content = template.getForObject(url, String.class);
-            Gson gson = new Gson();
-            result = new ArrayList<>(gson.fromJson(content, new TypeToken<ArrayList<Trx>>(){}.getType()));
-        }
-        catch (RuntimeException ex)
-        {
-            ex.printStackTrace();
-            return new ArrayList<>();
-        }
-        return result;
     }
 }

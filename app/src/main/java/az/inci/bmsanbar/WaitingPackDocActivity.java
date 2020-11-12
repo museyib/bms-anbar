@@ -38,7 +38,7 @@ public class WaitingPackDocActivity extends AppBaseActivity
         docListView.setOnItemClickListener((adapterView, view, i, l) ->
         {
             Doc doc = (Doc) view.getTag();
-            Intent intent=new Intent(this, WaitingPackTrxActivity.class);
+            Intent intent = new Intent(this, WaitingPackTrxActivity.class);
             intent.putExtra("trxNo", doc.getTrxNo());
             intent.putExtra("orderTrxNo", doc.getPrevTrxNo());
             intent.putExtra("bpName", doc.getBpName());

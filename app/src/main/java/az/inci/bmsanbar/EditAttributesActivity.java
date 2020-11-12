@@ -3,7 +3,6 @@ package az.inci.bmsanbar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EditAttributesActivity extends AppBaseActivity {
+public class EditAttributesActivity extends AppBaseActivity
+{
 
     ListView attributeListView;
     String invCode;
@@ -42,19 +42,21 @@ public class EditAttributesActivity extends AppBaseActivity {
     List<InvAttribute> attributeList;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_attributes);
 
-        attributeListView=findViewById(R.id.attribute_list);
+        attributeListView = findViewById(R.id.attribute_list);
 
-        invCode=getIntent().getStringExtra("invCode");
-        invName=getIntent().getStringExtra("invName");
+        invCode = getIntent().getStringExtra("invCode");
+        invName = getIntent().getStringExtra("invName");
         setTitle(invName);
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         getData();
     }
@@ -62,8 +64,9 @@ public class EditAttributesActivity extends AppBaseActivity {
     private void getData()
     {
         showProgressDialog(true);
-        new Thread(() -> {
-            attributeList=getAttributeList();
+        new Thread(() ->
+        {
+            attributeList = getAttributeList();
             runOnUiThread(this::loadData);
         }).start();
     }
@@ -71,29 +74,31 @@ public class EditAttributesActivity extends AppBaseActivity {
     private void loadData()
     {
         showProgressDialog(false);
-        if (attributeList.size()>0)
+        if (attributeList.size() > 0)
         {
             findViewById(R.id.save).setOnClickListener(v -> updateAttributes());
         }
-        AttributeAdapter adapter=new AttributeAdapter(this, attributeList);
+        AttributeAdapter adapter = new AttributeAdapter(this, attributeList);
         attributeListView.setAdapter(adapter);
-        attributeListView.setOnItemClickListener((parent, view, position, id) -> {
-            View dialog=LayoutInflater.from(this)
+        attributeListView.setOnItemClickListener((parent, view, position, id) ->
+        {
+            View dialog = LayoutInflater.from(this)
                     .inflate(R.layout.edit_attribute_dialog, parent, false);
-            InvAttribute attribute=attributeList.get(position);
+            InvAttribute attribute = attributeList.get(position);
             showEditAttributeDialog(attribute, dialog);
         });
     }
 
     private void showEditAttributeDialog(InvAttribute attribute, View dialog)
     {
-        TextView nameText=dialog.findViewById(R.id.attribute_name);
-        EditText valueEdit=dialog.findViewById(R.id.attribute_value);
+        TextView nameText = dialog.findViewById(R.id.attribute_name);
+        EditText valueEdit = dialog.findViewById(R.id.attribute_value);
         nameText.setText(attribute.getAttributeName());
         valueEdit.setText(attribute.getAttributeValue());
-        AlertDialog alertDialog=new AlertDialog.Builder(this)
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setView(dialog)
-                .setPositiveButton("OK", (dialog1, which) -> {
+                .setPositiveButton("OK", (dialog1, which) ->
+                {
                     attribute.setAttributeValue(valueEdit.getText().toString());
                     loadData();
                 })
@@ -117,7 +122,9 @@ public class EditAttributesActivity extends AppBaseActivity {
         {
             String content = template.getForObject(url, String.class);
             Gson gson = new Gson();
-            result = new ArrayList<>(gson.fromJson(content, new TypeToken<List<InvAttribute>>(){}.getType()));
+            result = new ArrayList<>(gson.fromJson(content, new TypeToken<List<InvAttribute>>()
+            {
+            }.getType()));
         }
         catch (RuntimeException ex)
         {
@@ -130,11 +137,14 @@ public class EditAttributesActivity extends AppBaseActivity {
     private void updateAttributes()
     {
         showProgressDialog(true);
-        new Thread(() -> {
+        new Thread(() ->
+        {
             String url = url("inv", "update-attributes");
-            JSONArray jsonArray=new JSONArray();
-            try {
-                for (InvAttribute attribute : attributeList) {
+            JSONArray jsonArray = new JSONArray();
+            try
+            {
+                for (InvAttribute attribute : attributeList)
+                {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("attributeId", attribute.getAttributeId());
                     jsonObject.put("invCode", attribute.getInvCode());
@@ -149,10 +159,10 @@ public class EditAttributesActivity extends AppBaseActivity {
                 e.printStackTrace();
             }
 
-            HttpHeaders headers=new HttpHeaders();
+            HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<String> entity=new HttpEntity<>(jsonArray.toString(), headers);
+            HttpEntity<String> entity = new HttpEntity<>(jsonArray.toString(), headers);
             RestTemplate template = new RestTemplate();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
                     .setConnectTimeout(config().getConnectionTimeout() * 1000);
@@ -180,28 +190,31 @@ public class EditAttributesActivity extends AppBaseActivity {
         Context context;
         List<InvAttribute> attributeList;
 
-        public AttributeAdapter(@NonNull Context context, @NonNull List<InvAttribute> objects) {
+        public AttributeAdapter(@NonNull Context context, @NonNull List<InvAttribute> objects)
+        {
             super(context, 0, objects);
-            this.context=context;
-            attributeList=objects;
+            this.context = context;
+            attributeList = objects;
         }
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            InvAttribute attribute=attributeList.get(position);
-            if (convertView==null)
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
+        {
+            InvAttribute attribute = attributeList.get(position);
+            if (convertView == null)
             {
-                convertView= LayoutInflater.from(context).inflate(R.layout.attribute_item, parent, false);
+                convertView = LayoutInflater.from(context).inflate(R.layout.attribute_item, parent, false);
             }
 
-            ViewHolder holder=new ViewHolder();
+            ViewHolder holder = new ViewHolder();
             holder.nameEdit = convertView.findViewById(R.id.attribute_name);
             holder.valueCheck = convertView.findViewById(R.id.attribute_value_check);
             holder.valueEdit = convertView.findViewById(R.id.attribute_value);
             holder.nameEdit.setText(attribute.getAttributeName());
 
-            if (attribute.getAttributeType().equals("BIT")) {
+            if (attribute.getAttributeType().equals("BIT"))
+            {
                 holder.valueCheck.setChecked(attribute.getAttributeValue().equals("1"));
                 holder.valueCheck.setOnCheckedChangeListener((buttonView, isChecked) ->
                         attribute.setAttributeValue(String.valueOf(isChecked ? 1 : 0)));

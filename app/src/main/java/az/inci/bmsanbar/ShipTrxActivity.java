@@ -236,7 +236,6 @@ public class ShipTrxActivity extends ScannerSupportActivity
         }
         String url = url("trx", "shipped");
         Map<String, String> parameters = new HashMap<>();
-        ;
         parameters.put("trx-no", trxNo);
         url = addRequestParameters(url, parameters);
         new ShippingCheck(this).execute(url);
@@ -259,7 +258,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
     void loadTrx()
     {
         trxList = dbHelper.getShipTrx(driverCode);
-        ArrayAdapter<ShipTrx> adapter = new ArrayAdapter<>(this, R.layout.ship_trx_item_layout, trxList);
+        ArrayAdapter<ShipTrx> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, trxList);
         trxListView.setAdapter(adapter);
     }
 
@@ -361,7 +360,6 @@ public class ShipTrxActivity extends ScannerSupportActivity
             {
                 String url = activity.url("trx", "ship", "create-doc");
                 Map<String, String> parameters = new HashMap<>();
-                ;
                 parameters.put("user-id", activity.config().getUser().getId());
                 url = activity.addRequestParameters(url, parameters);
                 try

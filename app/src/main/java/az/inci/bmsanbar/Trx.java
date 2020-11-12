@@ -2,6 +2,7 @@ package az.inci.bmsanbar;
 
 import android.os.Build;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import java.util.Objects;
@@ -32,6 +33,26 @@ public class Trx
     private String prevTrxNo;
     private String notes;
     private int priority;
+    private int trxTypeId;
+    private double amount;
+    private double price;
+    private double discountRatio;
+    private double discount;
+    private double prevQty;
+    private double prevQtySum;
+    private String prevTrxDate;
+    private int prevTrxId;
+
+    public static Trx parseFromInv(Inventory inventory)
+    {
+        Trx trx = new Trx();
+        trx.setInvCode(inventory.getInvCode());
+        trx.setInvName(inventory.getInvName());
+        trx.setInvBrand(inventory.getInvBrand());
+        trx.setPrice(inventory.getPrice());
+        trx.setPrevTrxNo("");
+        return trx;
+    }
 
     public int getTrxId()
     {
@@ -173,7 +194,6 @@ public class Trx
         this.uom = uom;
     }
 
-
     public String getInvBrand()
     {
         return invBrand;
@@ -255,10 +275,12 @@ public class Trx
     }
 
     @Override
+    @NonNull
     public String toString()
     {
         return "Trx{" +
-                "trxId=" + trxId +
+                "position=" + position +
+                ", trxId=" + trxId +
                 ", trxNo='" + trxNo + '\'' +
                 ", trxDate='" + trxDate + '\'' +
                 ", pickStatus='" + pickStatus + '\'' +
@@ -266,6 +288,7 @@ public class Trx
                 ", invName='" + invName + '\'' +
                 ", qty=" + qty +
                 ", pickedQty=" + pickedQty +
+                ", packedQty=" + packedQty +
                 ", whsCode='" + whsCode + '\'' +
                 ", pickArea='" + pickArea + '\'' +
                 ", pickGroup='" + pickGroup + '\'' +
@@ -280,6 +303,15 @@ public class Trx
                 ", prevTrxNo='" + prevTrxNo + '\'' +
                 ", notes='" + notes + '\'' +
                 ", priority=" + priority +
+                ", trxTypeId=" + trxTypeId +
+                ", amount=" + amount +
+                ", price=" + price +
+                ", discountRatio=" + discountRatio +
+                ", discount=" + discount +
+                ", prevQty=" + prevQty +
+                ", prevQtySum=" + prevQtySum +
+                ", prevTrxDate='" + prevTrxDate + '\'' +
+                ", prevTrxId=" + prevTrxId +
                 '}';
     }
 
@@ -317,5 +349,100 @@ public class Trx
     public void setPackedQty(double packedQty)
     {
         this.packedQty = packedQty;
+    }
+
+    public int getPrevTrxId()
+    {
+        return prevTrxId;
+    }
+
+    public void setPrevTrxId(int prevTrxId)
+    {
+        this.prevTrxId = prevTrxId;
+    }
+
+    public String getPrevTrxDate()
+    {
+        return prevTrxDate;
+    }
+
+    public void setPrevTrxDate(String prevTrxDate)
+    {
+        this.prevTrxDate = prevTrxDate;
+    }
+
+    public double getPrevQty()
+    {
+        return prevQty;
+    }
+
+    public void setPrevQty(double prevQty)
+    {
+        this.prevQty = prevQty;
+    }
+
+    public double getPrice()
+    {
+        return price;
+    }
+
+    public void setPrice(double price)
+    {
+        this.price = price;
+    }
+
+    public double getDiscountRatio()
+    {
+        return discountRatio;
+    }
+
+    public void setDiscountRatio(double discountRatio)
+    {
+        this.discountRatio = discountRatio;
+    }
+
+    public double getDiscount()
+    {
+        return discount;
+    }
+
+    public void setDiscount(double discount)
+    {
+        this.discount = discount;
+    }
+
+    public double getPrevQtySum()
+    {
+        return prevQtySum;
+    }
+
+    public void setPrevQtySum(double prevQtySum)
+    {
+        this.prevQtySum = prevQtySum;
+    }
+
+    public int getTrxTypeId()
+    {
+        return trxTypeId;
+    }
+
+    public void setTrxTypeId(int trxTypeId)
+    {
+        this.trxTypeId = trxTypeId;
+    }
+
+    public double getAmount()
+    {
+        return amount;
+    }
+
+    public void setAmount(double amount)
+    {
+        this.amount = amount;
+    }
+
+    public boolean isReturned()
+    {
+        return prevTrxId != 0;
     }
 }

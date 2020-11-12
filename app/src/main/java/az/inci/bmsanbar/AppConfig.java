@@ -3,11 +3,12 @@ package az.inci.bmsanbar;
 class AppConfig
 {
     static final String DB_NAME = "BMS_ANBAR";
-    static final int DB_VERSION = 3;
+    static final int DB_VERSION = 5;
 
     static final int PICK_MODE = 0;
     static final int PACK_MODE = 1;
     static final int SHIP_MODE = 2;
+    static final int APPROVE_MODE = 3;
 
     static final int VIEW_MODE = 0;
     static final int NEW_MODE = 1;

@@ -14,14 +14,20 @@
 
     </SearchView>
 
-    <ListView
-        android:id="@+id/result_list"
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="60dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0">
+
+        <ListView
+            android:id="@+id/result_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="60dp" />
+
+    </HorizontalScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

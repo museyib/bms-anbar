@@ -1,6 +1,7 @@
 package az.inci.bmsanbar;
 
-public class InvAttribute {
+public class InvAttribute
+{
     private String invCode;
     private String attributeId;
     private String attributeType;
@@ -8,35 +9,43 @@ public class InvAttribute {
     private String attributeValue;
     private boolean defined;
 
-    public String getInvCode() {
+    public String getInvCode()
+    {
         return invCode;
     }
 
-    public void setInvCode(String invCode) {
+    public void setInvCode(String invCode)
+    {
         this.invCode = invCode;
     }
 
-    public String getAttributeType() {
+    public String getAttributeType()
+    {
         return attributeType;
     }
 
-    public void setAttributeType(String attributeType) {
+    public void setAttributeType(String attributeType)
+    {
         this.attributeType = attributeType;
     }
 
-    public String getAttributeName() {
+    public String getAttributeName()
+    {
         return attributeName;
     }
 
-    public void setAttributeName(String attributeName) {
+    public void setAttributeName(String attributeName)
+    {
         this.attributeName = attributeName;
     }
 
-    public String getAttributeValue() {
+    public String getAttributeValue()
+    {
         return attributeValue;
     }
 
-    public void setAttributeValue(String attributeValue) {
+    public void setAttributeValue(String attributeValue)
+    {
         this.attributeValue = attributeValue;
     }
 

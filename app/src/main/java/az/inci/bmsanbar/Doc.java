@@ -27,6 +27,10 @@ class Doc
     private String bpCode;
     private String sbeCode;
     private String approveUser;
+    private int trxTypeId;
+    private double amount;
+    private String srcWhsCode;
+    private String srcWhsName;
 
     String getTrxNo()
     {
@@ -247,5 +251,45 @@ class Doc
     public void setNotes(String notes)
     {
         this.notes = notes;
+    }
+
+    public int getTrxTypeId()
+    {
+        return trxTypeId;
+    }
+
+    public void setTrxTypeId(int trxTypeId)
+    {
+        this.trxTypeId = trxTypeId;
+    }
+
+    public double getAmount()
+    {
+        return amount;
+    }
+
+    public void setAmount(double amount)
+    {
+        this.amount = amount;
+    }
+
+    public String getSrcWhsCode()
+    {
+        return srcWhsCode;
+    }
+
+    public void setSrcWhsCode(String srcWhsCode)
+    {
+        this.srcWhsCode = srcWhsCode;
+    }
+
+    public String getSrcWhsName()
+    {
+        return srcWhsName;
+    }
+
+    public void setSrcWhsName(String srcWhsName)
+    {
+        this.srcWhsName = srcWhsName;
     }
 }

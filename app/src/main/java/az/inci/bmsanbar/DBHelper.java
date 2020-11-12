@@ -22,6 +22,8 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String SHIP_TRX = "SHIP_TRX";
     public static final String LAST_LOGIN = "LAST_LOGIN";
     public static final String CONFIG = "CONFIG";
+    public static final String APPROVE_DOC = "APPROVE_DOC";
+    public static final String APPROVE_TRX = "APPROVE_TRX";
 
     public static final String USER_ID = "USER_ID";
     public static final String USER_NAME = "USER_NAME";
@@ -34,6 +36,7 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String PACK_FLAG = "PACK_FLAG";
     public static final String DOC_FLAG = "DOC_FLAG";
     public static final String LOADING_FLAG = "LOADING_FLAG";
+    public static final String APPROVE_FLAG = "APPROVE_FLAG";
 
     public static final String TRX_ID = "TRX_ID";
     public static final String TRX_NO = "TRX_NO";
@@ -70,6 +73,15 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String DRIVER_CODE = "DRIVER_CODE";
     public static final String NAME = "NAME";
     public static final String VALUE = "VALUE";
+    public static final String TRX_TYPE_ID = "TRX_TYPE_ID";
+    public static final String PREV_TRX_ID = "PREV_TRX_ID";
+    public static final String DISCOUNT = "DISCOUNT";
+    public static final String DISCOUNT_RATIO = "DISCOUNT_RATIO";
+    public static final String PRICE = "PRICE";
+    public static final String AMOUNT = "AMOUNT";
+    public static final String TRG_WHS = "TRG_WHS";
+    public static final String SRC_WHS_CODE = "SRC_CODE";
+    public static final String SRC_WHS_NAME = "SRC_NAME";
 
     private SQLiteDatabase db;
 
@@ -90,6 +102,8 @@ public class DBHelper extends SQLiteOpenHelper
         createShipTrxTable(db);
         createLastLoginTable(db);
         createConfigTable(db);
+        createApproveDocTable(db);
+        createApproveTrxTable(db);
     }
 
     @Override
@@ -134,7 +148,8 @@ public class DBHelper extends SQLiteOpenHelper
                 .append(LOCATION_FLAG).append(" INTEGER,")
                 .append(PACK_FLAG).append(" INTEGER,")
                 .append(DOC_FLAG).append(" INTEGER,")
-                .append(LOADING_FLAG).append(" INTEGER")
+                .append(LOADING_FLAG).append(" INTEGER,")
+                .append(APPROVE_FLAG).append(" INTEGER")
                 .append(")")
                 .toString());
     }
@@ -156,6 +171,7 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(PACK_FLAG, user.isPack() ? 1 : 0);
         values.put(DOC_FLAG, user.isDoc() ? 1 : 0);
         values.put(LOADING_FLAG, user.isLoading() ? 1 : 0);
+        values.put(APPROVE_FLAG, user.isApproveFlag() ? 1 : 0);
 
         db.insert(TERMINAL_USER, null, values);
     }
@@ -163,7 +179,8 @@ public class DBHelper extends SQLiteOpenHelper
     User getUser(String id)
     {
         String[] columns = new String[]{USER_ID, USER_NAME, PASS_WORD, PICK_GROUP, COLLECT_FLAG,
-                PICK_FLAG, CHECK_FLAG, COUNT_FLAG, LOCATION_FLAG, PACK_FLAG, DOC_FLAG, LOADING_FLAG};
+                PICK_FLAG, CHECK_FLAG, COUNT_FLAG, LOCATION_FLAG,
+                PACK_FLAG, DOC_FLAG, LOADING_FLAG, APPROVE_FLAG};
         User user = null;
 
         try (Cursor cursor = db.query(TERMINAL_USER, columns,
@@ -184,6 +201,7 @@ public class DBHelper extends SQLiteOpenHelper
                 user.setPackFlag(cursor.getInt(9) == 1);
                 user.setDocFlag(cursor.getInt(10) == 1);
                 user.setLoadingFlag(cursor.getInt(11) == 1);
+                user.setApproveFlag(cursor.getInt(12) == 1);
             }
         }
         return user;
@@ -909,6 +927,176 @@ public class DBHelper extends SQLiteOpenHelper
         {
             e.printStackTrace();
         }
+    }
 
+    private void createApproveDocTable(SQLiteDatabase db)
+    {
+        db.execSQL("DROP TABLE IF EXISTS " + APPROVE_DOC);
+        db.execSQL("CREATE TABLE APPROVE_DOC (TRX_NO TEXT PRIMARY KEY, TRX_DATE TEXT, TRX_TYPE_ID INTEGER," +
+                " AMOUNT REAL, TRG_WHS TEXT, SRC_CODE TEXT, SRC_NAME TEXT, BP_CODE TEXT, BP_NAME," +
+                " SBE_CODE TEXT, SBE_NAME TEXT, NOTES TEXT)");
+    }
+
+    public void addApproveDoc(Doc doc)
+    {
+        ContentValues values = new ContentValues();
+        values.put(TRX_NO, doc.getTrxNo());
+        values.put(TRX_DATE, doc.getTrxDate());
+        values.put(TRX_TYPE_ID, doc.getTrxTypeId());
+        values.put(AMOUNT, doc.getAmount());
+        values.put(TRG_WHS, doc.getWhsCode());
+        values.put(SRC_WHS_CODE, doc.getSrcWhsCode());
+        values.put(SRC_WHS_NAME, doc.getSrcWhsName());
+        values.put(BP_CODE, doc.getBpCode());
+        values.put(BP_NAME, doc.getBpName());
+        values.put(SBE_CODE, doc.getSbeCode());
+        values.put(SBE_NAME, doc.getSbeName());
+        values.put(NOTES, doc.getNotes());
+
+        db.insert(APPROVE_DOC, null, values);
+    }
+
+    public void updateApproveDoc(String trxNo, ContentValues values)
+    {
+        db.update(APPROVE_DOC, values, "TRX_NO=?", new String[]{trxNo});
+    }
+
+    public List<Doc> getApproveDocList()
+    {
+        List<Doc> docList = new ArrayList<>();
+
+        String query = "SELECT * FROM " + APPROVE_DOC;
+
+        try
+        {
+            Cursor cursor = db.rawQuery(query, null);
+            while (cursor.moveToNext())
+            {
+                Doc doc = new Doc();
+                doc.setTrxNo(cursor.getString(0));
+                doc.setTrxDate(cursor.getString(1));
+                doc.setTrxTypeId(cursor.getInt(2));
+                doc.setAmount(cursor.getDouble(3));
+                doc.setWhsCode(cursor.getString(4));
+                doc.setSrcWhsCode(cursor.getString(5));
+                doc.setSrcWhsName(cursor.getString(6));
+                doc.setBpCode(cursor.getString(7));
+                doc.setBpName(cursor.getString(8));
+                doc.setSbeCode(cursor.getString(9));
+                doc.setSbeName(cursor.getString(10));
+                doc.setNotes(cursor.getString(11));
+
+                docList.add(doc);
+            }
+            cursor.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return docList;
+    }
+
+    public void deleteApproveDoc(String trxNo)
+    {
+        db.delete(APPROVE_DOC, TRX_NO + "=?", new String[]{trxNo});
+        deleteApproveTrxByTrxNo(trxNo);
+    }
+
+    private void createApproveTrxTable(SQLiteDatabase db)
+    {
+        db.execSQL("DROP TABLE IF EXISTS " + APPROVE_TRX);
+        db.execSQL("CREATE TABLE APPROVE_TRX (TRX_ID INTEGER PRIMARY KEY, TRX_NO TEXT, INV_CODE TEXT," +
+                " INV_NAME TEXT, BRAND_CODE TEXT, QTY REAL, PRICE REAL, AMOUNT REAL," +
+                " DISCOUNT_RATIO REAL, DISCOUNT REAL, PREV_TRX_NO TEXT, PREV_TRX_ID INTEGER)");
+    }
+
+    public void addApproveTrx(Trx trx)
+    {
+        ContentValues values = new ContentValues();
+        values.put(TRX_ID, getNextApproveTrxId());
+        values.put(TRX_NO, trx.getTrxNo());
+        values.put(INV_CODE, trx.getInvCode());
+        values.put(INV_NAME, trx.getInvName());
+        values.put(BRAND_CODE, trx.getInvBrand());
+        values.put(QTY, trx.getQty());
+        values.put(PRICE, trx.getPrice());
+        values.put(AMOUNT, trx.getAmount());
+        values.put(PREV_TRX_NO, trx.getPrevTrxNo());
+        values.put(PREV_TRX_ID, trx.getPrevTrxId());
+        values.put(DISCOUNT, trx.getDiscount());
+        values.put(DISCOUNT_RATIO, trx.getDiscountRatio());
+
+        db.insert(APPROVE_TRX, null, values);
+    }
+
+    public List<Trx> getApproveTrxList(String trxNo)
+    {
+        List<Trx> trxList = new ArrayList<>();
+
+        String query = "SELECT * FROM " + APPROVE_TRX + " WHERE TRX_NO=?";
+
+        try
+        {
+            Cursor cursor = db.rawQuery(query, new String[]{trxNo});
+            while (cursor.moveToNext())
+            {
+                Trx trx = new Trx();
+                trx.setTrxId(cursor.getInt(0));
+                trx.setTrxNo(cursor.getString(1));
+                trx.setInvCode(cursor.getString(2));
+                trx.setInvName(cursor.getString(3));
+                trx.setInvBrand(cursor.getString(4));
+                trx.setQty(cursor.getDouble(5));
+                trx.setPrice(cursor.getDouble(6));
+                trx.setAmount(cursor.getDouble(7));
+                trx.setDiscountRatio(cursor.getDouble(8));
+                trx.setDiscount(cursor.getDouble(9));
+                trx.setPrevTrxNo(cursor.getString(10));
+                trx.setPrevTrxId(cursor.getInt(11));
+
+                trxList.add(trx);
+            }
+            cursor.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
+        return trxList;
+    }
+
+    public void deleteApproveTrxByTrxNo(String trxNo)
+    {
+        db.delete(APPROVE_TRX, TRX_NO + "=?", new String[]{trxNo});
+    }
+
+    public void updateApproveTrx(String invCode, ContentValues values)
+    {
+        db.update(APPROVE_TRX, values, TRX_ID + "=?", new String[]{invCode});
+    }
+
+    public void deleteApproveTrx(String trxId)
+    {
+        db.delete(APPROVE_TRX, TRX_ID + "=?", new String[]{trxId});
+    }
+
+    public int getNextApproveTrxId()
+    {
+        String query = "SELECT TRX_ID FROM APPROVE_TRX";
+        Cursor cursor = db.rawQuery(query, null, null);
+        int n = 1;
+        while (cursor.moveToNext())
+        {
+            if (n != cursor.getInt(0))
+                break;
+            else
+                n++;
+        }
+        cursor.close();
+        return n;
     }
 }

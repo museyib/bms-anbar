@@ -17,6 +17,7 @@ public class User
     private boolean packFlag;
     private boolean docFlag;
     private boolean loadingFlag;
+    private boolean approveFlag;
 
     String getId()
     {
@@ -138,6 +139,16 @@ public class User
         this.loadingFlag = loadingFlag;
     }
 
+    public boolean isApproveFlag()
+    {
+        return approveFlag;
+    }
+
+    public void setApproveFlag(boolean approveFlag)
+    {
+        this.approveFlag = approveFlag;
+    }
+
     @NonNull
     @Override
     public String toString()
@@ -155,6 +166,7 @@ public class User
                 ", packFlag=" + packFlag +
                 ", docFlag=" + docFlag +
                 ", loadingFlag=" + loadingFlag +
+                ", approveFlag=" + approveFlag +
                 '}';
     }
 }

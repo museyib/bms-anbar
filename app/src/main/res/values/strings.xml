@@ -92,4 +92,16 @@
     <string name="save">Yadda saxla</string>
     <string name="attribute_value">Atribut dəyəri</string>
     <string name="not_defined">&lt;Təyin edilməyib&gt;</string>
+    <string name="error_occurred">Xəta baş verdi!</string>
+    <string name="inv_approving">Mal qəbulu</string>
+    <string name="from_server">Serverdən</string>
+    <string name="src_whs">Çıxış anbarı</string>
+    <string name="amount">Məbləğ</string>
+    <string name="select">Seç</string>
+    <string name="print">Print</string>
+    <string name="select_src">Mənbəni seç</string>
+    <string name="from_customer">Müştəridən</string>
+    <string name="from_whs">Digər anbardan</string>
+    <string name="three_dot">...</string>
+    <string name="whs">Anbar</string>
 </resources>

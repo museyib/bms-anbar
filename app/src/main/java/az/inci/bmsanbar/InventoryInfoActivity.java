@@ -1,28 +1,27 @@
 package az.inci.bmsanbar;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,9 +52,10 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
-        if (invCode!=null)
+        if (invCode != null)
             getDataByInvCode(invCode);
     }
 
@@ -87,13 +87,30 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }
     }
 
-    private void showResultListDialog(List<JSONObject> list)
+    private void showResultListDialog(List<Inventory> list)
     {
         View view = LayoutInflater.from(this).inflate(R.layout.result_list_dialog,
                 findViewById(android.R.id.content), false);
 
         ListView listView = view.findViewById(R.id.result_list);
-        listView.setAdapter(new ResultListAdapter(this, R.layout.result_list_item, list));
+        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, list);
+        listView.setAdapter(adapter);
+        SearchView searchView = view.findViewById(R.id.search);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
+        {
+            @Override
+            public boolean onQueryTextSubmit(String query)
+            {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText)
+            {
+                adapter.getFilter().filter(newText);
+                return true;
+            }
+        });
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Axtarışın nəticəsi")
@@ -103,15 +120,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
         listView.setOnItemClickListener((adapterView, view1, i, l) ->
         {
-            JSONObject jsonObject = list.get(i);
-            try
-            {
-                invCode = jsonObject.getString("invCode");
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
+            Inventory inventory = (Inventory) adapterView.getItemAtPosition(i);
+            invCode = inventory.getInvCode();
             getDataByInvCode(invCode);
 
             dialog.dismiss();
@@ -120,22 +130,25 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     private void printInfo(String info)
     {
-        int firstIndex=info.indexOf(';');
+        int firstIndex = info.indexOf(';');
         invCode = info.substring(10, firstIndex);
-        invName = info.substring(firstIndex+invCode.length()+4,
-                info.indexOf(';', firstIndex+invCode.length()+4));
+        invName = info.substring(firstIndex + invCode.length() + 4,
+                info.indexOf(';', firstIndex + invCode.length() + 4));
         info = info.replaceAll("; ", "\n");
         info = info.replaceAll("\\\\n", "\n");
         infoText.setText(info);
     }
 
-    public void scanWithCamera(View view) {
+    public void scanWithCamera(View view)
+    {
         Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
         startActivityForResult(barcodeIntent, 1);
     }
 
-    public void editAttributes(View view) {
-        if (invCode!=null) {
+    public void editAttributes(View view)
+    {
+        if (invCode != null)
+        {
             Intent intent = new Intent(this, EditAttributesActivity.class);
             intent.putExtra("invCode", invCode);
             intent.putExtra("invName", invName);
@@ -146,7 +159,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     private void getDataByInvCode(String invCode)
     {
         showProgressDialog(true);
-        new Thread(() -> {
+        new Thread(() ->
+        {
             String url = url("inv", "info-by-inv-code");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("inv-code", invCode);
@@ -186,7 +200,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     private void getDataByBarcode(String barcode)
     {
         showProgressDialog(true);
-        new Thread(() -> {
+        new Thread(() ->
+        {
             String url = url("inv", "info-by-barcode");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("barcode", barcode);
@@ -226,8 +241,9 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     private void searchForKeyword(String keyword)
     {
         showProgressDialog(true);
-        new Thread(() -> {
-
+        new Thread(() ->
+        {
+            List<Inventory> inventoryList = null;
             String url = url("inv", "search");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("keyword", keyword);
@@ -239,76 +255,29 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             try
             {
                 result = template.getForObject(url, String.class);
+                Gson gson = new Gson();
+                Type type = new TypeToken<List<Inventory>>()
+                {
+                }.getType();
+                inventoryList = new ArrayList<>(gson.fromJson(result, type));
             }
             catch (ResourceAccessException ex)
             {
                 ex.printStackTrace();
             }
-            runOnUiThread(() -> {
+            List<Inventory> finalInventoryList = inventoryList;
+            runOnUiThread(() ->
+            {
                 showProgressDialog(false);
-                JSONArray jsonArray;
-                List<JSONObject> jsonObjectList = new ArrayList<>();
-                try
-                {
-                    jsonArray = new JSONArray(result);
 
-                    for (int i = 0; i < jsonArray.length(); i++)
-                    {
-                        jsonObjectList.add(jsonArray.getJSONObject(i));
-                    }
-                }
-                catch (RuntimeException | JSONException e)
-                {
-                    e.printStackTrace();
-                }
-
-                showResultListDialog(jsonObjectList);
+                showResultListDialog(finalInventoryList);
             });
         }).start();
     }
 
-    private static class ResultListAdapter extends ArrayAdapter<JSONObject>
-    {
-        List<JSONObject> list;
-        Context context;
-
-        public ResultListAdapter(@NonNull Context context, int resource, List<JSONObject> list)
-        {
-            super(context, resource, list);
-            this.list = list;
-            this.context = context;
-        }
-
-        @NonNull
-        @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
-            JSONObject item = list.get(position);
-
-            if (convertView == null)
-            {
-                convertView = LayoutInflater.from(context).inflate(R.layout.result_list_item,
-                        parent, false);
-            }
-
-            TextView invCodeText = convertView.findViewById(R.id.inv_code);
-            TextView invNameText = convertView.findViewById(R.id.inv_name);
-
-            try
-            {
-                invCodeText.setText(item.getString("invCode"));
-                invNameText.setText(item.getString("invName"));
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-            return convertView;
-        }
-    }
-
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode != -1 && data != null)
         {

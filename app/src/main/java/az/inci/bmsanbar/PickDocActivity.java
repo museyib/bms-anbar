@@ -22,7 +22,6 @@ import com.google.gson.reflect.TypeToken;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.ref.WeakReference;
@@ -170,7 +169,7 @@ public class PickDocActivity extends AppBaseActivity
     private static class DocLoader extends AsyncTask<String, Boolean, String>
     {
 
-        private WeakReference<PickDocActivity> reference;
+        private final WeakReference<PickDocActivity> reference;
 
         DocLoader(PickDocActivity activity)
         {
@@ -189,11 +188,6 @@ public class PickDocActivity extends AppBaseActivity
             try
             {
                 result = template.getForObject(url[0], String.class);
-            }
-            catch (ResourceAccessException ex)
-            {
-                ex.printStackTrace();
-                return null;
             }
             catch (RuntimeException ex)
             {
@@ -236,7 +230,7 @@ public class PickDocActivity extends AppBaseActivity
 
     private static class TrxLoader extends AsyncTask<String, Boolean, String>
     {
-        private WeakReference<PickDocActivity> reference;
+        private final WeakReference<PickDocActivity> reference;
 
         TrxLoader(PickDocActivity activity)
         {
@@ -255,11 +249,6 @@ public class PickDocActivity extends AppBaseActivity
             try
             {
                 result = template.getForObject(url[0], String.class);
-            }
-            catch (ResourceAccessException ex)
-            {
-                ex.printStackTrace();
-                return null;
             }
             catch (RuntimeException ex)
             {
