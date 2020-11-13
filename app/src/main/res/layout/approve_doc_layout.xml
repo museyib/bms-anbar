@@ -47,7 +47,7 @@
                     android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="120dp"
+                    android:layout_width="130dp"
                     android:layout_height="match_parent"
                     android:text="@string/trx_no_label"
                     android:textColor="@android:color/black" />
