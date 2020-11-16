@@ -92,4 +92,18 @@
         android:layout_height="match_parent"
         android:background="?android:attr/listDivider"
         android:foreground="@android:color/black" />
+
+    <TextView
+        android:id="@+id/whs_code"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:textColor="@android:color/black" />
+
+    <View
+        android:layout_width="3dp"
+        android:layout_height="match_parent"
+        android:background="?android:attr/listDivider"
+        android:foreground="@android:color/black" />
 </TableRow>

@@ -200,6 +200,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             TextView pickedItemCount = convertView.findViewById(R.id.picked_item_count);
             TextView bpName = convertView.findViewById(R.id.bp_name);
             TextView sbeName = convertView.findViewById(R.id.sbe_name);
+            TextView whsCode = convertView.findViewById(R.id.whs_code);
 
             assert doc != null;
             trxNo.setText(doc.getPrevTrxNo());
@@ -208,6 +209,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             pickedItemCount.setText(String.valueOf(doc.getPickedItemCount()));
             bpName.setText(doc.getBpName());
             sbeName.setText(doc.getSbeName());
+            whsCode.setText(doc.getWhsCode());
             convertView.setTag(doc);
 
             return convertView;

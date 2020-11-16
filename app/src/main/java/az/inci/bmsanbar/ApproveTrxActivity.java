@@ -232,14 +232,22 @@ public class ApproveTrxActivity extends ScannerSupportActivity
 
         uploadBtn.setOnClickListener(v ->
         {
-            switch (trxTypeId)
-            {
-                case 27:
-                    break;
-                case 53:
-                    uploadTransfer();
-                    break;
-            }
+            AlertDialog dialog = new AlertDialog.Builder(ApproveTrxActivity.this)
+                    .setMessage("Göndərmək istəyirsiniz?")
+                    .setPositiveButton("Bəli", (dialog1, which) ->
+                    {
+                        switch (trxTypeId)
+                        {
+                            case 27:
+                                break;
+                            case 53:
+                                uploadTransfer();
+                                break;
+                        }
+                    })
+                    .setNegativeButton("Xeyr", null)
+                    .create();
+            dialog.show();
         });
 
         if (config().isCameraScanning())
@@ -709,6 +717,11 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view1, position, id) ->
                 showAddInvDialog((Inventory) view1.getTag()));
+        listView.setOnItemLongClickListener((parent, view1, position, id) -> 
+        {
+            showInfoDialog((Inventory) view1.getTag());
+            return true;
+        });
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Mallar")
                 .setView(view)
@@ -1228,65 +1241,91 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     private void uploadTransfer()
     {
         showProgressDialog(true);
-        new Thread(() ->
+        if (isReady)
         {
-            String url = url("trx", "create-transfer");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("src-whs", srcWhs.getWhsCode());
-            parameters.put("trg-whs", trgWhs.getWhsCode());
-            parameters.put("user-id", config().getUser().getId());
-            url = addRequestParameters(url, parameters);
-            JSONArray jsonArray = new JSONArray();
-            try
+            new Thread(() ->
             {
-                for (Trx trx : trxList)
+                String url = url("trx", "create-transfer");
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("src-whs", srcWhs.getWhsCode());
+                parameters.put("trg-whs", trgWhs.getWhsCode());
+                parameters.put("user-id", config().getUser().getId());
+                url = addRequestParameters(url, parameters);
+                JSONArray jsonArray = new JSONArray();
+                try
                 {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("invCode", trx.getInvCode());
-                    jsonObject.put("qty", trx.getQty());
-                    jsonArray.put(jsonObject);
+                    for (Trx trx : trxList)
+                    {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("invCode", trx.getInvCode());
+                        jsonObject.put("qty", trx.getQty());
+                        jsonArray.put(jsonObject);
+                    }
                 }
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<String> entity = new HttpEntity<>(jsonArray.toString(), headers);
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            Boolean result;
-            try
-            {
-                result = template.postForObject(url, entity, Boolean.class);
-            }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-                result = false;
-            }
-            Boolean finalResult = result;
-            runOnUiThread(() ->
-            {
-                showProgressDialog(false);
-                if (finalResult)
+                HttpEntity<String> entity = new HttpEntity<>(jsonArray.toString(), headers);
+                RestTemplate template = new RestTemplate();
+                ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                        .setConnectTimeout(config().getConnectionTimeout() * 1000);
+                template.getMessageConverters().add(new StringHttpMessageConverter());
+                Boolean result;
+                try
                 {
-                    dbHelper.deleteApproveDoc(trxNo);
-                    finish();
+                    result = template.postForObject(url, entity, Boolean.class);
                 }
-                else
+                catch (RuntimeException ex)
                 {
-                    showMessageDialog(getString(R.string.info),
-                            getString(R.string.connection_error),
-                            android.R.drawable.ic_dialog_info);
+                    ex.printStackTrace();
+                    result = false;
                 }
-            });
-        }).start();
+                Boolean finalResult = result;
+                runOnUiThread(() ->
+                {
+                    showProgressDialog(false);
+                    if (finalResult)
+                    {
+                        dbHelper.deleteApproveDoc(trxNo);
+                        finish();
+                    }
+                    else
+                    {
+                        showMessageDialog(getString(R.string.info),
+                                getString(R.string.connection_error),
+                                android.R.drawable.ic_dialog_info);
+                    }
+                });
+            }).start();
+        }
+        else
+        {
+            showProgressDialog(false);
+            showMessageDialog(getString(R.string.info),
+                    "Mənbə təyin edilməyib",
+                    android.R.drawable.ic_dialog_info);
+        }
+    }
+
+    private void showInfoDialog(Inventory inventory)
+    {
+        String info = inventory.getInvName();
+        info += "\n\nBrend: " + inventory.getInvBrand();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Məlumat");
+        builder.setMessage(info);
+        builder.setPositiveButton("Şəkil", (dialog, which) ->
+        {
+            Intent photoIntent = new Intent(this, PhotoActivity.class);
+            photoIntent.putExtra("invCode", inventory.getInvCode());
+            startActivity(photoIntent);
+        });
+        builder.show();
     }
 
     @SuppressWarnings("unchecked")
@@ -1395,15 +1434,16 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             Trx trx = trxList.get(position);
             itemView.setOnLongClickListener(view ->
             {
-                if (!trx.isReturned())
+                Trx selectedTrx = (Trx) itemView.getTag();
+                if (!selectedTrx.isReturned())
                 {
                     AlertDialog dialog = new AlertDialog.Builder(ApproveTrxActivity.this)
-                            .setTitle(trx.getInvName())
+                            .setTitle(selectedTrx.getInvName())
                             .setMessage("Silmək istəyirsiniz?")
                             .setPositiveButton("Bəli", (dialog1, which) ->
                             {
-                                dbHelper.deleteApproveTrx(String.valueOf(trx.getTrxId()));
-                                amount -= trx.getQty() * trx.getPrice();
+                                dbHelper.deleteApproveTrx(String.valueOf(selectedTrx.getTrxId()));
+                                amount -= selectedTrx.getQty() * selectedTrx.getPrice();
                                 updateDocAmount();
                                 loadData();
                             })
@@ -1415,13 +1455,15 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             });
             itemView.setOnClickListener(view ->
             {
-                if (!trx.isReturned())
-                    showEditInvDialog(trx);
+                Trx selectedTrx = (Trx) itemView.getTag();
+                if (!selectedTrx.isReturned())
+                    showEditInvDialog(selectedTrx);
             });
             holder.invCode.setText(trx.getInvCode());
             holder.invName.setText(trx.getInvName());
             holder.qty.setText(String.valueOf(trx.getQty()));
             holder.invBrand.setText(String.valueOf(trx.getInvBrand()));
+            itemView.setTag(trx);
         }
 
         @Override

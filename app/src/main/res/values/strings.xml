@@ -102,6 +102,6 @@
     <string name="select_src">Mənbəni seç</string>
     <string name="from_customer">Müştəridən</string>
     <string name="from_whs">Digər anbardan</string>
-    <string name="three_dot">...</string>
+    <string name="three_dot">…</string>
     <string name="whs">Anbar</string>
 </resources>
