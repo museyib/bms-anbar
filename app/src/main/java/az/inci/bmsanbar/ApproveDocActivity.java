@@ -49,7 +49,8 @@ public class ApproveDocActivity extends AppBaseActivity
             Intent intent = new Intent(this, ApproveTrxActivity.class);
             intent.putExtra("trxNo", doc.getTrxNo());
             intent.putExtra("trxTypeId", doc.getTrxTypeId());
-            intent.putExtra("whsCode", doc.getWhsCode());
+            intent.putExtra("trgWhsCode", doc.getWhsCode());
+            intent.putExtra("trgWhsName", doc.getWhsName());
             intent.putExtra("srcWhsCode", doc.getSrcWhsCode());
             intent.putExtra("srcWhsName", doc.getSrcWhsName());
             intent.putExtra("bpCode", doc.getBpCode());

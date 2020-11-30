@@ -14,6 +14,7 @@ class Doc
     private int recStatus;
     private String pickStatus;
     private String whsCode;
+    private String whsName;
     private String description;
     private String notes;
     private String pickArea;
@@ -291,5 +292,15 @@ class Doc
     public void setSrcWhsName(String srcWhsName)
     {
         this.srcWhsName = srcWhsName;
+    }
+
+    public void setWhsName(String whsCode)
+    {
+        this.whsCode=whsCode;
+    }
+
+    public String getWhsName()
+    {
+        return whsName;
     }
 }

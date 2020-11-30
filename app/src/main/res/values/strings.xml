@@ -104,4 +104,7 @@
     <string name="from_whs">Digər anbardan</string>
     <string name="three_dot">…</string>
     <string name="whs">Anbar</string>
+    <string name="date">Tarix</string>
+    <string name="product_approve">Mal qəbulu (İstehsalat)</string>
+    <string name="internal_count">İç sayı</string>
 </resources>

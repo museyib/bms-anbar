@@ -89,6 +89,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     double amount;
     String trxNo;
     String trgWhsCode;
+    String trgWhsName;
     String srcWhsCode;
     String srcWhsName;
     String bpCode;
@@ -122,7 +123,8 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             docCreated = true;
             trxNo = getIntent().getStringExtra("trxNo");
             trxTypeId = getIntent().getIntExtra("trxTypeId", 27);
-            trgWhsCode = getIntent().getStringExtra("whsCode");
+            trgWhsCode = getIntent().getStringExtra("trgWhsCode");
+            trgWhsName = getIntent().getStringExtra("trgWhsName");
             srcWhsCode = getIntent().getStringExtra("srcWhsCode");
             srcWhsName = getIntent().getStringExtra("srcWhsName");
             bpCode = getIntent().getStringExtra("bpCode");
@@ -209,6 +211,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             {
                 trgWhs = (Whs) parent.getItemAtPosition(position);
                 trgWhsCode = trgWhs.getWhsCode();
+                trgWhsName = trgWhs.getWhsName();
                 if (docCreated)
                     updateDocTrg();
                 else
@@ -371,7 +374,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     private void updateDocTrg()
     {
         ContentValues values = new ContentValues();
-        values.put(DBHelper.TRG_WHS, trgWhs.getWhsCode());
+        values.put(DBHelper.TRG_WHS_CODE, trgWhs.getWhsCode());
         dbHelper.updateApproveDoc(trxNo, values);
         isReady = !srcTxt.getText().toString().isEmpty();
         updateButtonsStatus();
@@ -424,6 +427,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         sbe.setSbeName(sbeName);
         trgWhs = new Whs();
         trgWhs.setWhsCode(trgWhsCode);
+        trgWhs.setWhsName(trgWhsName);
         srcWhs = new Whs();
         srcWhs.setWhsCode(srcWhsCode);
         srcWhs.setWhsName(srcWhsName);
@@ -874,8 +878,8 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         {
             EditText qtyEdit = new EditText(this);
             qtyEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-            qtyEdit.setText("0");
             qtyEdit.selectAll();
+            qtyEdit.requestFocus();
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle(inventory.getInvCode())
                     .setMessage(inventory.getInvName())
@@ -929,6 +933,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             qtyEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
             qtyEdit.setText(String.format(Locale.getDefault(), "%.0f", trx.getQty()));
             qtyEdit.selectAll();
+            qtyEdit.requestFocus();
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle(trx.getInvCode())
                     .setMessage(trx.getInvName())
@@ -1159,22 +1164,25 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         html = html.concat("<table>");
         html = html.concat("<tr><th>Mal kodu</th>");
         html = html.concat("<th>Mal adı</th>");
+        html = html.concat("<th>Barkod</th>");
+        html = html.concat("<th>Brend</th>");
         html = html.concat("<th>Miqdar</th>");
         html = html.concat("<th>Qiymət</th>");
         html = html.concat("<th>Məbləğ</th>");
-        trxList.remove(trxList.size() - 1);
-        Collections.sort(trxList, (good, t1) ->
-                good.getPrevTrxNo().compareTo(t1.getPrevTrxNo()));
+        Collections.sort(trxList, (trx1, trx2) ->
+                trx1.getPrevTrxNo().compareTo(trx2.getPrevTrxNo()));
         for (Trx trx : trxList)
         {
 
             html = html.concat("<tr><td>" + trx.getInvCode() + "</td><td>" + trx.getInvName() + "</td>");
+            html = html.concat("<td>" + trx.getBarcode() + "</td>");
+            html = html.concat("<td>" + trx.getInvBrand() + "</td>");
             html = html.concat("<td style='text-align: right'>" + format(trx.getQty()) + "</td>");
             html = html.concat("<td style='text-align: right'>" + format(trx.getPrice()) + "</td>");
             html = html.concat("<td style='text-align: right'>" + format(trx.getQty() * trx.getPrice()) + "</td>");
         }
 
-        html = html.concat("<tr><td colspan='4' style='text-align: right'><b>Cəmi</b></td>");
+        html = html.concat("<tr><td colspan='6' style='text-align: right'><b>Cəmi</b></td>");
         html = html.concat("<td style='text-align: right'><b>" + format(amount) + "</b></td></tr>");
         html = html.concat("</table></body></head>");
 
@@ -1194,6 +1202,8 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         html = html.concat("<table>");
         html = html.concat("<tr><th>Mal kodu</th>");
         html = html.concat("<th>Mal adı</th>");
+        html = html.concat("<th>Barkod</th>");
+        html = html.concat("<th>Brend</th>");
         html = html.concat("<th>Miqdar</th>");
         html = html.concat("<th>Qiymət</th>");
         html = html.concat("<th>Endirim (%)</th>");
@@ -1215,6 +1225,8 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             amountWithoutDiscount += invAmount;
 
             html = html.concat("<tr><td>" + trx.getInvCode() + "</td><td>" + trx.getInvName() + "</td>");
+            html = html.concat("<td>" + trx.getBarcode() + "</td>");
+            html = html.concat("<td>" + trx.getInvBrand() + "</td>");
             html = html.concat("<td style='text-align: right'>" + format(trx.getQty()) + "</td>");
             html = html.concat("<td style='text-align: right'>" + format(trx.getPrice()) + "</td>");
             html = html.concat("<td style='text-align: right'>" + format(trx.getDiscountRatio()) + "</td>");
@@ -1222,11 +1234,11 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             html = html.concat("<td>" + trx.getPrevTrxNo() + "</td></tr>");
         }
 
-        html = html.concat("<tr><td colspan='5' style='text-align: right'><b>Cəmi</b></td>");
+        html = html.concat("<tr><td colspan='7' style='text-align: right'><b>Cəmi</b></td>");
         html = html.concat("<td style='text-align: right'><b>" + format(amount) + "</b></td></tr>");
-        html = html.concat("<tr><td colspan='5' style='text-align: right'><b>Endirim</b></td>");
+        html = html.concat("<tr><td colspan='7' style='text-align: right'><b>Endirim</b></td>");
         html = html.concat("<td style='text-align: right'><b>" + format(discountAmount) + "</b></td></tr>");
-        html = html.concat("<tr><td colspan='5' style='text-align: right'><b>Cəmi (Endirimli)</b></td>");
+        html = html.concat("<tr><td colspan='7' style='text-align: right'><b>Cəmi (Endirimli)</b></td>");
         html = html.concat("<td style='text-align: right'><b>" + format(amountWithoutDiscount) + "</b></td></tr>");
         html = html.concat("</table></body></html>");
 

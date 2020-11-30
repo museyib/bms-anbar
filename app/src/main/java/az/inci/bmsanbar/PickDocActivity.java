@@ -154,6 +154,7 @@ public class PickDocActivity extends AppBaseActivity
             TextView pickedItemCount = convertView.findViewById(R.id.picked_item_count);
             TextView pickArea = convertView.findViewById(R.id.pick_area);
             TextView docDesc = convertView.findViewById(R.id.doc_description);
+            TextView whsCode = convertView.findViewById(R.id.whs_code);
 
             assert doc != null;
             trxNo.setText(doc.getPrevTrxNo());
@@ -161,6 +162,7 @@ public class PickDocActivity extends AppBaseActivity
             pickedItemCount.setText(String.valueOf(doc.getPickedItemCount()));
             pickArea.setText(doc.getPickArea());
             docDesc.setText((!doc.getDescription().equals("null")) ? doc.getDescription() : "");
+            whsCode.setText(doc.getWhsCode());
 
             return convertView;
         }

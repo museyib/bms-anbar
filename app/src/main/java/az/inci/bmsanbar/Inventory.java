@@ -8,6 +8,7 @@ public class Inventory
     private String invName;
     private String barcode;
     private String invBrand;
+    private String internalCount;
     private double price;
 
     public static Inventory parseFromTrx(Trx trx)
@@ -76,5 +77,15 @@ public class Inventory
     public void setBarcode(String barcode)
     {
         this.barcode = barcode;
+    }
+
+    public String getInternalCount()
+    {
+        return internalCount;
+    }
+
+    public void setInternalCount(String internalCount)
+    {
+        this.internalCount = internalCount;
     }
 }

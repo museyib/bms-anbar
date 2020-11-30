@@ -33,8 +33,6 @@ public class Whs
     @NonNull
     public String toString()
     {
-        if (whsName == null)
-            return whsCode;
         if (whsCode != null && (!whsCode.isEmpty() && !whsName.isEmpty()))
             return whsCode + " - " + whsName;
         else

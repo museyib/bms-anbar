@@ -79,9 +79,10 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String DISCOUNT_RATIO = "DISCOUNT_RATIO";
     public static final String PRICE = "PRICE";
     public static final String AMOUNT = "AMOUNT";
-    public static final String TRG_WHS = "TRG_WHS";
-    public static final String SRC_WHS_CODE = "SRC_CODE";
-    public static final String SRC_WHS_NAME = "SRC_NAME";
+    public static final String TRG_WHS_CODE = "TRG_WHS_CODE";
+    public static final String TRG_WHS_NAME = "TRG_WHS_NAME";
+    public static final String SRC_WHS_CODE = "SRC_WHS_CODE";
+    public static final String SRC_WHS_NAME = "SRC_WHS_NAME";
 
     private SQLiteDatabase db;
 
@@ -249,7 +250,8 @@ public class DBHelper extends SQLiteOpenHelper
                 "PD.PREV_TRX_NO," +
                 "PD.PICK_USER," +
                 "PD.PICK_AREA," +
-                "PD.PICK_GROUP " +
+                "PD.PICK_GROUP, " +
+                "PD.WHS_CODE " +
                 " FROM PICK_DOC PD " +
                 "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
                 "FROM PICK_TRX GROUP BY TRX_NO) PT_ITEM ON PD.TRX_NO=PT_ITEM.TRX_NO " +
@@ -272,6 +274,7 @@ public class DBHelper extends SQLiteOpenHelper
                 doc.setPickUser(cursor.getString(6));
                 doc.setPickArea(cursor.getString(7));
                 doc.setPickGroup(cursor.getString(8));
+                doc.setWhsCode(cursor.getString(9));
 
                 docList.add(doc);
             }
@@ -518,7 +521,8 @@ public class DBHelper extends SQLiteOpenHelper
                 "PD.SBE_CODE," +
                 "PD.SBE_NAME," +
                 "PD.APPROVE_USER," +
-                "PD.NOTES" +
+                "PD.NOTES," +
+                "PD.WHS_CODE" +
                 " FROM PACK_DOC PD " +
                 "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
                 "FROM PACK_TRX GROUP BY TRX_NO) PT_ITEM ON PD.TRX_NO=PT_ITEM.TRX_NO " +
@@ -544,6 +548,7 @@ public class DBHelper extends SQLiteOpenHelper
                 doc.setSbeName(cursor.getString(9));
                 doc.setApproveUser(cursor.getString(10));
                 doc.setNotes(cursor.getString(11));
+                doc.setWhsCode(cursor.getString(12));
 
                 docList.add(doc);
             }
@@ -933,7 +938,7 @@ public class DBHelper extends SQLiteOpenHelper
     {
         db.execSQL("DROP TABLE IF EXISTS " + APPROVE_DOC);
         db.execSQL("CREATE TABLE APPROVE_DOC (TRX_NO TEXT PRIMARY KEY, TRX_DATE TEXT, TRX_TYPE_ID INTEGER," +
-                " AMOUNT REAL, TRG_WHS TEXT, SRC_CODE TEXT, SRC_NAME TEXT, BP_CODE TEXT, BP_NAME," +
+                " AMOUNT REAL, TRG_WHS_CODE TEXT, TRG_WHS_NAME TEXT, SRC_CODE TEXT, SRC_NAME TEXT, BP_CODE TEXT, BP_NAME," +
                 " SBE_CODE TEXT, SBE_NAME TEXT, NOTES TEXT)");
     }
 
@@ -944,7 +949,8 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(TRX_DATE, doc.getTrxDate());
         values.put(TRX_TYPE_ID, doc.getTrxTypeId());
         values.put(AMOUNT, doc.getAmount());
-        values.put(TRG_WHS, doc.getWhsCode());
+        values.put(TRG_WHS_CODE, doc.getWhsCode());
+        values.put(TRG_WHS_NAME, doc.getWhsName());
         values.put(SRC_WHS_CODE, doc.getSrcWhsCode());
         values.put(SRC_WHS_NAME, doc.getSrcWhsName());
         values.put(BP_CODE, doc.getBpCode());
@@ -952,6 +958,17 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(SBE_CODE, doc.getSbeCode());
         values.put(SBE_NAME, doc.getSbeName());
         values.put(NOTES, doc.getNotes());
+
+        db.insert(APPROVE_DOC, null, values);
+    }
+
+    public void addProductApproveDoc(Doc doc)
+    {
+        ContentValues values = new ContentValues();
+        values.put(TRX_NO, doc.getTrxNo());
+        values.put(TRX_DATE, doc.getTrxDate());
+        values.put(NOTES, doc.getNotes());
+        values.put(TRX_TYPE_ID, 4);
 
         db.insert(APPROVE_DOC, null, values);
     }
@@ -965,7 +982,7 @@ public class DBHelper extends SQLiteOpenHelper
     {
         List<Doc> docList = new ArrayList<>();
 
-        String query = "SELECT * FROM " + APPROVE_DOC;
+        String query = "SELECT * FROM " + APPROVE_DOC + " WHERE TRX_TYPE_ID IN (27,53)";
 
         try
         {
@@ -978,13 +995,52 @@ public class DBHelper extends SQLiteOpenHelper
                 doc.setTrxTypeId(cursor.getInt(2));
                 doc.setAmount(cursor.getDouble(3));
                 doc.setWhsCode(cursor.getString(4));
-                doc.setSrcWhsCode(cursor.getString(5));
-                doc.setSrcWhsName(cursor.getString(6));
-                doc.setBpCode(cursor.getString(7));
-                doc.setBpName(cursor.getString(8));
-                doc.setSbeCode(cursor.getString(9));
-                doc.setSbeName(cursor.getString(10));
-                doc.setNotes(cursor.getString(11));
+                doc.setWhsName(cursor.getString(5));
+                doc.setSrcWhsCode(cursor.getString(6));
+                doc.setSrcWhsName(cursor.getString(7));
+                doc.setBpCode(cursor.getString(8));
+                doc.setBpName(cursor.getString(9));
+                doc.setSbeCode(cursor.getString(10));
+                doc.setSbeName(cursor.getString(11));
+                doc.setNotes(cursor.getString(12));
+
+                docList.add(doc);
+            }
+            cursor.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return docList;
+    }
+
+    public List<Doc> getProductApproveDocList()
+    {
+        List<Doc> docList = new ArrayList<>();
+
+        String query = "SELECT * FROM " + APPROVE_DOC + " WHERE TRX_TYPE_ID = 4";
+
+        try
+        {
+            Cursor cursor = db.rawQuery(query, null);
+            while (cursor.moveToNext())
+            {
+                Doc doc = new Doc();
+                doc.setTrxNo(cursor.getString(0));
+                doc.setTrxDate(cursor.getString(1));
+                doc.setTrxTypeId(cursor.getInt(2));
+                doc.setAmount(cursor.getDouble(3));
+                doc.setWhsCode(cursor.getString(4));
+                doc.setWhsName(cursor.getString(5));
+                doc.setSrcWhsCode(cursor.getString(6));
+                doc.setSrcWhsName(cursor.getString(7));
+                doc.setBpCode(cursor.getString(8));
+                doc.setBpName(cursor.getString(9));
+                doc.setSbeCode(cursor.getString(10));
+                doc.setSbeName(cursor.getString(11));
+                doc.setNotes(cursor.getString(12));
 
                 docList.add(doc);
             }
@@ -1009,7 +1065,8 @@ public class DBHelper extends SQLiteOpenHelper
         db.execSQL("DROP TABLE IF EXISTS " + APPROVE_TRX);
         db.execSQL("CREATE TABLE APPROVE_TRX (TRX_ID INTEGER PRIMARY KEY, TRX_NO TEXT, INV_CODE TEXT," +
                 " INV_NAME TEXT, BRAND_CODE TEXT, QTY REAL, PRICE REAL, AMOUNT REAL," +
-                " DISCOUNT_RATIO REAL, DISCOUNT REAL, PREV_TRX_NO TEXT, PREV_TRX_ID INTEGER)");
+                " DISCOUNT_RATIO REAL, DISCOUNT REAL, PREV_TRX_NO TEXT, PREV_TRX_ID INTEGER," +
+                " BARCODE TEXT, NOTES TEXT)");
     }
 
     public void addApproveTrx(Trx trx)
@@ -1027,6 +1084,8 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(PREV_TRX_ID, trx.getPrevTrxId());
         values.put(DISCOUNT, trx.getDiscount());
         values.put(DISCOUNT_RATIO, trx.getDiscountRatio());
+        values.put(BARCODE, trx.getBarcode());
+        values.put(NOTES, trx.getNotes());
 
         db.insert(APPROVE_TRX, null, values);
     }
@@ -1055,6 +1114,8 @@ public class DBHelper extends SQLiteOpenHelper
                 trx.setDiscount(cursor.getDouble(9));
                 trx.setPrevTrxNo(cursor.getString(10));
                 trx.setPrevTrxId(cursor.getInt(11));
+                trx.setBarcode(cursor.getString(12));
+                trx.setNotes(cursor.getString(13));
 
                 trxList.add(trx);
             }

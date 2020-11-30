@@ -48,7 +48,9 @@ public class Trx
         Trx trx = new Trx();
         trx.setInvCode(inventory.getInvCode());
         trx.setInvName(inventory.getInvName());
+        trx.setBarcode(inventory.getBarcode());
         trx.setInvBrand(inventory.getInvBrand());
+        trx.setNotes(inventory.getInternalCount());
         trx.setPrice(inventory.getPrice());
         trx.setPrevTrxNo("");
         return trx;
