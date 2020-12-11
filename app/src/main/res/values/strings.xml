@@ -107,4 +107,5 @@
     <string name="date">Tarix</string>
     <string name="product_approve">Mal qəbulu (İstehsalat)</string>
     <string name="internal_count">İç sayı</string>
+    <string name="inv_list">Mallar</string>
 </resources>

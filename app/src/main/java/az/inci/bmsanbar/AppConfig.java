@@ -15,8 +15,8 @@ class AppConfig
     static final int NEW_MODE = 1;
 
     private User user;
-    private String serverUrl = "http://192.168.0.5:8022";
-    private String imageUrl = "http://192.168.0.5:8025";
+    private String serverUrl = "http://185.129.0.46:8022";
+    private String imageUrl = "http://185.129.0.46:8025";
     private int connectionTimeout = 5;
     private boolean cameraScanning = false;
 

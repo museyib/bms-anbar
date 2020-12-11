@@ -29,16 +29,15 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:contentDescription="@string/send"
-            android:visibility="gone"
-            app:layout_constraintEnd_toStartOf="@+id/print"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/doc_description"
             app:srcCompat="@android:drawable/ic_menu_upload" />
 
         <ImageButton
             android:id="@+id/inv_list"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:contentDescription="@string/save"
+            android:contentDescription="@string/inv_list"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/doc_description"
             app:srcCompat="@android:drawable/ic_menu_sort_by_size" />
@@ -71,8 +70,10 @@
         android:id="@+id/trx_list_scroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
         app:layout_constraintBottom_toTopOf="@id/user_info"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/top_panel"
         app:layout_constraintVertical_bias="0.0">
