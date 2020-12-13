@@ -24,7 +24,7 @@
         android:foreground="@android:color/black" />
 
     <TextView
-        android:id="@+id/from_whs"
+        android:id="@+id/trg_whs"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:paddingTop="4dp"

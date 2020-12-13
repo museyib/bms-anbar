@@ -783,28 +783,24 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             Trx trx = trxList.get(position);
             itemView.setOnLongClickListener(view ->
             {
-                Trx selectedTrx = (Trx) itemView.getTag();
-                if (!selectedTrx.isReturned())
-                {
-                    AlertDialog dialog = new AlertDialog.Builder(ProductApproveTrxActivity.this)
-                            .setTitle(selectedTrx.getInvName())
-                            .setMessage("Silmək istəyirsiniz?")
-                            .setPositiveButton("Bəli", (dialog1, which) ->
-                            {
-                                dbHelper.deleteApproveTrx(String.valueOf(selectedTrx.getTrxId()));
-                                loadData();
-                            })
-                            .setNegativeButton("Xeyr", null)
-                            .create();
-                    dialog.show();
-                }
+                Trx selectedTrx = trxList.get(position);
+                AlertDialog dialog = new AlertDialog.Builder(ProductApproveTrxActivity.this)
+                        .setTitle(selectedTrx.getInvName())
+                        .setMessage("Silmək istəyirsiniz?")
+                        .setPositiveButton("Bəli", (dialog1, which) ->
+                        {
+                            dbHelper.deleteApproveTrx(String.valueOf(selectedTrx.getTrxId()));
+                            loadData();
+                        })
+                        .setNegativeButton("Xeyr", null)
+                        .create();
+                dialog.show();
                 return true;
             });
             itemView.setOnClickListener(view ->
             {
-                Trx selectedTrx = (Trx) itemView.getTag();
-                if (!selectedTrx.isReturned())
-                    showEditInvDialog(selectedTrx);
+                Trx selectedTrx = trxList.get(position);
+                showEditInvDialog(selectedTrx);
             });
             holder.invCode.setText(trx.getInvCode());
             holder.invName.setText(trx.getInvName());

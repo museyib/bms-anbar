@@ -375,6 +375,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     {
         ContentValues values = new ContentValues();
         values.put(DBHelper.TRG_WHS_CODE, trgWhs.getWhsCode());
+        values.put(DBHelper.TRG_WHS_NAME, trgWhs.getWhsName());
         dbHelper.updateApproveDoc(trxNo, values);
         isReady = !srcTxt.getText().toString().isEmpty();
         updateButtonsStatus();
@@ -1446,7 +1447,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             Trx trx = trxList.get(position);
             itemView.setOnLongClickListener(view ->
             {
-                Trx selectedTrx = (Trx) itemView.getTag();
+                Trx selectedTrx = trxList.get(position);
                 if (!selectedTrx.isReturned())
                 {
                     AlertDialog dialog = new AlertDialog.Builder(ApproveTrxActivity.this)
@@ -1467,7 +1468,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             });
             itemView.setOnClickListener(view ->
             {
-                Trx selectedTrx = (Trx) itemView.getTag();
+                Trx selectedTrx = trxList.get(position);
                 if (!selectedTrx.isReturned())
                     showEditInvDialog(selectedTrx);
             });

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -131,14 +132,14 @@ public class ApproveDocActivity extends AppBaseActivity
             }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);
-            TextView fromWHs = convertView.findViewById(R.id.from_whs);
+            TextView trgWhs = convertView.findViewById(R.id.trg_whs);
             TextView srcWhsName = convertView.findViewById(R.id.src_whs);
             TextView bpName = convertView.findViewById(R.id.bp_name);
             TextView sbeName = convertView.findViewById(R.id.sbe_name);
             TextView amount = convertView.findViewById(R.id.amount);
 
             trxNo.setText(doc.getTrxNo());
-            fromWHs.setText(doc.getWhsCode());
+            trgWhs.setText(doc.getWhsCode());
             srcWhsName.setText(doc.getSrcWhsName());
             bpName.setText(doc.getBpName());
             sbeName.setText(doc.getSbeName());

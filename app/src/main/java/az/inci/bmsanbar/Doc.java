@@ -212,15 +212,16 @@ class Doc
 
     @NonNull
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Doc{" +
                 "trxNo='" + trxNo + '\'' +
                 ", trxDate='" + trxDate + '\'' +
                 ", recStatus=" + recStatus +
                 ", pickStatus='" + pickStatus + '\'' +
                 ", whsCode='" + whsCode + '\'' +
+                ", whsName='" + whsName + '\'' +
                 ", description='" + description + '\'' +
+                ", notes='" + notes + '\'' +
                 ", pickArea='" + pickArea + '\'' +
                 ", pickGroup='" + pickGroup + '\'' +
                 ", pickUser='" + pickUser + '\'' +
@@ -231,6 +232,11 @@ class Doc
                 ", sbeName='" + sbeName + '\'' +
                 ", bpCode='" + bpCode + '\'' +
                 ", sbeCode='" + sbeCode + '\'' +
+                ", approveUser='" + approveUser + '\'' +
+                ", trxTypeId=" + trxTypeId +
+                ", amount=" + amount +
+                ", srcWhsCode='" + srcWhsCode + '\'' +
+                ", srcWhsName='" + srcWhsName + '\'' +
                 '}';
     }
 
@@ -294,9 +300,9 @@ class Doc
         this.srcWhsName = srcWhsName;
     }
 
-    public void setWhsName(String whsCode)
+    public void setWhsName(String whsName)
     {
-        this.whsCode=whsCode;
+        this.whsName=whsName;
     }
 
     public String getWhsName()
