@@ -15,6 +15,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
+
+import java.lang.reflect.Type;
 import java.util.List;
 
 public class ProductApproveDocActivity extends AppBaseActivity
@@ -22,6 +30,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
 
     ListView docListView;
     ImageButton add;
+    ImageButton download;
 
     List<Doc> docList;
 
@@ -34,6 +43,12 @@ public class ProductApproveDocActivity extends AppBaseActivity
 
         docListView = findViewById(R.id.doc_list);
         add = findViewById(R.id.add);
+        download = findViewById(R.id.download);
+
+        if (config().getUser().isApproveFlag())
+            download.setVisibility(View.VISIBLE);
+        else if (config().getUser().isApprovePrdFlag())
+            add.setVisibility(View.VISIBLE);
 
         add.setOnClickListener(v ->
         {
@@ -41,6 +56,8 @@ public class ProductApproveDocActivity extends AppBaseActivity
             intent.putExtra("mode", AppConfig.NEW_MODE);
             startActivity(intent);
         });
+
+        download.setOnClickListener(view -> loadDocsFromServer());
 
         docListView.setOnItemClickListener((parent, view, position, id) ->
         {
@@ -94,6 +111,102 @@ public class ProductApproveDocActivity extends AppBaseActivity
         }
     }
 
+    private void loadDocsFromServer()
+    {
+        showProgressDialog(true);
+        new Thread(this::loadTrxListFromServer).start();
+    }
+
+    private void loadTrxListFromServer()
+    {
+        String url = url("trx", "approve-prd", "list");
+        RestTemplate template = new RestTemplate();
+        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                .setConnectTimeout(config().getConnectionTimeout() * 1000);
+        template.getMessageConverters().add(new StringHttpMessageConverter());
+        String result;
+        try
+        {
+            result = template.getForObject(url, String.class);
+            Gson gson = new Gson();
+            Type type = new TypeToken<List<Trx>>()
+            {
+            }.getType();
+            List<Trx> trxList = gson.fromJson(result, type);
+            if (trxList.size() > 0)
+            {
+                for (Trx trx : trxList)
+                    dbHelper.addApproveTrx(trx);
+                loadDocListFromServer(trxList);
+            }
+            else
+            {
+                runOnUiThread(() -> showMessageDialog(getString(R.string.info),
+                        getString(R.string.no_data),
+                        android.R.drawable.ic_dialog_info));
+            }
+
+        }
+        catch (RuntimeException ex)
+        {
+            ex.printStackTrace();
+            runOnUiThread(() ->
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert));
+        }
+        finally
+        {
+            showProgressDialog(false);
+        }
+    }
+
+    private void loadDocListFromServer(List<Trx> trxList)
+    {
+
+        String url = url("doc", "approve-prd", "list");
+        RestTemplate template = new RestTemplate();
+        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                .setConnectTimeout(config().getConnectionTimeout() * 1000);
+        template.getMessageConverters().add(new StringHttpMessageConverter());
+        String result;
+        try
+        {
+            result = template.getForObject(url, String.class);
+            Gson gson = new Gson();
+            Type type = new TypeToken<List<Doc>>()
+            {
+            }.getType();
+            List<Doc> docList = gson.fromJson(result, type);
+            for (Doc doc : docList)
+            {
+                doc.setTrxTypeId(4);
+                dbHelper.addApproveDoc(doc);
+            }
+            runOnUiThread(() ->
+            {
+                showProgressDialog(false);
+                loadDocs();
+            });
+
+        }
+        catch (RuntimeException ex)
+        {
+            ex.printStackTrace();
+            for (Trx trx : trxList)
+            {
+                dbHelper.deleteApproveTrxByTrxNo(trx.getTrxNo());
+            }
+            runOnUiThread(() ->
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert));
+        }
+        finally
+        {
+            showProgressDialog(false);
+        }
+    }
 
     static class DocAdapter extends ArrayAdapter<Doc>
     {

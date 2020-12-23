@@ -51,6 +51,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,7 +79,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
     int mode;
     boolean docCreated;
     String trxNo;
-    private String notes ="";
+    private String notes = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -107,9 +108,9 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
 
         printBtn.setOnClickListener(v ->
         {
-            if (trxList.size()>0)
+            if (trxList.size() > 0)
             {
-                String report= getPrintForm();
+                String report = getPrintForm();
                 showProgressDialog(true);
                 print(report);
             }
@@ -129,7 +130,8 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                     .setMessage("Göndərmək istəyirsiniz?")
                     .setPositiveButton("Bəli", (dialog1, which) ->
                     {
-
+                        int status = config().getUser().isApprovePrdFlag() ? 0 : 2;
+                        uploadDoc(status);
                     })
                     .setNegativeButton("Xeyr", null)
                     .create();
@@ -139,7 +141,8 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         if (config().isCameraScanning())
             cameraScanner.setVisibility(View.VISIBLE);
 
-        cameraScanner.setOnClickListener(v -> {
+        cameraScanner.setOnClickListener(v ->
+        {
             Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
             startActivityForResult(barcodeIntent, 1);
         });
@@ -155,8 +158,8 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                notes =s.toString();
-                ContentValues values=new ContentValues();
+                notes = s.toString();
+                ContentValues values = new ContentValues();
                 values.put(DBHelper.NOTES, notes);
                 dbHelper.updateApproveDoc(trxNo, values);
             }
@@ -205,7 +208,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             @Override
             public boolean onQueryTextChange(String newText)
             {
-                ((TrxAdapter)trxListView.getAdapter()).getFilter().filter(newText);
+                ((TrxAdapter) Objects.requireNonNull(trxListView.getAdapter())).getFilter().filter(newText);
                 return true;
             }
         });
@@ -244,7 +247,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         trxListView.setLayoutManager(new LinearLayoutManager(this));
         trxListView.setAdapter(adapter);
 
-        if (trxList.size()==0)
+        if (trxList.size() == 0)
             findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
         else
             findViewById(R.id.trx_list_scroll).setVisibility(View.VISIBLE);
@@ -360,7 +363,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view1, position, id) ->
                 showAddInvDialog((Inventory) view1.getTag()));
-        listView.setOnItemLongClickListener((parent, view1, position, id) -> 
+        listView.setOnItemLongClickListener((parent, view1, position, id) ->
         {
             showInfoDialog((Inventory) view1.getTag());
             return true;
@@ -489,6 +492,79 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         return new Trx();
     }
 
+    private void uploadDoc(int status)
+    {
+        showProgressDialog(true);
+        new Thread(() ->
+        {
+
+            String url = url("trx", "approve-prd", "insert");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("user-id", config().getUser().getId());
+            parameters.put("notes", notes);
+            parameters.put("status", String.valueOf(status));
+            url = addRequestParameters(url, parameters);
+            JSONArray jsonArray = new JSONArray();
+            try
+            {
+                for (Trx trx : trxList)
+                {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("trxNo", trxNo);
+                    jsonObject.put("trxDate", new java.sql.Date(System.currentTimeMillis()));
+                    jsonObject.put("invCode", trx.getInvCode());
+                    jsonObject.put("invName", trx.getInvName());
+                    jsonObject.put("invBrand", trx.getInvBrand());
+                    jsonObject.put("barcode", trx.getBarcode());
+                    jsonObject.put("qty", trx.getQty());
+                    jsonObject.put("notes", trx.getNotes());
+                    jsonArray.put(jsonObject);
+                }
+            }
+            catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            MediaType mediaType = new MediaType("application", "json", StandardCharsets.UTF_8);
+            headers.setContentType(mediaType);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
+            HttpEntity<String> entity = new HttpEntity<>(jsonArray.toString(), headers);
+            RestTemplate template = new RestTemplate();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
+            Boolean result;
+            try
+            {
+                result = template.postForObject(url, entity, Boolean.class);
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+                result = false;
+            }
+            Boolean finalResult = result;
+            runOnUiThread(() ->
+            {
+                showProgressDialog(false);
+                if (finalResult)
+                {
+                    dbHelper.deleteApproveDoc(trxNo);
+                    finish();
+                }
+                else
+                {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                }
+            });
+        }).start();
+    }
+
     private void print(String html)
     {
         WebView webView = new WebView(this);
@@ -562,7 +638,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                 "th{background-color: #636d72;color:white}td,th{padding:0 4px 0 4px}</style>" +
                 "</head><body>";
         html = html.concat("<h3 style='text-align: center'>İstehsaldan mal qəbulu</h3></br>");
-        html = html.concat("<h4>"+ notes +"</h4></br>");
+        html = html.concat("<h4>" + notes + "</h4></br>");
         html = html.concat("<table>");
         html = html.concat("<tr><th>Mal kodu</th>");
         html = html.concat("<th>Mal adı</th>");
@@ -591,7 +667,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
     private void uploadTransfer()
     {
         showProgressDialog(true);
-        if (trxList.size()>0)
+        if (trxList.size() > 0)
         {
             new Thread(() ->
             {
@@ -758,9 +834,9 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
     @SuppressWarnings("unchecked")
     private class TrxAdapter extends RecyclerView.Adapter<TrxAdapter.Holder> implements Filterable
     {
+        private final ProductApproveTrxActivity activity;
         List<Trx> trxList;
         View itemView;
-        private final ProductApproveTrxActivity activity;
 
         public TrxAdapter(Context context, List<Trx> trxList)
         {

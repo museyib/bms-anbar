@@ -18,6 +18,7 @@ public class User
     private boolean docFlag;
     private boolean loadingFlag;
     private boolean approveFlag;
+    private boolean approvePrdFlag;
 
     String getId()
     {
@@ -167,6 +168,17 @@ public class User
                 ", docFlag=" + docFlag +
                 ", loadingFlag=" + loadingFlag +
                 ", approveFlag=" + approveFlag +
+                ", approvePrdFlag=" + approvePrdFlag +
                 '}';
+    }
+
+    public boolean isApprovePrdFlag()
+    {
+        return approvePrdFlag;
+    }
+
+    public void setApprovePrdFlag(boolean approvePrdFlag)
+    {
+        this.approvePrdFlag = approvePrdFlag;
     }
 }

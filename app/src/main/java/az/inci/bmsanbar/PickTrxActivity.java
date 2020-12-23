@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,14 +25,20 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,12 +126,12 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
             if (trxList.size() > 0)
             {
                 if (pickedAll)
-                    new SendTrx(this).execute();
+                    sendTrx();
                 else
                 {
                     AlertDialog dialog = new AlertDialog.Builder(this)
                             .setMessage("Mallar tam yığılmayıb. Göndərmək istəyirsiniz?")
-                            .setNegativeButton("Bəli", (dialogInterface, i) -> new SendTrx(this).execute())
+                            .setNegativeButton("Bəli", (dialogInterface, i) -> sendTrx())
                             .setPositiveButton("Xeyr", null)
                             .create();
 
@@ -483,76 +488,67 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         }
     }
 
-    private static class SendTrx extends AsyncTask<Void, Void, Boolean>
+    private void sendTrx()
     {
-        WeakReference<PickTrxActivity> reference;
-        List<Trx> trxList;
+        showProgressDialog(true);
+        new Thread(() -> {
 
-        public SendTrx(PickTrxActivity activity)
-        {
-            reference = new WeakReference<>(activity);
-            trxList = reference.get().trxList;
-        }
-
-        @Override
-        protected void onPreExecute()
-        {
-            reference.get().showProgressDialog(true);
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... aVoid)
-        {
-            PickTrxActivity activity = reference.get();
+            JSONArray jsonArray = new JSONArray();
+            try
+            {
+                for (Trx trx : trxList)
+                {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("trxId", trx.getTrxId());
+                    jsonObject.put("qty", trx.getPickedQty());
+                    jsonObject.put("pickStatus", "A");
+                    jsonArray.put(jsonObject);
+                }
+            }
+            catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+            HttpHeaders headers = new HttpHeaders();
+            MediaType mediaType = new MediaType("application", "json", StandardCharsets.UTF_8);
+            headers.setContentType(mediaType);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
+            HttpEntity<String> entity = new HttpEntity<>(jsonArray.toString(), headers);
             RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            boolean result = false;
-            for (Object item : trxList)
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
+            boolean result;
+            String url = url("trx", "collect");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("trx-no", null);
+            url = addRequestParameters(url, parameters);
+            try
             {
-                Trx trx = (Trx) item;
-                String url = activity.url("trx", "collect");
-                Map<String, String> parameters = new HashMap<>();
-                parameters.put("trx-id", String.valueOf(trx.getTrxId()));
-                parameters.put("qty", String.valueOf(trx.getPickedQty()));
-                parameters.put("pick-status", "A");
-                parameters.put("trx-no", null);
-                url = activity.addRequestParameters(url, parameters);
-                try
-                {
-                    result = template.postForObject(url, null, Boolean.class);
-                }
-                catch (ResourceAccessException ex)
-                {
-                    ex.printStackTrace();
-                    break;
-                }
-                catch (RuntimeException ex)
-                {
-                    ex.printStackTrace();
-                    return null;
-                }
+                result = template.postForObject(url, entity, Boolean.class);
             }
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result)
-        {
-            PickTrxActivity activity = reference.get();
-            if (!result)
+            catch (RuntimeException ex)
             {
-                activity.showMessageDialog(activity.getString(R.string.error),
-                        activity.getString(R.string.connection_error),
-                        android.R.drawable.ic_dialog_alert);
-                activity.playSound(SOUND_FAIL);
+                ex.printStackTrace();
+                result=false;
             }
-            else
-            {
-                activity.dbHelper.deletePickTrx(activity.trxNo);
-                activity.finish();
-            }
-            activity.showProgressDialog(false);
-        }
+            boolean finalResult = result;
+            runOnUiThread(() -> {
+                if (!finalResult)
+                {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                }
+                else
+                {
+                    dbHelper.deletePickTrx(trxNo);
+                    finish();
+                }
+                showProgressDialog(false);
+            });
+        }).start();
     }
 }

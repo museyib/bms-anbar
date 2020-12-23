@@ -31,7 +31,7 @@ public class Trx
     private String sbeName;
     private String barcode;
     private String prevTrxNo;
-    private String notes;
+    private String notes = "";
     private int priority;
     private int trxTypeId;
     private double amount;

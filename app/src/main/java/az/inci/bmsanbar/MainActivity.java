@@ -138,6 +138,7 @@ public class MainActivity extends AppBaseActivity
     {
         showLoginDialog(AppConfig.APPROVE_MODE);
     }
+
     public void openProductApproving(View view)
     {
         showLoginDialog(AppConfig.PRODUCT_APPROVE_MODE);
@@ -248,7 +249,7 @@ public class MainActivity extends AppBaseActivity
                     aClass = ApproveDocActivity.class;
                     break;
                 case AppConfig.PRODUCT_APPROVE_MODE:
-                    if (!user.isApproveFlag())
+                    if (!(user.isApproveFlag() || user.isApprovePrdFlag()))
                     {
                         showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                                 android.R.drawable.ic_dialog_alert);

@@ -37,6 +37,7 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String DOC_FLAG = "DOC_FLAG";
     public static final String LOADING_FLAG = "LOADING_FLAG";
     public static final String APPROVE_FLAG = "APPROVE_FLAG";
+    public static final String APPROVE_PRD_FLAG = "APPROVE_PRD_FLAG";
 
     public static final String TRX_ID = "TRX_ID";
     public static final String TRX_NO = "TRX_NO";
@@ -150,7 +151,8 @@ public class DBHelper extends SQLiteOpenHelper
                 .append(PACK_FLAG).append(" INTEGER,")
                 .append(DOC_FLAG).append(" INTEGER,")
                 .append(LOADING_FLAG).append(" INTEGER,")
-                .append(APPROVE_FLAG).append(" INTEGER")
+                .append(APPROVE_FLAG).append(" INTEGER,")
+                .append(APPROVE_PRD_FLAG).append(" INTEGER")
                 .append(")")
                 .toString());
     }
@@ -173,6 +175,7 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(DOC_FLAG, user.isDoc() ? 1 : 0);
         values.put(LOADING_FLAG, user.isLoading() ? 1 : 0);
         values.put(APPROVE_FLAG, user.isApproveFlag() ? 1 : 0);
+        values.put(APPROVE_PRD_FLAG, user.isApprovePrdFlag() ? 1 : 0);
 
         db.insert(TERMINAL_USER, null, values);
     }
@@ -181,7 +184,7 @@ public class DBHelper extends SQLiteOpenHelper
     {
         String[] columns = new String[]{USER_ID, USER_NAME, PASS_WORD, PICK_GROUP, COLLECT_FLAG,
                 PICK_FLAG, CHECK_FLAG, COUNT_FLAG, LOCATION_FLAG,
-                PACK_FLAG, DOC_FLAG, LOADING_FLAG, APPROVE_FLAG};
+                PACK_FLAG, DOC_FLAG, LOADING_FLAG, APPROVE_FLAG, APPROVE_PRD_FLAG};
         User user = null;
 
         try (Cursor cursor = db.query(TERMINAL_USER, columns,
@@ -203,6 +206,7 @@ public class DBHelper extends SQLiteOpenHelper
                 user.setDocFlag(cursor.getInt(10) == 1);
                 user.setLoadingFlag(cursor.getInt(11) == 1);
                 user.setApproveFlag(cursor.getInt(12) == 1);
+                user.setApprovePrdFlag(cursor.getInt(13) == 1);
             }
         }
         return user;

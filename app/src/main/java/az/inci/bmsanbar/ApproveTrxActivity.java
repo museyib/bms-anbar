@@ -256,7 +256,8 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         if (config().isCameraScanning())
             cameraScanner.setVisibility(View.VISIBLE);
 
-        cameraScanner.setOnClickListener(v -> {
+        cameraScanner.setOnClickListener(v ->
+        {
             Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
             startActivityForResult(barcodeIntent, 1);
         });
@@ -316,7 +317,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             @Override
             public boolean onQueryTextChange(String newText)
             {
-                ((TrxAdapter)trxListView.getAdapter()).getFilter().filter(newText);
+                ((TrxAdapter) trxListView.getAdapter()).getFilter().filter(newText);
                 return true;
             }
         });
@@ -439,7 +440,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         trxListView.setLayoutManager(new LinearLayoutManager(this));
         trxListView.setAdapter(adapter);
 
-        if (trxList.size()==0)
+        if (trxList.size() == 0)
             findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
         else
             findViewById(R.id.trx_list_scroll).setVisibility(View.VISIBLE);
@@ -722,7 +723,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view1, position, id) ->
                 showAddInvDialog((Inventory) view1.getTag()));
-        listView.setOnItemLongClickListener((parent, view1, position, id) -> 
+        listView.setOnItemLongClickListener((parent, view1, position, id) ->
         {
             showInfoDialog((Inventory) view1.getTag());
             return true;
@@ -1422,9 +1423,9 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     @SuppressWarnings("unchecked")
     private class TrxAdapter extends RecyclerView.Adapter<TrxAdapter.Holder> implements Filterable
     {
+        private final ApproveTrxActivity activity;
         List<Trx> trxList;
         View itemView;
-        private final ApproveTrxActivity activity;
 
         public TrxAdapter(Context context, List<Trx> trxList)
         {

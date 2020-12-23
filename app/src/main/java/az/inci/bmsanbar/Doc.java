@@ -212,7 +212,8 @@ class Doc
 
     @NonNull
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "Doc{" +
                 "trxNo='" + trxNo + '\'' +
                 ", trxDate='" + trxDate + '\'' +
@@ -300,13 +301,13 @@ class Doc
         this.srcWhsName = srcWhsName;
     }
 
-    public void setWhsName(String whsName)
-    {
-        this.whsName=whsName;
-    }
-
     public String getWhsName()
     {
         return whsName;
+    }
+
+    public void setWhsName(String whsName)
+    {
+        this.whsName = whsName;
     }
 }
