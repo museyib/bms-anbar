@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.model;
 
 public class ShipDoc
 {

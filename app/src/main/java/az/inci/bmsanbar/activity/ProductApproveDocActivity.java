@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -24,6 +24,11 @@ import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Type;
 import java.util.List;
+
+import az.inci.bmsanbar.AppConfig;
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.Doc;
+import az.inci.bmsanbar.model.Trx;
 
 public class ProductApproveDocActivity extends AppBaseActivity
 {

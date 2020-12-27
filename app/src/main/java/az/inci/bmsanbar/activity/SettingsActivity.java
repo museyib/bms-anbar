@@ -1,9 +1,11 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+
+import az.inci.bmsanbar.R;
 
 public class SettingsActivity extends AppBaseActivity
 {

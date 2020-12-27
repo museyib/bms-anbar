@@ -1,8 +1,7 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,7 +26,6 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,12 +34,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.Doc;
+import az.inci.bmsanbar.model.Trx;
+
 public class PackDocActivity extends AppBaseActivity implements SearchView.OnQueryTextListener
 {
 
     List<Doc> docList;
     ListView docListView;
     ImageButton newDocs;
+    ImageButton newDocsIncomplete;
     private SearchView searchView;
 
     @Override
@@ -67,10 +70,25 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
 
         newDocs = findViewById(R.id.newDocs);
         newDocs.setOnClickListener(v ->
-        {
-            getNewDocs(config().getUser().getId());
-            loadDocs();
-        });
+                loadTrxFromServer(1));
+
+        newDocsIncomplete = findViewById(R.id.newDocsIncomplete);
+        newDocsIncomplete.setOnClickListener(v ->
+                {
+                    List<String> list=dbHelper.getIncompletePackDocList(config().getUser().getId());
+                    if (list.size()==0)
+                    {
+                        showMessageDialog(getString(R.string.info),
+                                getString(R.string.no_incomplete_doc),
+                                android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                    }
+                    else
+                    {
+                        for (String trxNo : list)
+                            loadDocFromServer(trxNo);
+                    }
+                });
     }
 
     @Override
@@ -95,15 +113,6 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             findViewById(R.id.header).setVisibility(View.GONE);
         else
             findViewById(R.id.header).setVisibility(View.VISIBLE);
-    }
-
-    public void getNewDocs(String approveUser)
-    {
-        String url = url("trx", "pack");
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("approve-user", approveUser);
-        url = addRequestParameters(url, parameters);
-        new TrxLoader(this).execute(url);
     }
 
     @Override
@@ -255,151 +264,119 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         }
     }
 
-    private static class DocLoader extends AsyncTask<String, Boolean, String>
+    private void loadDocFromServer(String trxNo)
     {
-
-        private final WeakReference<PackDocActivity> reference;
-
-        DocLoader(PackDocActivity activity)
-        {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected String doInBackground(String... url)
-        {
-            publishProgress(true);
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("doc", "pack");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("trx-no", trxNo);
+            url = addRequestParameters(url, parameters);
             RestTemplate template = new RestTemplate();
-            AppBaseActivity activity = reference.get();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
-            String result;
+            String result = null;
             try
             {
-                result = template.getForObject(url[0], String.class);
+                result = template.getForObject(url, String.class);
             }
             catch (RuntimeException ex)
             {
                 ex.printStackTrace();
-                return null;
-            }
-            return result;
-        }
-
-        @Override
-        protected void onProgressUpdate(Boolean... b)
-        {
-            reference.get().showProgressDialog(true);
-        }
-
-        @Override
-        protected void onPostExecute(String result)
-        {
-            PackDocActivity activity = reference.get();
-            if (result == null)
-            {
-                activity.showMessageDialog(activity.getString(R.string.error),
-                        activity.getString(R.string.connection_error),
-                        android.R.drawable.ic_dialog_alert);
-                activity.playSound(SOUND_FAIL);
-            }
-            else
-            {
-                Gson gson = new Gson();
-                Type type = new TypeToken<Doc>()
+                runOnUiThread(() ->
                 {
-                }.getType();
-                Doc doc = gson.fromJson(result, type);
-                activity.dbHelper.addPackDoc(doc);
-                activity.loadDocs();
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
             }
-            activity.showProgressDialog(false);
-        }
+            finally
+            {
+                runOnUiThread(() -> showProgressDialog(false));
+            }
+            String finalResult = result;
+            runOnUiThread(() -> {
+                if (finalResult!=null)
+                {
+                    Gson gson = new Gson();
+                    Type type = new TypeToken<Doc>()
+                    {
+                    }.getType();
+                    Doc doc = gson.fromJson(finalResult, type);
+                    dbHelper.addPackDoc(doc);
+                    dbHelper.updatePackTrxStatus(doc.getTrxNo(), 1);
+                    loadDocs();
+                }
+            });
+        }).start();
     }
 
-    private static class TrxLoader extends AsyncTask<String, Boolean, String>
+    private void loadTrxFromServer(int mode)
     {
-        private final WeakReference<PackDocActivity> reference;
-
-        TrxLoader(PackDocActivity activity)
-        {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected String doInBackground(String... url)
-        {
-            publishProgress(true);
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("trx", "pack");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("approve-user", config().getUser().getId());
+            parameters.put("mode", String.valueOf(mode));
+            url = addRequestParameters(url, parameters);
             RestTemplate template = new RestTemplate();
-            AppBaseActivity activity = reference.get();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
             String result;
             try
             {
-                result = template.getForObject(url[0], String.class);
+                result=template.getForObject(url, String.class);
             }
             catch (RuntimeException ex)
             {
                 ex.printStackTrace();
-                return null;
-            }
-            return result;
-        }
+                runOnUiThread(() -> {
 
-        @Override
-        protected void onProgressUpdate(Boolean... b)
-        {
-            reference.get().showProgressDialog(true);
-        }
-
-        @Override
-        protected void onPostExecute(String result)
-        {
-            PackDocActivity activity = reference.get();
-            if (result == null)
-            {
-                activity.showMessageDialog(activity.getString(R.string.error),
-                        activity.getString(R.string.connection_error),
-                        android.R.drawable.ic_dialog_alert);
-                activity.playSound(SOUND_FAIL);
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
+                return;
             }
-            else
+            finally
             {
+                runOnUiThread(() -> showProgressDialog(false));
+            }
+            String finalResult = result;
+            runOnUiThread(() -> {
+
                 Gson gson = new Gson();
                 Type type = new TypeToken<ArrayList<Trx>>()
                 {
                 }.getType();
-                List<Trx> trxList = new ArrayList<>(gson.fromJson(result, type));
+                List<Trx> trxList = new ArrayList<>(gson.fromJson(finalResult, type));
                 Set<String> trxSet = new HashSet<>();
                 if (trxList.isEmpty())
                 {
-                    activity.showMessageDialog(activity.getString(R.string.info),
-                            activity.getString(R.string.no_data), android.R.drawable.ic_dialog_info);
-                    activity.playSound(SOUND_FAIL);
+                    showMessageDialog(getString(R.string.info),
+                            getString(R.string.no_data), android.R.drawable.ic_dialog_info);
+                    playSound(SOUND_FAIL);
                 }
                 else
                 {
                     for (Trx trx : trxList)
                     {
-                        activity.dbHelper.addPackTrx(trx);
+                        dbHelper.addPackTrx(trx);
                         trxSet.add(trx.getTrxNo());
                     }
 
                     for (String trxNo : trxSet)
                     {
-                        String url = activity.url("doc", "pack");
-                        Map<String, String> parameters = new HashMap<>();
-                        parameters.put("trx-no", trxNo);
-                        url = activity.addRequestParameters(url, parameters);
-                        new DocLoader(activity).execute(url);
+                        loadDocFromServer(trxNo);
                     }
                 }
-            }
-            activity.showProgressDialog(false);
-        }
+            });
+        }).start();
     }
 
 }

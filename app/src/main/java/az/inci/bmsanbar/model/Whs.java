@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.model;
 
 import androidx.annotation.NonNull;
 

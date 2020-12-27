@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -19,6 +19,10 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import az.inci.bmsanbar.AppConfig;
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.ShipTrx;
 
 public class ShipTrxActivity extends ScannerSupportActivity
 {

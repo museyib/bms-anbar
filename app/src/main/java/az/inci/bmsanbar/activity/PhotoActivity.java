@@ -1,7 +1,9 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.os.Bundle;
 import android.webkit.WebView;
+
+import az.inci.bmsanbar.R;
 
 public class PhotoActivity extends AppBaseActivity
 {

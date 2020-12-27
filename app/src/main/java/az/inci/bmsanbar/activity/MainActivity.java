@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.Manifest;
 import android.content.Intent;
@@ -32,6 +32,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import az.inci.bmsanbar.AppConfig;
+import az.inci.bmsanbar.BuildConfig;
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.User;
 
 public class MainActivity extends AppBaseActivity
 {

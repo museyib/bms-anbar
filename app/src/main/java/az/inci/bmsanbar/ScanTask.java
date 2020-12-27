@@ -5,6 +5,8 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
+import az.inci.bmsanbar.activity.ScannerSupportActivity;
+
 
 public class ScanTask extends AsyncTask<String, Integer, Boolean>
 {

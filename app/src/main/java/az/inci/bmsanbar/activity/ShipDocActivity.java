@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -16,6 +16,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.List;
+
+import az.inci.bmsanbar.AppConfig;
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.ShipDoc;
 
 public class ShipDocActivity extends AppBaseActivity
 {

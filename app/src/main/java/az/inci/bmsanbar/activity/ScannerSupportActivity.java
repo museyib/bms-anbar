@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +11,8 @@ import android.view.KeyEvent;
 import com.rscja.deviceapi.DeviceConfiguration;
 import com.zebra.adc.decoder.Barcode2DWithSoft;
 
+import az.inci.bmsanbar.ScanTask;
+
 public abstract class ScannerSupportActivity extends AppBaseActivity
 {
 
@@ -18,7 +20,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
     protected boolean isContinuous = false;
 
     protected ScanManager scanManager;
-    protected Barcode2DWithSoft barcode2DWithSoft;
+    public Barcode2DWithSoft barcode2DWithSoft;
     protected ScanTask scanTask;
     protected boolean busy = false;
     private final BroadcastReceiver urovoScanReceiver = new BroadcastReceiver()

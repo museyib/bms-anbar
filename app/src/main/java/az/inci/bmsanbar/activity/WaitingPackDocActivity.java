@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +21,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.Doc;
 
 public class WaitingPackDocActivity extends AppBaseActivity
 {

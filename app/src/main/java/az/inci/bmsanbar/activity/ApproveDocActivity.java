@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -17,6 +17,10 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 import java.util.Locale;
+
+import az.inci.bmsanbar.AppConfig;
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.Doc;
 
 public class ApproveDocActivity extends AppBaseActivity
 {

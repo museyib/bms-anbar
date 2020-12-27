@@ -11,6 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import az.inci.bmsanbar.model.Doc;
+import az.inci.bmsanbar.model.ShipDoc;
+import az.inci.bmsanbar.model.ShipTrx;
+import az.inci.bmsanbar.model.Trx;
+import az.inci.bmsanbar.model.User;
+
 public class DBHelper extends SQLiteOpenHelper
 {
 
@@ -63,6 +69,7 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String PREV_TRX_NO = "PREV_TRX_NO";
     public static final String NOTES = "NOTES";
     public static final String PRIORITY = "PRIORITY";
+    public static final String STATUS = "STATUS";
     public static final String DOC_DESC = "DOC_DESC";
     public static final String ITEM_COUNT = "ITEM_COUNT";
     public static final String PICKED_ITEM_COUNT = "PICKED_ITEM_COUNT";
@@ -87,7 +94,7 @@ public class DBHelper extends SQLiteOpenHelper
 
     private SQLiteDatabase db;
 
-    DBHelper(Context context)
+    public DBHelper(Context context)
     {
         super(context, Objects.requireNonNull(context.getExternalFilesDir("/"))
                 .getPath() + "/" + AppConfig.DB_NAME, null, AppConfig.DB_VERSION);
@@ -120,7 +127,7 @@ public class DBHelper extends SQLiteOpenHelper
         onCreate(db);
     }
 
-    void open() throws SQLException
+    public void open() throws SQLException
     {
         db = getWritableDatabase();
     }
@@ -157,7 +164,7 @@ public class DBHelper extends SQLiteOpenHelper
                 .toString());
     }
 
-    void addUser(User user)
+    public void addUser(User user)
     {
         db.delete(TERMINAL_USER, USER_ID + "=?", new String[]{user.getId()});
 
@@ -180,7 +187,7 @@ public class DBHelper extends SQLiteOpenHelper
         db.insert(TERMINAL_USER, null, values);
     }
 
-    User getUser(String id)
+    public User getUser(String id)
     {
         String[] columns = new String[]{USER_ID, USER_NAME, PASS_WORD, PICK_GROUP, COLLECT_FLAG,
                 PICK_FLAG, CHECK_FLAG, COUNT_FLAG, LOCATION_FLAG,
@@ -242,7 +249,7 @@ public class DBHelper extends SQLiteOpenHelper
         }
     }
 
-    List<Doc> getPickDocsByPickUser(String pickUser)
+    public List<Doc> getPickDocsByPickUser(String pickUser)
     {
         List<Doc> docList = new ArrayList<>();
 
@@ -292,7 +299,7 @@ public class DBHelper extends SQLiteOpenHelper
         return docList;
     }
 
-    void addPickDoc(Doc doc)
+    public void addPickDoc(Doc doc)
     {
         ContentValues values = new ContentValues();
         values.put(TRX_NO, doc.getTrxNo());
@@ -338,12 +345,13 @@ public class DBHelper extends SQLiteOpenHelper
                 .append(BARCODE).append(" TEXT,")
                 .append(PREV_TRX_NO).append(" TEXT,")
                 .append(NOTES).append(" TEXT,")
-                .append(PRIORITY).append(" INTEGER")
+                .append(PRIORITY).append(" INTEGER,")
+                .append(STATUS).append(" INTEGER")
                 .append(")")
                 .toString());
     }
 
-    void addPickTrx(Trx trx)
+    public void addPickTrx(Trx trx)
     {
         ContentValues values = new ContentValues();
         values.put(TRX_ID, trx.getTrxId());
@@ -368,11 +376,12 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(BRAND_CODE, trx.getInvBrand());
         values.put(PRIORITY, trx.getPriority());
         values.put(NOTES, trx.getNotes());
+        values.put(STATUS, 0);
 
         db.insert(PICK_TRX, null, values);
     }
 
-    List<Trx> getPickTrx(String trxNo)
+    public List<Trx> getPickTrx(String trxNo)
     {
 
         List<Trx> trxList = new ArrayList<>();
@@ -420,7 +429,7 @@ public class DBHelper extends SQLiteOpenHelper
         return trxList;
     }
 
-    Trx getPickTrxByBarcode(String barcode, String trxNo)
+    public Trx getPickTrxByBarcode(String barcode, String trxNo)
     {
 
         String sql = "SELECT * FROM PICK_TRX WHERE BARCODE=? AND TRX_NO=?";
@@ -459,12 +468,36 @@ public class DBHelper extends SQLiteOpenHelper
         return trx;
     }
 
+    public void updatePickTrxStatus(String trxNo, int status)
+    {
+        ContentValues values=new ContentValues();
+        values.put(STATUS, status);
+        db.update(PICK_TRX, values, TRX_NO + "=?", new String[]{trxNo});
+    }
+
     public void updatePickTrx(Trx trx)
     {
         ContentValues values = new ContentValues();
         values.put(PICKED_QTY, trx.getPickedQty());
 
         db.update(PICK_TRX, values, TRX_ID + "=?", new String[]{String.valueOf(trx.getTrxId())});
+    }
+
+    public List<String> getIncompletePickDocList(String userId)
+    {
+        String sql = "SELECT DISTINCT TRX_NO FROM PICK_TRX WHERE STATUS=0 AND PICK_USER=?";
+
+        List<String> result=new ArrayList<>();
+        Cursor cursor = db.rawQuery(sql, new String[]{userId});
+
+        while (cursor.moveToNext())
+        {
+            result.add(cursor.getString(0));
+        }
+
+        cursor.close();
+
+        return result;
     }
 
     public void deletePickTrx(String trxNo)
@@ -510,7 +543,7 @@ public class DBHelper extends SQLiteOpenHelper
         }
     }
 
-    List<Doc> getPackDocsByApproveUser(String approveUser)
+    public List<Doc> getPackDocsByApproveUser(String approveUser)
     {
         List<Doc> docList = new ArrayList<>();
 
@@ -566,7 +599,7 @@ public class DBHelper extends SQLiteOpenHelper
         return docList;
     }
 
-    void addPackDoc(Doc doc)
+    public void addPackDoc(Doc doc)
     {
         ContentValues values = new ContentValues();
         values.put(TRX_NO, doc.getTrxNo());
@@ -622,12 +655,13 @@ public class DBHelper extends SQLiteOpenHelper
                 .append(BARCODE).append(" TEXT,")
                 .append(PREV_TRX_NO).append(" TEXT,")
                 .append(NOTES).append(" TEXT,")
-                .append(PRIORITY).append(" INTEGER")
+                .append(PRIORITY).append(" INTEGER,")
+                .append(STATUS).append(" INTEGER")
                 .append(")")
                 .toString());
     }
 
-    void addPackTrx(Trx trx)
+    public void addPackTrx(Trx trx)
     {
         ContentValues values = new ContentValues();
         values.put(TRX_ID, trx.getTrxId());
@@ -653,11 +687,12 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(BRAND_CODE, trx.getInvBrand());
         values.put(PRIORITY, trx.getPriority());
         values.put(NOTES, trx.getNotes());
+        values.put(STATUS, 0);
 
         db.insert(PACK_TRX, null, values);
     }
 
-    List<Trx> getPackTrxByApproveUser(String trxNo)
+    public List<Trx> getPackTrxByApproveUser(String trxNo)
     {
 
         List<Trx> trxList = new ArrayList<>();
@@ -706,7 +741,7 @@ public class DBHelper extends SQLiteOpenHelper
         return trxList;
     }
 
-    Trx getPackTrxByBarcode(String barcode, String trxNo)
+    public Trx getPackTrxByBarcode(String barcode, String trxNo)
     {
 
         String sql = "SELECT * FROM PACK_TRX WHERE BARCODE=? AND TRX_NO=?";
@@ -746,12 +781,36 @@ public class DBHelper extends SQLiteOpenHelper
         return trx;
     }
 
+    public void updatePackTrxStatus(String trxNo, int status)
+    {
+        ContentValues values=new ContentValues();
+        values.put(STATUS, status);
+        db.update(PACK_TRX, values, TRX_NO + "=?", new String[]{trxNo});
+    }
+
     public void updatePackTrx(Trx trx)
     {
         ContentValues values = new ContentValues();
         values.put(PACKED_QTY, trx.getPackedQty());
 
         db.update(PACK_TRX, values, TRX_ID + "=?", new String[]{String.valueOf(trx.getTrxId())});
+    }
+
+    public List<String> getIncompletePackDocList(String userId)
+    {
+        String sql = "SELECT DISTINCT TRX_NO FROM PACK_TRX WHERE STATUS=0 AND APPROVE_USER=?";
+
+        List<String> result=new ArrayList<>();
+        Cursor cursor = db.rawQuery(sql, new String[]{userId});
+
+        while (cursor.moveToNext())
+        {
+            result.add(cursor.getString(0));
+        }
+
+        cursor.close();
+
+        return result;
     }
 
     public void deletePackTrx(String trxNo)

@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.model;
 
 import android.os.Build;
 
@@ -7,7 +7,7 @@ import androidx.annotation.RequiresApi;
 
 import java.util.Objects;
 
-class Doc
+public class Doc
 {
     private String trxNo;
     private String trxDate;
@@ -33,27 +33,27 @@ class Doc
     private String srcWhsCode;
     private String srcWhsName;
 
-    String getTrxNo()
+    public String getTrxNo()
     {
         return trxNo;
     }
 
-    void setTrxNo(String trxNo)
+    public void setTrxNo(String trxNo)
     {
         this.trxNo = trxNo;
     }
 
-    String getTrxDate()
+    public String getTrxDate()
     {
         return trxDate;
     }
 
-    void setTrxDate(String trxDate)
+    public void setTrxDate(String trxDate)
     {
         this.trxDate = trxDate;
     }
 
-    int getRecStatus()
+    public int getRecStatus()
     {
         return recStatus;
     }
@@ -63,7 +63,7 @@ class Doc
         this.recStatus = recStatus;
     }
 
-    String getPickStatus()
+    public String getPickStatus()
     {
         return pickStatus;
     }
@@ -73,62 +73,62 @@ class Doc
         this.pickStatus = pickStatus;
     }
 
-    String getWhsCode()
+    public String getWhsCode()
     {
         return whsCode;
     }
 
-    void setWhsCode(String whsCode)
+    public void setWhsCode(String whsCode)
     {
         this.whsCode = whsCode;
     }
 
-    String getPickArea()
+    public String getPickArea()
     {
         return pickArea;
     }
 
-    void setPickArea(String pickArea)
+    public void setPickArea(String pickArea)
     {
         this.pickArea = pickArea;
     }
 
-    String getPickGroup()
+    public String getPickGroup()
     {
         return pickGroup;
     }
 
-    void setPickGroup(String pickGroup)
+    public void setPickGroup(String pickGroup)
     {
         this.pickGroup = pickGroup;
     }
 
-    String getPickUser()
+    public String getPickUser()
     {
         return pickUser;
     }
 
-    void setPickUser(String pickUser)
+    public void setPickUser(String pickUser)
     {
         this.pickUser = pickUser;
     }
 
-    String getDescription()
+    public String getDescription()
     {
         return description;
     }
 
-    void setDescription(String description)
+    public void setDescription(String description)
     {
         this.description = description;
     }
 
-    int getItemCount()
+    public int getItemCount()
     {
         return itemCount;
     }
 
-    void setItemCount(int itemCount)
+    public void setItemCount(int itemCount)
     {
         this.itemCount = itemCount;
     }

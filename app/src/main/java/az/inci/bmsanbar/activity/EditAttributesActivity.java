@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -32,6 +32,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.InvAttribute;
 
 public class EditAttributesActivity extends AppBaseActivity
 {
@@ -167,15 +170,13 @@ public class EditAttributesActivity extends AppBaseActivity
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
                     .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter());
-            Boolean result;
             try
             {
-                result = template.postForObject(url, entity, Boolean.class);
+                template.postForObject(url, entity, Boolean.class);
             }
             catch (RuntimeException ex)
             {
                 ex.printStackTrace();
-                result = false;
             }
             runOnUiThread(() ->
             {

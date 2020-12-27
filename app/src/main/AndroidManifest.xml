@@ -31,17 +31,17 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
-        <activity android:name=".ApproveTrxActivity"></activity>
-        <activity android:name=".ApproveDocActivity" />
-        <activity android:name=".EditAttributesActivity" />
-        <activity android:name=".WaitingPackTrxActivity" />
+        <activity android:name=".activity.ApproveTrxActivity"></activity>
+        <activity android:name=".activity.ApproveDocActivity" />
+        <activity android:name=".activity.EditAttributesActivity" />
+        <activity android:name=".activity.WaitingPackTrxActivity" />
 
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
 
         <activity
-            android:name=".WaitingPackDocActivity"
+            android:name=".activity.WaitingPackDocActivity"
             android:label="@string/waiting_docs" />
 
         <provider
@@ -55,18 +55,18 @@
         </provider>
 
         <activity
-            android:name=".InventoryInfoActivity"
+            android:name=".activity.InventoryInfoActivity"
             android:label="@string/inv_attributes" />
-        <activity android:name=".ScannerSupportActivity" />
-        <activity android:name=".SettingsActivity" />
+        <activity android:name=".activity.ScannerSupportActivity" />
+        <activity android:name=".activity.SettingsActivity" />
         <activity
-            android:name=".ShipTrxActivity"
+            android:name=".activity.ShipTrxActivity"
             android:label="@string/ship_doc"
             android:windowSoftInputMode="stateHidden" />
         <activity
-            android:name=".PhotoActivity"
+            android:name=".activity.PhotoActivity"
             android:label="@string/image" />
-        <activity android:name=".PackTrxActivity" />
+        <activity android:name=".activity.PackTrxActivity" />
 
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
@@ -76,7 +76,7 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -84,21 +84,21 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PickDocActivity"
+            android:name=".activity.PickDocActivity"
             android:label="@string/picking" />
         <activity
-            android:name=".PackDocActivity"
+            android:name=".activity.PackDocActivity"
             android:label="@string/packing" />
         <activity
-            android:name=".ShipDocActivity"
+            android:name=".activity.ShipDocActivity"
             android:label="@string/transport" />
-        <activity android:name=".AppBaseActivity" />
-        <activity android:name=".PickTrxActivity" />
+        <activity android:name=".activity.AppBaseActivity" />
+        <activity android:name=".activity.PickTrxActivity" />
         <activity
-            android:name=".BarcodeScannerCamera"
+            android:name=".activity.BarcodeScannerCamera"
             android:label="@string/camera_scanner" />
-        <activity android:name=".ProductApproveDocActivity" />
-        <activity android:name=".ProductApproveTrxActivity" />
+        <activity android:name=".activity.ProductApproveDocActivity" />
+        <activity android:name=".activity.ProductApproveTrxActivity" />
     </application>
 
 </manifest>

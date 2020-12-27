@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -23,6 +23,12 @@ import java.lang.ref.WeakReference;
 import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import az.inci.bmsanbar.App;
+import az.inci.bmsanbar.AppConfig;
+import az.inci.bmsanbar.DBHelper;
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.User;
 
 public class AppBaseActivity extends AppCompatActivity
 {

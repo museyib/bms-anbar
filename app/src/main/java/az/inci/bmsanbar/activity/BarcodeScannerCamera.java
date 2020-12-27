@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.Manifest;
 import android.content.Context;
@@ -26,6 +26,9 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import java.lang.reflect.Field;
+
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.Trx;
 
 public class BarcodeScannerCamera extends AppBaseActivity
 {

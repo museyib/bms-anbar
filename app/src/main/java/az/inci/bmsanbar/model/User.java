@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.model;
 
 import androidx.annotation.NonNull;
 
@@ -20,7 +20,7 @@ public class User
     private boolean approveFlag;
     private boolean approvePrdFlag;
 
-    String getId()
+    public String getId()
     {
         return id;
     }
@@ -30,102 +30,102 @@ public class User
         this.id = id;
     }
 
-    String getPassword()
+    public String getPassword()
     {
         return password;
     }
 
-    void setPassword(String password)
+    public void setPassword(String password)
     {
         this.password = password;
     }
 
-    boolean isCollect()
+    public boolean isCollect()
     {
         return collectFlag;
     }
 
-    void setCollectFlag(boolean collectFlag)
+    public void setCollectFlag(boolean collectFlag)
     {
         this.collectFlag = collectFlag;
     }
 
-    boolean isPick()
+    public boolean isPick()
     {
         return pickFlag;
     }
 
-    void setPickFlag(boolean pickFlag)
+    public void setPickFlag(boolean pickFlag)
     {
         this.pickFlag = pickFlag;
     }
 
-    boolean isCheck()
+    public boolean isCheck()
     {
         return checkFlag;
     }
 
-    void setCheckFlag(boolean checkFlag)
+    public void setCheckFlag(boolean checkFlag)
     {
         this.checkFlag = checkFlag;
     }
 
-    boolean isCount()
+    public boolean isCount()
     {
         return countFlag;
     }
 
-    void setCountFlag(boolean countFlag)
+    public void setCountFlag(boolean countFlag)
     {
         this.countFlag = countFlag;
     }
 
-    boolean isLocation()
+    public boolean isLocation()
     {
         return locationFlag;
     }
 
-    void setLocationFlag(boolean locationFlag)
+    public void setLocationFlag(boolean locationFlag)
     {
         this.locationFlag = locationFlag;
     }
 
-    boolean isPack()
+    public boolean isPack()
     {
         return packFlag;
     }
 
-    void setPackFlag(boolean packFlag)
+    public void setPackFlag(boolean packFlag)
     {
         this.packFlag = packFlag;
     }
 
-    boolean isDoc()
+    public boolean isDoc()
     {
         return docFlag;
     }
 
-    void setDocFlag(boolean docFlag)
+    public void setDocFlag(boolean docFlag)
     {
         this.docFlag = docFlag;
     }
 
-    String getPickGroup()
+    public String getPickGroup()
     {
         return pickGroup;
     }
 
-    void setPickGroup(String pickGroup)
+    public void setPickGroup(String pickGroup)
     {
         this.pickGroup = pickGroup;
     }
 
-    String getName()
+    public String getName()
     {
         return name;
     }
 
-    void setName(String name)
+    public void setName(String name)
     {
         this.name = name;
     }

@@ -1,4 +1,4 @@
-package az.inci.bmsanbar;
+package az.inci.bmsanbar.activity;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.Trx;
 
 public class WaitingPackTrxActivity extends AppBaseActivity
 {

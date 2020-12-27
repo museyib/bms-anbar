@@ -20,6 +20,13 @@
             android:layout_height="50dp"
             android:contentDescription="@string/refresh"
             android:src="@drawable/refresh" />
+
+        <ImageButton
+            android:id="@+id/newDocsIncomplete"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:contentDescription="@string/refresh"
+            android:src="@android:drawable/stat_sys_download" />
     </LinearLayout>
 
     <HorizontalScrollView
