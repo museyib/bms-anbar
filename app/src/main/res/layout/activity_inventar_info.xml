@@ -32,14 +32,25 @@
             android:text="@string/search" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/good_info"
-        android:layout_width="match_parent"
+    <ScrollView
+        android:id="@+id/good_info_row"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
+        android:layout_width="match_parent"
+        android:paddingBottom="130dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/top" />
+        app:layout_constraintTop_toBottomOf="@+id/top">
+
+        <TextView
+            android:id="@+id/good_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:gravity="start|top"
+            android:scrollbars="vertical"/>
+    </ScrollView>
 
     <Button
         android:id="@+id/camera_scanner"
@@ -52,7 +63,7 @@
         app:layout_constraintBottom_toTopOf="@+id/edit_attributes"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/good_info"
+        app:layout_constraintTop_toBottomOf="@+id/good_info_row"
         app:layout_constraintVertical_bias="1.0" />
 
     <Button
@@ -65,7 +76,7 @@
         app:layout_constraintBottom_toTopOf="@+id/photo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/good_info"
+        app:layout_constraintTop_toBottomOf="@+id/good_info_row"
         app:layout_constraintVertical_bias="1.0" />
 
     <Button
