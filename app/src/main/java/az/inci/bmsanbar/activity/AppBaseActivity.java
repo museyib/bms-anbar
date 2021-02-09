@@ -64,13 +64,6 @@ public class AppBaseActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onStop()
-    {
-        super.onStop();
-        dbHelper.close();
-    }
-
-    @Override
     protected void onDestroy()
     {
         super.onDestroy();

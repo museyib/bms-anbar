@@ -73,11 +73,22 @@
         android:onClick="editAttributes"
         android:text="@string/edit_attributes"
         android:textAllCaps="false"
-        app:layout_constraintBottom_toTopOf="@+id/photo"
+        app:layout_constraintBottom_toTopOf="@+id/edit_barcodes"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/good_info_row"
         app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/edit_barcodes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="editBarcodes"
+        android:text="@string/edit_barcodes"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/photo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/photo"

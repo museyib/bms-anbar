@@ -7,7 +7,7 @@ android {
         applicationId "az.inci.bmsanbar"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 24
+        versionCode 27
         versionName "1.0"
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_8

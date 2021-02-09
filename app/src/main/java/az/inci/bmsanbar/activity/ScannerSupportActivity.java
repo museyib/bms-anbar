@@ -17,7 +17,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
 {
 
     protected String model;
-    protected boolean isContinuous = false;
+    protected boolean isContinuous = true;
 
     protected ScanManager scanManager;
     public Barcode2DWithSoft barcode2DWithSoft;

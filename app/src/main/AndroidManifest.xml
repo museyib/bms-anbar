@@ -99,6 +99,7 @@
             android:label="@string/camera_scanner" />
         <activity android:name=".activity.ProductApproveDocActivity" />
         <activity android:name=".activity.ProductApproveTrxActivity" />
+        <activity android:name=".activity.EditBarcodesActivity" />
     </application>
 
 </manifest>

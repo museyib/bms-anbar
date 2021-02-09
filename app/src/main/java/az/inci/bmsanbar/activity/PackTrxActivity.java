@@ -111,12 +111,12 @@ public class PackTrxActivity extends ScannerSupportActivity
         notes = intent.getStringExtra("notes");
         setTitle(orderTrxNo + ": " + bpName);
 
-        trxListView.setOnItemClickListener((parent, view, position, id) ->
-        {
-            onFocus = true;
-            Trx trx = (Trx) view.getTag();
-            showEditPackedQtyDialog(trx);
-        });
+//        trxListView.setOnItemClickListener((parent, view, position, id) ->
+//        {
+//            onFocus = true;
+//            Trx trx = (Trx) view.getTag();
+//            showEditPackedQtyDialog(trx);
+//        });
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) ->
         {
@@ -248,7 +248,10 @@ public class PackTrxActivity extends ScannerSupportActivity
                 }
                 else
                 {
-                    trx.setPackedQty(trx.getPackedQty() + 1);
+                    double qty=trx.getPackedQty() + trx.getUomFactor();
+                    if (qty>trx.getQty())
+                        qty=trx.getQty();
+                    trx.setPackedQty(qty);
                     dbHelper.updatePackTrx(trx);
                 }
                 playSound(SOUND_SUCCESS);

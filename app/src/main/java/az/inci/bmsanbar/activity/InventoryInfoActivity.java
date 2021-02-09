@@ -167,6 +167,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             String url = url("inv", "info-by-inv-code");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("inv-code", invCode);
+            parameters.put("user-id", config().getUser().getId());
             url = addRequestParameters(url, parameters);
 
             RestTemplate template = new RestTemplate();
@@ -289,6 +290,17 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             {
                 onScanComplete(barcode);
             }
+        }
+    }
+
+    public void editBarcodes(View view)
+    {
+        if (invCode != null)
+        {
+            Intent intent = new Intent(this, EditBarcodesActivity.class);
+            intent.putExtra("invCode", invCode);
+            intent.putExtra("invName", invName);
+            startActivity(intent);
         }
     }
 }

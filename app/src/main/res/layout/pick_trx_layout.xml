@@ -41,7 +41,9 @@
                 android:id="@+id/continuous_check"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/serial_scan" />
+                android:text="@string/serial_scan"
+                android:enabled="false"
+                android:checked="true" />
 
             <CheckBox
                 android:id="@+id/readyToSend"
@@ -63,7 +65,8 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/refresh" />
+        app:srcCompat="@drawable/refresh"
+        android:visibility="invisible"/>
 
     <ImageButton
         android:id="@+id/equate_all"
@@ -73,7 +76,8 @@
         app:layout_constraintBottom_toTopOf="@+id/trx_list_scroll"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/equate" />
+        app:srcCompat="@drawable/equate"
+        android:visibility="invisible" />
 
     <HorizontalScrollView
         android:id="@+id/trx_list_scroll"
@@ -169,7 +173,7 @@
                 android:layout_marginTop="20dp"
                 android:divider="@android:color/black"
                 android:dividerHeight="3dp"
-                android:paddingBottom="80dp" />
+                android:paddingBottom="90dp" />
         </RelativeLayout>
 
     </HorizontalScrollView>

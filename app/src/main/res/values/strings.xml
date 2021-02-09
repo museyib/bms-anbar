@@ -109,4 +109,8 @@
     <string name="internal_count">İç sayı</string>
     <string name="inv_list">Mallar</string>
     <string name="no_incomplete_doc">Tamamlanmamış sənəd yoxdur</string>
+    <string name="barcode">Barkod</string>
+    <string name="uom_factor">Ölçü vahidi faktoru</string>
+    <string name="edit_barcodes">Barkodlara düzəliş</string>
+    <string name="barcode_already_assigned">Bu barkod artıq başqa malda tanıdılıb!</string>
 </resources>

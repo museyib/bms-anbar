@@ -229,7 +229,10 @@ public class BarcodeScannerCamera extends AppBaseActivity
         {
             if (trx.getPickedQty() < trx.getQty())
             {
-                trx.setPickedQty(trx.getPickedQty() + 1);
+                double qty=trx.getPickedQty() + trx.getUomFactor();
+                if (qty>trx.getQty())
+                    qty=trx.getQty();
+                trx.setPickedQty(qty);
                 dbHelper.updatePickTrx(trx);
                 playSound(SOUND_SUCCESS);
             }
@@ -256,7 +259,10 @@ public class BarcodeScannerCamera extends AppBaseActivity
         {
             if (trx.getPackedQty() < trx.getQty())
             {
-                trx.setPackedQty(trx.getPackedQty() + 1);
+                double qty=trx.getPackedQty() + trx.getUomFactor();
+                if (qty>trx.getQty())
+                    qty=trx.getQty();
+                trx.setPackedQty(qty);
                 dbHelper.updatePackTrx(trx);
                 playSound(SOUND_SUCCESS);
             }

@@ -111,12 +111,12 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         pickArea = intent.getStringExtra("pickArea");
         setTitle(prevTrxNo + " - " + pickArea);
 
-        trxListView.setOnItemClickListener((parent, view, position, id) ->
-        {
-            onFocus = true;
-            Trx trx = (Trx) view.getTag();
-            showEditPickedQtyDialog(trx);
-        });
+//        trxListView.setOnItemClickListener((parent, view, position, id) ->
+//        {
+//            onFocus = true;
+//            Trx trx = (Trx) view.getTag();
+//            showEditPickedQtyDialog(trx);
+//        });
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) ->
         {
@@ -249,7 +249,10 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
                 }
                 else
                 {
-                    trx.setPickedQty(trx.getPickedQty() + 1);
+                    double qty=trx.getPickedQty() + trx.getUomFactor();
+                    if (qty>trx.getQty())
+                        qty=trx.getQty();
+                    trx.setPickedQty(qty);
                     dbHelper.updatePickTrx(trx);
                 }
                 playSound(SOUND_SUCCESS);
