@@ -65,8 +65,7 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/refresh"
-        android:visibility="invisible"/>
+        app:srcCompat="@drawable/refresh" />
 
     <ImageButton
         android:id="@+id/equate_all"
@@ -76,8 +75,7 @@
         app:layout_constraintBottom_toTopOf="@+id/trx_list_scroll"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/equate"
-        android:visibility="invisible" />
+        app:srcCompat="@drawable/equate" />
 
     <HorizontalScrollView
         android:id="@+id/trx_list_scroll"

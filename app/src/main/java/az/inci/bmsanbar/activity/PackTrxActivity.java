@@ -45,6 +45,7 @@ import java.util.Objects;
 
 import az.inci.bmsanbar.DBHelper;
 import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.Trx;
 
 public class PackTrxActivity extends ScannerSupportActivity
@@ -111,12 +112,12 @@ public class PackTrxActivity extends ScannerSupportActivity
         notes = intent.getStringExtra("notes");
         setTitle(orderTrxNo + ": " + bpName);
 
-//        trxListView.setOnItemClickListener((parent, view, position, id) ->
-//        {
-//            onFocus = true;
-//            Trx trx = (Trx) view.getTag();
-//            showEditPackedQtyDialog(trx);
-//        });
+        trxListView.setOnItemClickListener((parent, view, position, id) ->
+        {
+            onFocus = true;
+            Trx trx = (Trx) view.getTag();
+            showEditPackedQtyDialog(trx);
+        });
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) ->
         {
@@ -225,47 +226,66 @@ public class PackTrxActivity extends ScannerSupportActivity
         builder.show();
     }
 
-    @Override
-    public void onScanComplete(String barcode)
+    private void checkInvBarcode(InvBarcode invBarcode)
     {
-        Trx trx = dbHelper.getPackTrxByBarcode(barcode, trxNo);
-        if (trx != null)
-        {
-            onFocus = true;
-            focusPosition = trxList.indexOf(trx);
-            if (trx.getPackedQty() >= trx.getQty())
-            {
-                showMessageDialog(getString(R.string.info),
-                        getString(R.string.already_packed),
-                        android.R.drawable.ic_dialog_info);
-                playSound(SOUND_FAIL);
-            }
-            else
-            {
-                if (!isContinuous)
-                {
-                    showEditPackedQtyDialog(trx);
-                }
-                else
-                {
-                    double qty=trx.getPackedQty() + trx.getUomFactor();
-                    if (qty>trx.getQty())
-                        qty=trx.getQty();
-                    trx.setPackedQty(qty);
-                    dbHelper.updatePackTrx(trx);
-                }
-                playSound(SOUND_SUCCESS);
-            }
-        }
-        else
+        Trx trx = dbHelper.getPackTrxByInvCode(invBarcode.getInvCode(), trxNo);
+        if (trx == null)
         {
             showMessageDialog(getString(R.string.info),
                     getString(R.string.good_not_found),
                     android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
         }
+        else
+        {
+            trx.setUomFactor(invBarcode.getUomFactor());
+            goToScannedItem(trx);
+        }
+    }
+
+    private void goToScannedItem(Trx trx)
+    {
+        onFocus = true;
+        focusPosition = trxList.indexOf(trx);
+        if (trx.getPackedQty() >= trx.getQty())
+        {
+            showMessageDialog(getString(R.string.info),
+                    getString(R.string.already_packed),
+                    android.R.drawable.ic_dialog_info);
+            playSound(SOUND_FAIL);
+        }
+        else
+        {
+            if (!isContinuous)
+            {
+                showEditPackedQtyDialog(trx);
+            }
+            else
+            {
+                double qty=trx.getPackedQty() + trx.getUomFactor();
+                if (qty>trx.getQty())
+                    qty=trx.getQty();
+                trx.setPackedQty(qty);
+                dbHelper.updatePackTrx(trx);
+            }
+            playSound(SOUND_SUCCESS);
+        }
 
         loadTrx();
+    }
+
+    @Override
+    public void onScanComplete(String barcode)
+    {
+        Trx trx = dbHelper.getPackTrxByBarcode(barcode, trxNo);
+        if (trx != null)
+        {
+            goToScannedItem(trx);
+        }
+        else
+        {
+            getInvBarcodeFromServer(barcode, this::checkInvBarcode);
+        }
     }
 
     public void loadTrx()

@@ -468,6 +468,45 @@ public class DBHelper extends SQLiteOpenHelper
         return trx;
     }
 
+    public Trx getPickTrxByInvCode(String invCode, String trxNo)
+    {
+
+        String sql = "SELECT * FROM PICK_TRX WHERE INV_CODE=? AND TRX_NO=? LIMIT 1";
+
+        Cursor cursor = db.rawQuery(sql, new String[]{invCode, trxNo});
+
+        Trx trx = null;
+
+        if (cursor.moveToFirst())
+        {
+            trx = new Trx();
+            trx.setTrxId(cursor.getInt(0));
+            trx.setTrxNo(cursor.getString(1));
+            trx.setTrxDate(cursor.getString(2));
+            trx.setPickStatus(cursor.getString(3));
+            trx.setInvCode(cursor.getString(4));
+            trx.setInvName(cursor.getString(5));
+            trx.setInvBrand(cursor.getString(6));
+            trx.setBpName(cursor.getString(7));
+            trx.setSbeName(cursor.getString(8));
+            trx.setWhsCode(cursor.getString(9));
+            trx.setUom(cursor.getString(10));
+            trx.setUomFactor(cursor.getDouble(11));
+            trx.setQty(cursor.getDouble(12));
+            trx.setPickedQty(cursor.getDouble(13));
+            trx.setPickArea(cursor.getString(14));
+            trx.setPickGroup(cursor.getString(15));
+            trx.setPickUser(cursor.getString(16));
+            trx.setApproveUser(cursor.getString(17));
+            trx.setBarcode(cursor.getString(18));
+            trx.setPrevTrxNo(cursor.getString(19));
+            trx.setNotes(cursor.getString(20));
+            trx.setPriority(cursor.getInt(21));
+        }
+        cursor.close();
+        return trx;
+    }
+
     public void updatePickTrxStatus(String trxNo, int status)
     {
         ContentValues values=new ContentValues();
@@ -747,6 +786,46 @@ public class DBHelper extends SQLiteOpenHelper
         String sql = "SELECT * FROM PACK_TRX WHERE BARCODE=? AND TRX_NO=?";
 
         Cursor cursor = db.rawQuery(sql, new String[]{barcode, trxNo});
+
+        Trx trx = null;
+
+        if (cursor.moveToFirst())
+        {
+            trx = new Trx();
+            trx.setTrxId(cursor.getInt(0));
+            trx.setTrxNo(cursor.getString(1));
+            trx.setTrxDate(cursor.getString(2));
+            trx.setPickStatus(cursor.getString(3));
+            trx.setInvCode(cursor.getString(4));
+            trx.setInvName(cursor.getString(5));
+            trx.setInvBrand(cursor.getString(6));
+            trx.setBpName(cursor.getString(7));
+            trx.setSbeName(cursor.getString(8));
+            trx.setWhsCode(cursor.getString(9));
+            trx.setUom(cursor.getString(10));
+            trx.setUomFactor(cursor.getDouble(11));
+            trx.setQty(cursor.getDouble(12));
+            trx.setPickedQty(cursor.getDouble(13));
+            trx.setPackedQty(cursor.getDouble(14));
+            trx.setPickArea(cursor.getString(15));
+            trx.setPickGroup(cursor.getString(16));
+            trx.setPickUser(cursor.getString(17));
+            trx.setApproveUser(cursor.getString(18));
+            trx.setBarcode(cursor.getString(19));
+            trx.setPrevTrxNo(cursor.getString(20));
+            trx.setNotes(cursor.getString(21));
+            trx.setPriority(cursor.getInt(22));
+        }
+        cursor.close();
+        return trx;
+    }
+
+    public Trx getPackTrxByInvCode(String invCode, String trxNo)
+    {
+
+        String sql = "SELECT * FROM PACK_TRX WHERE INV_CODE=? AND TRX_NO=? LIMIT 1";
+
+        Cursor cursor = db.rawQuery(sql, new String[]{invCode, trxNo});
 
         Trx trx = null;
 

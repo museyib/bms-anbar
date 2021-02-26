@@ -63,6 +63,10 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         setTitle(invName);
 
         Button scanBtn = findViewById(R.id.scan);
+
+        if (config().isCameraScanning())
+            scanBtn.setVisibility(View.VISIBLE);
+
         scanBtn.setOnClickListener(v -> {
             Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
             startActivityForResult(barcodeIntent, 1);

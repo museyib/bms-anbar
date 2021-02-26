@@ -27,7 +27,9 @@ import java.util.Map;
 import az.inci.bmsanbar.App;
 import az.inci.bmsanbar.AppConfig;
 import az.inci.bmsanbar.DBHelper;
+import az.inci.bmsanbar.OnInvBarcodeFetched;
 import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.User;
 
 public class AppBaseActivity extends AppCompatActivity
@@ -308,5 +310,48 @@ public class AppBaseActivity extends AppCompatActivity
             }
             activity.showProgressDialog(false);
         }
+    }
+
+    protected void getInvBarcodeFromServer(String barcode, OnInvBarcodeFetched onInvBarcodeFetched)
+    {
+        showProgressDialog(true);
+        new Thread(() ->
+        {
+            String url = url("inv", "inv-barcode");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("barcode", barcode);
+            url = addRequestParameters(url, parameters);
+
+            RestTemplate template = new RestTemplate();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+            InvBarcode invBarcodeFromServer = null;
+            try
+            {
+                invBarcodeFromServer = template.getForObject(url, InvBarcode.class);
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+            }
+            InvBarcode finalInvBarcodeFromServer = invBarcodeFromServer;
+            runOnUiThread(() ->
+            {
+                showProgressDialog(false);
+                if (finalInvBarcodeFromServer == null
+                        || finalInvBarcodeFromServer.getInvCode() == null)
+                {
+                    showMessageDialog(getString(R.string.info),
+                            getString(R.string.good_not_found),
+                            android.R.drawable.ic_dialog_info);
+                    playSound(SOUND_FAIL);
+                }
+                else
+                {
+                    onInvBarcodeFetched.invBarcodeFetched(finalInvBarcodeFromServer);
+                }
+            });
+        }).start();
     }
 }

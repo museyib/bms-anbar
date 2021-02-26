@@ -46,6 +46,7 @@ import java.util.Objects;
 
 import az.inci.bmsanbar.DBHelper;
 import az.inci.bmsanbar.R;
+import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.Trx;
 
 public class PickTrxActivity extends ScannerSupportActivity implements SearchView.OnQueryTextListener
@@ -111,12 +112,12 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         pickArea = intent.getStringExtra("pickArea");
         setTitle(prevTrxNo + " - " + pickArea);
 
-//        trxListView.setOnItemClickListener((parent, view, position, id) ->
-//        {
-//            onFocus = true;
-//            Trx trx = (Trx) view.getTag();
-//            showEditPickedQtyDialog(trx);
-//        });
+        trxListView.setOnItemClickListener((parent, view, position, id) ->
+        {
+            onFocus = true;
+            Trx trx = (Trx) view.getTag();
+            showEditPickedQtyDialog(trx);
+        });
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) ->
         {
@@ -226,44 +227,64 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         builder.show();
     }
 
+    private void checkInvBarcode(InvBarcode invBarcode)
+    {
+        Trx trx = dbHelper.getPickTrxByInvCode(invBarcode.getInvCode(), trxNo);
+        if (trx == null)
+        {
+            showMessageDialog(getString(R.string.info),
+                    getString(R.string.good_not_found),
+                    android.R.drawable.ic_dialog_info);
+            playSound(SOUND_FAIL);
+        }
+        else
+        {
+            trx.setUomFactor(invBarcode.getUomFactor());
+            goToScannedItem(trx);
+        }
+    }
+
+    private void goToScannedItem(Trx trx)
+    {
+
+        onFocus = true;
+        focusPosition = trxList.indexOf(trx);
+        if (trx.getPickedQty() >= trx.getQty())
+        {
+            showMessageDialog(getString(R.string.info),
+                    getString(R.string.already_picked),
+                    android.R.drawable.ic_dialog_info);
+            playSound(SOUND_FAIL);
+        }
+        else
+        {
+            if (!isContinuous)
+            {
+                showEditPickedQtyDialog(trx);
+            }
+            else
+            {
+                double qty=trx.getPickedQty() + trx.getUomFactor();
+                if (qty>trx.getQty())
+                    qty=trx.getQty();
+                trx.setPickedQty(qty);
+                dbHelper.updatePickTrx(trx);
+            }
+            playSound(SOUND_SUCCESS);
+        }
+    }
+
     @Override
     public void onScanComplete(String barcode)
     {
         Trx trx = dbHelper.getPickTrxByBarcode(barcode, trxNo);
         if (trx != null)
         {
-            onFocus = true;
-            focusPosition = trxList.indexOf(trx);
-            if (trx.getPickedQty() >= trx.getQty())
-            {
-                showMessageDialog(getString(R.string.info),
-                        getString(R.string.already_picked),
-                        android.R.drawable.ic_dialog_info);
-                playSound(SOUND_FAIL);
-            }
-            else
-            {
-                if (!isContinuous)
-                {
-                    showEditPickedQtyDialog(trx);
-                }
-                else
-                {
-                    double qty=trx.getPickedQty() + trx.getUomFactor();
-                    if (qty>trx.getQty())
-                        qty=trx.getQty();
-                    trx.setPickedQty(qty);
-                    dbHelper.updatePickTrx(trx);
-                }
-                playSound(SOUND_SUCCESS);
-            }
+            goToScannedItem(trx);
         }
         else
         {
-            showMessageDialog(getString(R.string.info),
-                    getString(R.string.good_not_found),
-                    android.R.drawable.ic_dialog_info);
-            playSound(SOUND_FAIL);
+            getInvBarcodeFromServer(barcode, this::checkInvBarcode);
         }
 
         loadTrx();

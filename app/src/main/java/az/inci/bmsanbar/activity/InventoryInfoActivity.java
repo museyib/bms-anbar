@@ -209,6 +209,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             String url = url("inv", "info-by-barcode");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("barcode", barcode);
+            parameters.put("user-id", config().getUser().getId());
             url = addRequestParameters(url, parameters);
 
             RestTemplate template = new RestTemplate();
