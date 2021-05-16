@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -52,8 +54,6 @@ public class ProductApproveDocActivity extends AppBaseActivity
 
         if (config().getUser().isApproveFlag())
             download.setVisibility(View.VISIBLE);
-        else if (config().getUser().isApprovePrdFlag())
-            add.setVisibility(View.VISIBLE);
 
         add.setOnClickListener(v ->
         {
@@ -99,6 +99,25 @@ public class ProductApproveDocActivity extends AppBaseActivity
     {
         super.onResume();
         loadDocs();
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.pick_menu, menu);
+        MenuItem attributes = menu.findItem(R.id.inv_attributes);
+        attributes.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        attributes.setOnMenuItemClickListener(item1 ->
+        {
+            startActivity(new Intent(this, InventoryInfoActivity.class));
+            return true;
+        });
+
+        menu.findItem(R.id.pick_report).setVisible(false);
+        menu.findItem(R.id.search).setVisible(false);
+        menu.findItem(R.id.doc_list).setVisible(false);
+
+        return true;
     }
 
     private void loadDocs()

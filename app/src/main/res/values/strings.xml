@@ -113,4 +113,5 @@
     <string name="uom_factor">Ölçü vahidi faktoru</string>
     <string name="edit_barcodes">Barkodlara düzəliş</string>
     <string name="barcode_already_assigned">Bu barkod artıq başqa malda tanıdılıb!</string>
+    <string name="reset">Geri göndər</string>
 </resources>

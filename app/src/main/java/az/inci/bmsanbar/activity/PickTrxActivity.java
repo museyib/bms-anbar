@@ -58,6 +58,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
     ImageButton barcodeButton;
     ImageButton equateAll;
     ImageButton reload;
+    ImageButton reset;
     SearchView searchView;
     CheckBox continuousCheck;
     CheckBox readyCheck;
@@ -84,6 +85,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
         trxListView = findViewById(R.id.trx_list);
         equateAll = findViewById(R.id.equate_all);
         reload = findViewById(R.id.reload);
+        reset = findViewById(R.id.reset);
         continuousCheck = findViewById(R.id.continuous_check);
         readyCheck = findViewById(R.id.readyToSend);
 
@@ -189,6 +191,34 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
                         }
 
                         loadTrx();
+                    })
+                    .setPositiveButton("Xeyr", null)
+                    .create();
+            dialog.show();
+        });
+
+        reset.setOnClickListener(v -> {
+
+            playSound(SOUND_FAIL);
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setMessage("Sənədi geri göndərmək istəyirsiniz?")
+                    .setNegativeButton("Bəli", (dialogInterface, i) ->
+                    {
+                        boolean modified = false;
+                        for (Trx trx : trxList)
+                        {
+                            if (trx.getPickedQty()>0)
+                            {
+                                modified = true;
+                                break;
+                            }
+                        }
+                        if (modified)
+                            showMessageDialog(getString(R.string.info),
+                                    "Sənəddə dəyişiklik edilib, geri göndərilə bilməz!",
+                                    android.R.drawable.ic_dialog_info);
+                        else
+                            reset();
                     })
                     .setPositiveButton("Xeyr", null)
                     .create();
@@ -555,6 +585,47 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
             try
             {
                 result = template.postForObject(url, entity, Boolean.class);
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+                result=false;
+            }
+            boolean finalResult = result;
+            runOnUiThread(() -> {
+                if (!finalResult)
+                {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                }
+                else
+                {
+                    dbHelper.deletePickTrx(trxNo);
+                    finish();
+                }
+                showProgressDialog(false);
+            });
+        }).start();
+    }
+
+    private void reset()
+    {
+        new Thread(()->{
+            RestTemplate template = new RestTemplate();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
+            boolean result;
+            String url = url("doc", "pick", "reset");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("trx-no", trxNo);
+            parameters.put("user-id", config().getUser().getId());
+            url = addRequestParameters(url, parameters);
+            try
+            {
+                result = template.postForObject(url, null, Boolean.class);
             }
             catch (RuntimeException ex)
             {

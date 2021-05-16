@@ -6,9 +6,8 @@
 
     <TextView
         android:id="@+id/barcode_string"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:textColor="@android:color/black"
         android:textSize="20sp" />
 
@@ -16,9 +15,8 @@
         android:id="@+id/uom_factor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="@string/not_defined"
-        android:ems="10"
         android:gravity="end"
+        android:hint="@string/not_defined"
         android:textColor="@android:color/black"
         android:textSize="20sp" />
 
