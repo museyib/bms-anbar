@@ -21,6 +21,7 @@ public class DBHelper extends SQLiteOpenHelper
 {
 
     public static final String TERMINAL_USER = "TERMINAL_USER";
+    public static final String TERMINAL_PERMISSION = "TERMINAL_PERMISSION";
     public static final String PICK_DOC = "PICK_DOC";
     public static final String PICK_TRX = "PICK_TRX";
     public static final String PACK_DOC = "PACK_DOC";
@@ -38,6 +39,7 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String PICK_FLAG = "PICK_FLAG";
     public static final String CHECK_FLAG = "CHECK_FLAG";
     public static final String COUNT_FLAG = "COUNT_FLAG";
+    public static final String ATTRIBUTE_FLAG = "ATTRIBUTE_FLAG";
     public static final String LOCATION_FLAG = "LOCATION_FLAG";
     public static final String PACK_FLAG = "PACK_FLAG";
     public static final String DOC_FLAG = "DOC_FLAG";
@@ -91,6 +93,8 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String TRG_WHS_NAME = "TRG_WHS_NAME";
     public static final String SRC_WHS_CODE = "SRC_WHS_CODE";
     public static final String SRC_WHS_NAME = "SRC_WHS_NAME";
+    private static final String PERMISSION_NAME = "PERMISSION_NAME";
+    private static final String PERMISSION_VALUE = "PERMISSION_VALUE";
 
     private SQLiteDatabase db;
 
@@ -104,6 +108,7 @@ public class DBHelper extends SQLiteOpenHelper
     public void onCreate(SQLiteDatabase db)
     {
         createUserTable(db);
+        createPermissionTable(db);
         createPickDocTable(db);
         createPickTrxTable(db);
         createPackDocTable(db);
@@ -149,17 +154,7 @@ public class DBHelper extends SQLiteOpenHelper
                 .append(USER_ID).append(" TEXT,")
                 .append(USER_NAME).append(" TEXT,")
                 .append(PASS_WORD).append(" TEXT,")
-                .append(PICK_GROUP).append(" TEXT,")
-                .append(COLLECT_FLAG).append(" INTEGER,")
-                .append(PICK_FLAG).append(" INTEGER,")
-                .append(CHECK_FLAG).append(" INTEGER,")
-                .append(COUNT_FLAG).append(" INTEGER,")
-                .append(LOCATION_FLAG).append(" INTEGER,")
-                .append(PACK_FLAG).append(" INTEGER,")
-                .append(DOC_FLAG).append(" INTEGER,")
-                .append(LOADING_FLAG).append(" INTEGER,")
-                .append(APPROVE_FLAG).append(" INTEGER,")
-                .append(APPROVE_PRD_FLAG).append(" INTEGER")
+                .append(PICK_GROUP).append(" TEXT")
                 .append(")")
                 .toString());
     }
@@ -173,50 +168,171 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(USER_NAME, user.getName());
         values.put(PASS_WORD, user.getPassword());
         values.put(PICK_GROUP, user.getPickGroup());
-        values.put(COLLECT_FLAG, user.isCollect() ? 1 : 0);
-        values.put(PICK_FLAG, user.isPick() ? 1 : 0);
-        values.put(CHECK_FLAG, user.isCheck() ? 1 : 0);
-        values.put(COUNT_FLAG, user.isCount() ? 1 : 0);
-        values.put(LOCATION_FLAG, user.isLocation() ? 1 : 0);
-        values.put(PACK_FLAG, user.isPack() ? 1 : 0);
-        values.put(DOC_FLAG, user.isDoc() ? 1 : 0);
-        values.put(LOADING_FLAG, user.isLoading() ? 1 : 0);
-        values.put(APPROVE_FLAG, user.isApproveFlag() ? 1 : 0);
-        values.put(APPROVE_PRD_FLAG, user.isApprovePrdFlag() ? 1 : 0);
 
         db.insert(TERMINAL_USER, null, values);
     }
 
     public User getUser(String id)
     {
-        String[] columns = new String[]{USER_ID, USER_NAME, PASS_WORD, PICK_GROUP, COLLECT_FLAG,
-                PICK_FLAG, CHECK_FLAG, COUNT_FLAG, LOCATION_FLAG,
-                PACK_FLAG, DOC_FLAG, LOADING_FLAG, APPROVE_FLAG, APPROVE_PRD_FLAG};
         User user = null;
 
-        try (Cursor cursor = db.query(TERMINAL_USER, columns,
-                "USER_ID=?", new String[]{id.toUpperCase()}, null, null, null))
+        try (Cursor cursor = db.rawQuery(
+                "SELECT USER_ID, " +
+                        "USER_NAME, " +
+                        "PASS_WORD, " +
+                        "PICK_GROUP " +
+                        "FROM TERMINAL_USER WHERE USER_ID=?",
+                new String[]{id}))
         {
-            if (cursor.moveToNext())
+            if (cursor.moveToFirst())
             {
                 user = new User();
                 user.setId(cursor.getString(0));
                 user.setName(cursor.getString(1));
                 user.setPassword(cursor.getString(2));
                 user.setPickGroup(cursor.getString(3));
-                user.setCollectFlag(cursor.getInt(4) == 1);
-                user.setPickFlag(cursor.getInt(5) == 1);
-                user.setCheckFlag(cursor.getInt(6) == 1);
-                user.setCountFlag(cursor.getInt(7) == 1);
-                user.setLocationFlag(cursor.getInt(8) == 1);
-                user.setPackFlag(cursor.getInt(9) == 1);
-                user.setDocFlag(cursor.getInt(10) == 1);
-                user.setLoadingFlag(cursor.getInt(11) == 1);
-                user.setApproveFlag(cursor.getInt(12) == 1);
-                user.setApprovePrdFlag(cursor.getInt(13) == 1);
+            }
+        }
+
+        if (user != null)
+        {
+            try (Cursor cursor = db.rawQuery(
+                    "SELECT PERMISSION_NAME, " +
+                            "PERMISSION_VALUE " +
+                            "FROM TERMINAL_PERMISSION WHERE USER_ID=?",
+                    new String[]{id}))
+            {
+                while (cursor.moveToNext())
+                {
+                    String paramName = cursor.getString(0);
+                    int paramValue = cursor.getInt(1);
+
+                    switch (paramName)
+                    {
+                        case COLLECT_FLAG:
+                            user.setCollectFlag(paramValue == 1);
+                            break;
+                        case PICK_FLAG:
+                            user.setPickFlag(paramValue == 1);
+                            break;
+                        case CHECK_FLAG:
+                            user.setCheckFlag(paramValue == 1);
+                            break;
+                        case COUNT_FLAG:
+                            user.setCountFlag(paramValue == 1);
+                            break;
+                        case ATTRIBUTE_FLAG:
+                            user.setAttributeFlag(paramValue == 1);
+                            break;
+                        case LOCATION_FLAG:
+                            user.setLocationFlag(paramValue == 1);
+                            break;
+                        case PACK_FLAG:
+                            user.setPackFlag(paramValue == 1);
+                            break;
+                        case DOC_FLAG:
+                            user.setDocFlag(paramValue == 1);
+                            break;
+                        case LOADING_FLAG:
+                            user.setLoadingFlag(paramValue == 1);
+                            break;
+                        case APPROVE_FLAG:
+                            user.setApproveFlag(paramValue == 1);
+                            break;
+                        case APPROVE_PRD_FLAG:
+                            user.setApprovePrdFlag(paramValue == 1);
+                            break;
+                    }
+                }
             }
         }
         return user;
+    }
+
+    private void createPermissionTable(SQLiteDatabase db)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        db.execSQL("DROP TABLE IF EXISTS " + TERMINAL_PERMISSION);
+
+        db.execSQL(sb.append("CREATE TABLE ")
+                .append(TERMINAL_PERMISSION).append("(")
+                .append(USER_ID).append(" TEXT,")
+                .append(PERMISSION_NAME).append(" TEXT,")
+                .append(PERMISSION_VALUE).append(" INTEGER")
+                .append(")")
+                .toString());
+    }
+
+    public void addUserPermission(User user)
+    {
+        db.delete(TERMINAL_PERMISSION, USER_ID + "=?", new String[]{user.getId()});
+
+        ContentValues values = new ContentValues();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, COLLECT_FLAG);
+        values.put(PERMISSION_VALUE, user.isCollect() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, PICK_FLAG);
+        values.put(PERMISSION_VALUE, user.isPick() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, CHECK_FLAG);
+        values.put(PERMISSION_VALUE, user.isCheck() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, COUNT_FLAG);
+        values.put(PERMISSION_VALUE, user.isCount() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, ATTRIBUTE_FLAG);
+        values.put(PERMISSION_VALUE, user.isAttribute() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, LOCATION_FLAG);
+        values.put(PERMISSION_VALUE, user.isLocation() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, PACK_FLAG);
+        values.put(PERMISSION_VALUE, user.isPack() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, DOC_FLAG);
+        values.put(PERMISSION_VALUE, user.isDoc() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, LOADING_FLAG);
+        values.put(PERMISSION_VALUE, user.isLoading() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, APPROVE_FLAG);
+        values.put(PERMISSION_VALUE, user.isApprove() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
+
+        values.clear();
+        values.put(USER_ID, user.getId());
+        values.put(PERMISSION_NAME, APPROVE_PRD_FLAG);
+        values.put(PERMISSION_VALUE, user.isApprovePrd() ? 1 : 0);
+        db.insert(TERMINAL_PERMISSION, null, values);
     }
 
     private void createPickDocTable(SQLiteDatabase db)

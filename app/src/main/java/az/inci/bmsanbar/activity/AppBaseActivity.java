@@ -141,6 +141,7 @@ public class AppBaseActivity extends AppCompatActivity
         if (newUser)
         {
             dbHelper.addUser(user);
+            dbHelper.addUserPermission(user);
         }
         config().setUser(user);
     }

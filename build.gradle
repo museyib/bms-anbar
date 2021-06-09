@@ -4,19 +4,30 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
+        maven { url "https://repo.spring.io/libs-milestone" }
 
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.0'
+        classpath 'com.android.tools.build:gradle:4.2.1'
+    }
+    configurations.all {
+        resolutionStrategy {
+            eachDependency {
+                // https://issuetracker.google.com/issues/109894262#comment9
+                if (requested.group == "org.jetbrains.trove4j" && requested.name == "trove4j" && requested.version == "20160824") {
+                    useTarget("org.jetbrains.intellij.deps:trove4j:1.0.20181211")
+                }
+            }
+        }
     }
 }
 
 allprojects {
     repositories {
         google()
-        jcenter()
-
+        mavenCentral()
+        maven { url "https://repo.spring.io/libs-milestone" }
     }
 }
 

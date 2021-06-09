@@ -5,12 +5,12 @@
     "kind": "Directory"
   },
   "applicationId": "az.inci.bmsanbar",
-  "variantName": "processReleaseResources",
+  "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
-      "versionCode": 31,
+      "versionCode": 33,
       "versionName": "1.0",
       "outputFile": "app-release.apk"
     }

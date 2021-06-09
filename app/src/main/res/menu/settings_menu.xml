@@ -4,10 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <item
+        android:id="@+id/inv_attributes"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="@string/inv_attributes"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
+
+    <item
         android:id="@+id/settings"
         android:icon="@android:drawable/ic_menu_manage"
         android:title="@string/parameters"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         tools:ignore="AppCompatResource" />
 
     <item

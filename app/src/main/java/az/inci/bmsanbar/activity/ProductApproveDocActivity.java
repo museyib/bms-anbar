@@ -52,7 +52,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
         add = findViewById(R.id.add);
         download = findViewById(R.id.download);
 
-        if (config().getUser().isApproveFlag())
+        if (config().getUser().isApprove())
             download.setVisibility(View.VISIBLE);
 
         add.setOnClickListener(v ->

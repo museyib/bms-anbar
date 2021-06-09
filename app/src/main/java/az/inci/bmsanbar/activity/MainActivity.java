@@ -111,6 +111,12 @@ public class MainActivity extends AppBaseActivity
             dialog.show();
             return true;
         });
+        MenuItem itemInfo = menu.findItem(R.id.inv_attributes);
+        itemInfo.setOnMenuItemClickListener(item1 ->
+        {
+            showLoginDialog(AppConfig.INV_ATTRIBUTE_MODE);
+            return true;
+        });
         return true;
     }
 
@@ -244,7 +250,7 @@ public class MainActivity extends AppBaseActivity
                     aClass = ShipDocActivity.class;
                     break;
                 case AppConfig.APPROVE_MODE:
-                    if (!user.isApproveFlag())
+                    if (!user.isApprove())
                     {
                         showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                                 android.R.drawable.ic_dialog_alert);
@@ -254,7 +260,7 @@ public class MainActivity extends AppBaseActivity
                     aClass = ApproveDocActivity.class;
                     break;
                 case AppConfig.PRODUCT_APPROVE_MODE:
-                    if (!(user.isApproveFlag() || user.isApprovePrdFlag()))
+                    if (!(user.isApprove() || user.isApprovePrd()))
                     {
                         showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                                 android.R.drawable.ic_dialog_alert);
@@ -262,6 +268,16 @@ public class MainActivity extends AppBaseActivity
                         return;
                     }
                     aClass = ProductApproveDocActivity.class;
+                    break;
+                case AppConfig.INV_ATTRIBUTE_MODE:
+                    if (!user.isAttribute())
+                    {
+                        showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
+                                android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                        return;
+                    }
+                    aClass = InventoryInfoActivity.class;
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mode);

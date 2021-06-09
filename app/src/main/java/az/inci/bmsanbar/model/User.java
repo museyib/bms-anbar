@@ -13,6 +13,7 @@ public class User
     private boolean pickFlag;
     private boolean checkFlag;
     private boolean countFlag;
+    private boolean attributeFlag;
     private boolean locationFlag;
     private boolean packFlag;
     private boolean docFlag;
@@ -140,7 +141,7 @@ public class User
         this.loadingFlag = loadingFlag;
     }
 
-    public boolean isApproveFlag()
+    public boolean isApprove()
     {
         return approveFlag;
     }
@@ -163,6 +164,7 @@ public class User
                 ", pickFlag=" + pickFlag +
                 ", checkFlag=" + checkFlag +
                 ", countFlag=" + countFlag +
+                ", attributeFlag=" + attributeFlag +
                 ", locationFlag=" + locationFlag +
                 ", packFlag=" + packFlag +
                 ", docFlag=" + docFlag +
@@ -172,7 +174,7 @@ public class User
                 '}';
     }
 
-    public boolean isApprovePrdFlag()
+    public boolean isApprovePrd()
     {
         return approvePrdFlag;
     }
@@ -180,5 +182,13 @@ public class User
     public void setApprovePrdFlag(boolean approvePrdFlag)
     {
         this.approvePrdFlag = approvePrdFlag;
+    }
+
+    public boolean isAttribute() {
+        return attributeFlag;
+    }
+
+    public void setAttributeFlag(boolean attributeFlag) {
+        this.attributeFlag = attributeFlag;
     }
 }

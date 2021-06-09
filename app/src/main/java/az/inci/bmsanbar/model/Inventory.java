@@ -66,7 +66,7 @@ public class Inventory
     @NonNull
     public String toString()
     {
-        return invCode + " - " + invName;
+        return invCode + " - " + invName + " - " + invBrand;
     }
 
     public String getBarcode()

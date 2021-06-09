@@ -92,6 +92,14 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     private void showResultListDialog(List<Inventory> list)
     {
+        if (list.size()==0) {
+            showMessageDialog(getString(R.string.error),
+                    getString(R.string.connection_error),
+                    android.R.drawable.ic_dialog_alert);
+            playSound(SOUND_FAIL);
+            return;
+        }
+
         View view = LayoutInflater.from(this).inflate(R.layout.result_list_dialog,
                 findViewById(android.R.id.content), false);
 
@@ -248,7 +256,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         showProgressDialog(true);
         new Thread(() ->
         {
-            List<Inventory> inventoryList = null;
+            List<Inventory> inventoryList = new ArrayList<>();
             String url = url("inv", "search");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("keyword", keyword);

@@ -7,6 +7,7 @@ public class InvAttribute
     private String attributeType;
     private String attributeName;
     private String attributeValue;
+    private String whsCode;
     private boolean defined;
 
     public String getInvCode()
@@ -67,5 +68,13 @@ public class InvAttribute
     public void setAttributeId(String attributeId)
     {
         this.attributeId = attributeId;
+    }
+
+    public String getWhsCode() {
+        return whsCode;
+    }
+
+    public void setWhsCode(String whsCode) {
+        this.whsCode = whsCode;
     }
 }

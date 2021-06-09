@@ -113,9 +113,10 @@ public class EditAttributesActivity extends AppBaseActivity
     {
         List<InvAttribute> result;
 
-        String url = url("inv", "attribute-list");
+        String url = url("inv", "attribute-list-by-whs");
         Map<String, String> parameters = new HashMap<>();
         parameters.put("inv-code", invCode);
+        parameters.put("user-id", config().getUser().getId());
         url = addRequestParameters(url, parameters);
         RestTemplate template = new RestTemplate();
         ((SimpleClientHttpRequestFactory) template.getRequestFactory())
@@ -153,6 +154,7 @@ public class EditAttributesActivity extends AppBaseActivity
                     jsonObject.put("invCode", attribute.getInvCode());
                     jsonObject.put("attributeValue", attribute.getAttributeValue());
                     jsonObject.put("attributeType", attribute.getAttributeType());
+                    jsonObject.put("whsCode", attribute.getWhsCode());
                     jsonObject.put("defined", attribute.isDefined());
                     jsonArray.put(jsonObject);
                 }
@@ -228,6 +230,14 @@ public class EditAttributesActivity extends AppBaseActivity
                 holder.valueEdit.setVisibility(View.VISIBLE);
                 holder.valueCheck.setVisibility(View.GONE);
             }
+
+            if (((EditAttributesActivity)context).config().getUser().isLocation() &&
+                    (attribute.getAttributeId().equals("AT010")
+                    || attribute.getAttributeId().equals("AT011"))
+            || !((EditAttributesActivity)context).config().getUser().isLocation())
+                convertView.setVisibility(View.VISIBLE);
+            else
+                convertView.setVisibility(View.GONE);
 
             return convertView;
         }

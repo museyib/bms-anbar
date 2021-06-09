@@ -137,7 +137,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                     .setMessage("Göndərmək istəyirsiniz?")
                     .setPositiveButton("Bəli", (dialog1, which) ->
                     {
-                        int status = config().getUser().isApprovePrdFlag() ? 0 : 2;
+                        int status = config().getUser().isApprovePrd() ? 0 : 2;
                         uploadDoc(status);
                     })
                     .setNegativeButton("Xeyr", null)
