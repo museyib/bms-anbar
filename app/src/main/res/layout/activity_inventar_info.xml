@@ -24,11 +24,15 @@
             android:hint="@string/keyword"
             android:inputType="textFilter" />
 
+        <Spinner
+            android:id="@+id/search_field"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
         <Button
             android:id="@+id/search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="searchKeyword"
             android:text="@string/search" />
     </LinearLayout>
 
@@ -58,7 +62,6 @@
         android:id="@+id/camera_scanner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="scanWithCamera"
         android:text="@string/camera_scanner"
         android:textAllCaps="false"
         android:visibility="invisible"
@@ -69,21 +72,26 @@
 
     <Button
         android:id="@+id/edit_attributes"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="editAttributes"
         android:text="@string/edit_attributes"
         android:textAllCaps="false"
         app:layout_constraintBottom_toTopOf="@+id/edit_barcodes"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <Button
+        android:id="@+id/edit_shelf_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/shelf_location"
+        android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintBottom_toTopOf="@+id/edit_barcodes"/>
 
     <Button
         android:id="@+id/edit_barcodes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="editBarcodes"
         android:text="@string/edit_barcodes"
         android:textAllCaps="false"
         app:layout_constraintBottom_toTopOf="@+id/photo"
@@ -94,7 +102,6 @@
         android:id="@+id/photo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="viewImage"
         android:text="@string/image"
         android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="parent"

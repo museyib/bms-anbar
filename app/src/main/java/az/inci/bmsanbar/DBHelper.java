@@ -154,6 +154,7 @@ public class DBHelper extends SQLiteOpenHelper
                 .append(USER_ID).append(" TEXT,")
                 .append(USER_NAME).append(" TEXT,")
                 .append(PASS_WORD).append(" TEXT,")
+                .append(WHS_CODE).append(" TEXT,")
                 .append(PICK_GROUP).append(" TEXT")
                 .append(")")
                 .toString());
@@ -168,6 +169,7 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(USER_NAME, user.getName());
         values.put(PASS_WORD, user.getPassword());
         values.put(PICK_GROUP, user.getPickGroup());
+        values.put(WHS_CODE, user.getWhsCode());
 
         db.insert(TERMINAL_USER, null, values);
     }
@@ -180,6 +182,7 @@ public class DBHelper extends SQLiteOpenHelper
                 "SELECT USER_ID, " +
                         "USER_NAME, " +
                         "PASS_WORD, " +
+                        "WHS_CODE, " +
                         "PICK_GROUP " +
                         "FROM TERMINAL_USER WHERE USER_ID=?",
                 new String[]{id}))
@@ -190,7 +193,8 @@ public class DBHelper extends SQLiteOpenHelper
                 user.setId(cursor.getString(0));
                 user.setName(cursor.getString(1));
                 user.setPassword(cursor.getString(2));
-                user.setPickGroup(cursor.getString(3));
+                user.setWhsCode(cursor.getString(3));
+                user.setPickGroup(cursor.getString(4));
             }
         }
 

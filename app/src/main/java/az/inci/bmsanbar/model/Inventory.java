@@ -2,6 +2,8 @@ package az.inci.bmsanbar.model;
 
 import androidx.annotation.NonNull;
 
+import java.util.Objects;
+
 public class Inventory
 {
     private String invCode;
@@ -66,7 +68,7 @@ public class Inventory
     @NonNull
     public String toString()
     {
-        return invCode + " - " + invName + " - " + invBrand;
+        return invCode + " | " + invName + " | " + invBrand;
     }
 
     public String getBarcode()
@@ -87,5 +89,19 @@ public class Inventory
     public void setInternalCount(String internalCount)
     {
         this.internalCount = internalCount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Inventory inventory = (Inventory) o;
+        return Objects.equals(invCode, inventory.invCode) &&
+                Objects.equals(barcode, inventory.barcode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(invCode, barcode);
     }
 }

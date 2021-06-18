@@ -114,4 +114,6 @@
     <string name="edit_barcodes">Barkodlara düzəliş</string>
     <string name="barcode_already_assigned">Bu barkod artıq başqa malda tanıdılıb!</string>
     <string name="reset">Geri göndər</string>
+    <string name="shelf_location">Vitrin yerləşməsi</string>
+    <string name="shelf_barcode">Vitrin barkodu</string>
 </resources>

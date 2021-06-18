@@ -8,6 +8,7 @@ public class User
     private String id;
     private String password;
     private String name;
+    private String whsCode;
     private String pickGroup;
     private boolean collectFlag;
     private boolean pickFlag;
@@ -39,6 +40,14 @@ public class User
     public void setPassword(String password)
     {
         this.password = password;
+    }
+
+    public String getWhsCode() {
+        return whsCode;
+    }
+
+    public void setWhsCode(String whsCode) {
+        this.whsCode = whsCode;
     }
 
     public boolean isCollect()
@@ -151,14 +160,13 @@ public class User
         this.approveFlag = approveFlag;
     }
 
-    @NonNull
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "User{" +
                 "id='" + id + '\'' +
                 ", password='" + password + '\'' +
                 ", name='" + name + '\'' +
+                ", whsCode='" + whsCode + '\'' +
                 ", pickGroup='" + pickGroup + '\'' +
                 ", collectFlag=" + collectFlag +
                 ", pickFlag=" + pickFlag +

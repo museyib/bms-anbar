@@ -6,9 +6,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -34,9 +36,17 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 {
 
     TextView infoText;
+    EditText keywordEdit;
+    Spinner searchField;
+    Button searchBtn;
+    Button cameraBtn;
+    Button editAttributes;
+    Button editShelf;
+    Button editBarcodes;
+    Button viewImage;
+
     String invCode;
     String invName;
-    EditText keywordEdit;
     String keyword;
     String result = "";
 
@@ -47,11 +57,27 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         setContentView(R.layout.activity_inventar_info);
         infoText = findViewById(R.id.good_info);
         keywordEdit = findViewById(R.id.keyword_edit);
+        searchField = findViewById(R.id.search_field);
+        searchBtn = findViewById(R.id.search);
+        cameraBtn = findViewById(R.id.camera_scanner);
+        editAttributes = findViewById(R.id.edit_attributes);
+        editShelf = findViewById(R.id.edit_shelf_location);
+        editBarcodes = findViewById(R.id.edit_barcodes);
+        viewImage = findViewById(R.id.photo);
 
         if (config().isCameraScanning())
-        {
             findViewById(R.id.camera_scanner).setVisibility(View.VISIBLE);
-        }
+
+        searchField.setAdapter(
+                ArrayAdapter.createFromResource(this, R.array.search_field_list,
+                        R.layout.spinner_item));
+
+        searchBtn.setOnClickListener(v -> searchKeyword());
+        cameraBtn.setOnClickListener(v -> scanWithCamera());
+        editAttributes.setOnClickListener(v -> editAttributes());
+        editAttributes.setOnClickListener(v -> editBarcodes());
+        viewImage.setOnClickListener(v -> viewImage());
+        editShelf.setOnClickListener(v -> editShelfLocation());
     }
 
     @Override
@@ -68,14 +94,22 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         getDataByBarcode(barcode);
     }
 
-    public void viewImage(View view)
+    public void viewImage()
     {
-        Intent intent = new Intent(this, PhotoActivity.class);
-        intent.putExtra("invCode", invCode);
+        if (invCode != null) {
+            Intent intent = new Intent(this, PhotoActivity.class);
+            intent.putExtra("invCode", invCode);
+            startActivity(intent);
+        }
+    }
+
+    public void editShelfLocation()
+    {
+        Intent intent = new Intent(this, EditShelfActivity.class);
         startActivity(intent);
     }
 
-    public void searchKeyword(View view)
+    public void searchKeyword()
     {
         keyword = keywordEdit.getText().toString();
 
@@ -93,8 +127,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     private void showResultListDialog(List<Inventory> list)
     {
         if (list.size()==0) {
-            showMessageDialog(getString(R.string.error),
-                    getString(R.string.connection_error),
+            showMessageDialog(getString(R.string.info),
+                    getString(R.string.good_not_found),
                     android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
@@ -150,13 +184,13 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         infoText.setText(info);
     }
 
-    public void scanWithCamera(View view)
+    public void scanWithCamera()
     {
         Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
         startActivityForResult(barcodeIntent, 1);
     }
 
-    public void editAttributes(View view)
+    public void editAttributes()
     {
         if (invCode != null)
         {
@@ -256,10 +290,11 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         showProgressDialog(true);
         new Thread(() ->
         {
-            List<Inventory> inventoryList = new ArrayList<>();
+            List<Inventory> inventoryList = null;
             String url = url("inv", "search");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("keyword", keyword);
+            parameters.put("in", (String) searchField.getSelectedItem());
             url = addRequestParameters(url, parameters);
             RestTemplate template = new RestTemplate();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
@@ -277,6 +312,16 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             catch (ResourceAccessException ex)
             {
                 ex.printStackTrace();
+
+                runOnUiThread(() -> {
+                    showProgressDialog(false);
+
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
+                return;
             }
             List<Inventory> finalInventoryList = inventoryList;
             runOnUiThread(() ->
@@ -302,7 +347,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }
     }
 
-    public void editBarcodes(View view)
+    public void editBarcodes()
     {
         if (invCode != null)
         {

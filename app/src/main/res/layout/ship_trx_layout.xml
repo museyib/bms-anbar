@@ -9,26 +9,26 @@
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_margin="5dp"
-        android:autofillHints=""
         android:ems="10"
         android:enabled="false"
         android:hint="@string/driver"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:importantForAutofill="no" />
 
     <EditText
         android:id="@+id/vehicle"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_margin="5dp"
-        android:autofillHints=""
         android:ems="10"
         android:enabled="false"
         android:hint="@string/vehicle"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/driver" />
+        app:layout_constraintTop_toBottomOf="@id/driver"
+        android:importantForAutofill="no" />
 
     <Button
         android:id="@+id/scan_driver_code"
