@@ -14,6 +14,8 @@ public class PhotoActivity extends AppBaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory_info);
         WebView webView = findViewById(R.id.photo_view);
+        webView.getSettings().setBuiltInZoomControls(true);
+
         String invCode = getIntent().getStringExtra("invCode");
         String imgUrl = config().getImageUrl() + "/" + invCode + ".jpg";
         String htmlCode = "<html><head><style>img {max-width: 100%}" +

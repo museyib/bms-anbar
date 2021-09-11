@@ -630,14 +630,20 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
             catch (RuntimeException ex)
             {
                 ex.printStackTrace();
-                result=false;
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
+                return;
             }
             boolean finalResult = result;
             runOnUiThread(() -> {
                 if (!finalResult)
                 {
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.connection_error),
+                    showMessageDialog(getString(R.string.warning),
+                            "Yığım sənədini geri qaytarmaq səlahiyyətiniz yoxdur!",
                             android.R.drawable.ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 }
