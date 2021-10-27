@@ -75,7 +75,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         searchBtn.setOnClickListener(v -> searchKeyword());
         cameraBtn.setOnClickListener(v -> scanWithCamera());
         editAttributes.setOnClickListener(v -> editAttributes());
-        editAttributes.setOnClickListener(v -> editBarcodes());
+        editBarcodes.setOnClickListener(v -> editBarcodes());
         viewImage.setOnClickListener(v -> viewImage());
         editShelf.setOnClickListener(v -> editShelfLocation());
     }
