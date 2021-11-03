@@ -3,9 +3,16 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout-v23/internal_use_trx_layout.xml" value="0.17527173913043478" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/activity_edit_attributes.xml" value="0.10587431693989072" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/activity_inventar_info.xml" value="0.10587431693989072" />
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/activity_main.xml" value="0.15" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/activity_settings.xml" value="0.25" />
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/approve_doc_layout.xml" value="0.10587431693989072" />
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/approve_trx_layout.xml" value="0.17" />
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/internal_use_doc_item_layout.xml" value="0.13217213114754098" />
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/internal_use_doc_layout.xml" value="0.15" />
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/internal_use_trx_layout.xml" value="0.2" />
       </map>
     </option>
   </component>

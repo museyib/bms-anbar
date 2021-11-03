@@ -31,6 +31,8 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String CONFIG = "CONFIG";
     public static final String APPROVE_DOC = "APPROVE_DOC";
     public static final String APPROVE_TRX = "APPROVE_TRX";
+    public static final String INTERNAL_USE_DOC = "INTERNAL_USE_DOC";
+    public static final String INTERNAL_USE_TRX = "INTERNAL_USE_TRX";
 
     public static final String USER_ID = "USER_ID";
     public static final String USER_NAME = "USER_NAME";
@@ -59,6 +61,7 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String BP_NAME = "BP_NAME";
     public static final String SBE_NAME = "SBE_NAME";
     public static final String WHS_CODE = "WHS_CODE";
+    public static final String WHS_NAME = "WHS_NAME";
     public static final String UOM = "UOM";
     public static final String UOM_FACTOR = "UOM_FACTOR";
     public static final String QTY = "QTY";
@@ -118,6 +121,8 @@ public class DBHelper extends SQLiteOpenHelper
         createConfigTable(db);
         createApproveDocTable(db);
         createApproveTrxTable(db);
+        createInternalUseDocTable(db);
+        createInternalUseTrxTable(db);
     }
 
     @Override
@@ -1410,6 +1415,177 @@ public class DBHelper extends SQLiteOpenHelper
     public int getNextApproveTrxId()
     {
         String query = "SELECT TRX_ID FROM APPROVE_TRX";
+        Cursor cursor = db.rawQuery(query, null, null);
+        int n = 1;
+        while (cursor.moveToNext())
+        {
+            if (n != cursor.getInt(0))
+                break;
+            else
+                n++;
+        }
+        cursor.close();
+        return n;
+    }
+
+    private void createInternalUseDocTable(SQLiteDatabase db)
+    {
+        db.execSQL("DROP TABLE IF EXISTS " + INTERNAL_USE_DOC);
+        db.execSQL("CREATE TABLE INTERNAL_USE_DOC (" +
+                "TRX_NO TEXT PRIMARY KEY, " +
+                "TRX_DATE TEXT, " +
+                "TRX_TYPE_ID INTEGER," +
+                "AMOUNT REAL, " +
+                "WHS_CODE TEXT, " +
+                "WHS_NAME TEXT, " +
+                "NOTES TEXT)");
+    }
+
+    public void addInternalUseDoc(Doc doc)
+    {
+        ContentValues values = new ContentValues();
+        values.put(TRX_NO, doc.getTrxNo());
+        values.put(TRX_DATE, doc.getTrxDate());
+        values.put(TRX_TYPE_ID, doc.getTrxTypeId());
+        values.put(AMOUNT, doc.getAmount());
+        values.put(WHS_CODE, doc.getWhsCode());
+        values.put(WHS_NAME, doc.getWhsName());
+        values.put(NOTES, doc.getNotes());
+
+        db.insert(INTERNAL_USE_DOC, null, values);
+    }
+
+    public void updateInternalUseDoc(String trxNo, ContentValues values)
+    {
+        db.update(INTERNAL_USE_DOC, values, "TRX_NO=?", new String[]{trxNo});
+    }
+
+    public List<Doc> getInternalUseDocList()
+    {
+        List<Doc> docList = new ArrayList<>();
+
+        String query = "SELECT * FROM " + INTERNAL_USE_DOC;
+
+        try
+        {
+            Cursor cursor = db.rawQuery(query, null);
+            while (cursor.moveToNext())
+            {
+                Doc doc = new Doc();
+                doc.setTrxNo(cursor.getString(0));
+                doc.setTrxDate(cursor.getString(1));
+                doc.setTrxTypeId(cursor.getInt(2));
+                doc.setAmount(cursor.getDouble(3));
+                doc.setWhsCode(cursor.getString(4));
+                doc.setWhsName(cursor.getString(5));
+                doc.setNotes(cursor.getString(6));
+
+                docList.add(doc);
+            }
+            cursor.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return docList;
+    }
+
+    public void deleteInternalUseDoc(String trxNo)
+    {
+        db.delete(INTERNAL_USE_DOC, TRX_NO + "=?", new String[]{trxNo});
+        deleteInternalUseTrxByTrxNo(trxNo);
+    }
+
+
+    private void createInternalUseTrxTable(SQLiteDatabase db)
+    {
+        db.execSQL("DROP TABLE IF EXISTS " + INTERNAL_USE_TRX);
+        db.execSQL("CREATE TABLE INTERNAL_USE_TRX (" +
+                "TRX_ID INTEGER PRIMARY KEY, " +
+                "TRX_NO TEXT, " +
+                "INV_CODE TEXT," +
+                "INV_NAME TEXT, " +
+                "BRAND_CODE TEXT, " +
+                "QTY REAL, " +
+                "PRICE REAL, " +
+                "AMOUNT REAL," +
+                "BARCODE TEXT, " +
+                "NOTES TEXT)");
+    }
+
+    public void addInternalUseTrx(Trx trx)
+    {
+        ContentValues values = new ContentValues();
+        values.put(TRX_ID, getNextInternalUseTrxId());
+        values.put(TRX_NO, trx.getTrxNo());
+        values.put(INV_CODE, trx.getInvCode());
+        values.put(INV_NAME, trx.getInvName());
+        values.put(BRAND_CODE, trx.getInvBrand());
+        values.put(QTY, trx.getQty());
+        values.put(PRICE, trx.getPrice());
+        values.put(AMOUNT, trx.getAmount());
+        values.put(BARCODE, trx.getBarcode());
+        values.put(NOTES, trx.getNotes());
+
+        db.insert(INTERNAL_USE_TRX, null, values);
+    }
+
+    public List<Trx> getInternalUseTrxList(String trxNo)
+    {
+        List<Trx> trxList = new ArrayList<>();
+
+        String query = "SELECT * FROM " + INTERNAL_USE_TRX + " WHERE TRX_NO=?";
+
+        try
+        {
+            Cursor cursor = db.rawQuery(query, new String[]{trxNo});
+            while (cursor.moveToNext())
+            {
+                Trx trx = new Trx();
+                trx.setTrxId(cursor.getInt(0));
+                trx.setTrxNo(cursor.getString(1));
+                trx.setInvCode(cursor.getString(2));
+                trx.setInvName(cursor.getString(3));
+                trx.setInvBrand(cursor.getString(4));
+                trx.setQty(cursor.getDouble(5));
+                trx.setPrice(cursor.getDouble(6));
+                trx.setAmount(cursor.getDouble(7));
+                trx.setBarcode(cursor.getString(8));
+                trx.setNotes(cursor.getString(9));
+
+                trxList.add(trx);
+            }
+            cursor.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+
+        return trxList;
+    }
+
+    public void deleteInternalUseTrx(String trxId)
+    {
+        db.delete(INTERNAL_USE_TRX, TRX_ID + "=?", new String[]{trxId});
+    }
+
+    public void deleteInternalUseTrxByTrxNo(String trxNo)
+    {
+        db.delete(INTERNAL_USE_TRX, TRX_NO + "=?", new String[]{trxNo});
+    }
+
+    public void updateInternalUseTrx(String invCode, ContentValues values)
+    {
+        db.update(INTERNAL_USE_TRX, values, TRX_ID + "=?", new String[]{invCode});
+    }
+
+    public int getNextInternalUseTrxId()
+    {
+        String query = "SELECT TRX_ID FROM INTERNAL_USE_TRX";
         Cursor cursor = db.rawQuery(query, null, null);
         int n = 1;
         while (cursor.moveToNext())

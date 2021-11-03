@@ -192,6 +192,13 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     public void editAttributes()
     {
+        if (!config().getUser().isAttribute())
+        {
+            showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
+                    android.R.drawable.ic_dialog_alert);
+            playSound(SOUND_FAIL);
+            return;
+        }
         if (invCode != null)
         {
             Intent intent = new Intent(this, EditAttributesActivity.class);

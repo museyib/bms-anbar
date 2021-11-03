@@ -61,7 +61,7 @@
             android:drawableStart="@drawable/list"
             android:gravity="start|center_vertical"
             android:onClick="openInvApproving"
-            android:text="@string/inv_approving"
+            android:text="@string/internal_use"
             android:textAllCaps="false"
             android:textSize="18sp" />
 

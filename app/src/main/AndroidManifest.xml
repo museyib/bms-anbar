@@ -104,6 +104,8 @@
         <activity android:name=".activity.ProductApproveDocActivity" />
         <activity android:name=".activity.ProductApproveTrxActivity" />
         <activity android:name=".activity.EditBarcodesActivity" />
+        <activity android:name=".activity.InternalUseDocActivity" />
+        <activity android:name=".activity.InternalUseTrxActivity" />
     </application>
 
 </manifest>
