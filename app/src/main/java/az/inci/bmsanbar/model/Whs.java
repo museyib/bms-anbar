@@ -9,6 +9,15 @@ public class Whs
     private String whsCode;
     private String whsName;
 
+    public Whs()
+    {
+
+    }
+    public Whs(String whsCode)
+    {
+        this.whsCode = whsCode;
+    }
+
     public String getWhsCode()
     {
         return whsCode;

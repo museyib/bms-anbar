@@ -9,10 +9,12 @@
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/activity_main.xml" value="0.15" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/activity_settings.xml" value="0.25" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/approve_doc_layout.xml" value="0.10587431693989072" />
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/approve_trx_item_layout.xml" value="0.1" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/approve_trx_layout.xml" value="0.17" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/internal_use_doc_item_layout.xml" value="0.13217213114754098" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/internal_use_doc_layout.xml" value="0.15" />
         <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/internal_use_trx_layout.xml" value="0.2" />
+        <entry key="..\:/Users/Museyib/Projects/bmsanbar/app/src/main/res/layout/inv_list_item.xml" value="0.1" />
       </map>
     </option>
   </component>

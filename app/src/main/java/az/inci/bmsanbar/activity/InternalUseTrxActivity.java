@@ -4,11 +4,7 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.print.PrintAttributes;
-import android.print.PrintDocumentAdapter;
-import android.print.PrintManager;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,8 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -46,14 +40,10 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +77,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
 
     int mode;
     boolean docCreated;
-    boolean isReady;
     int trxTypeId = 73;
     double amount;
     String trxNo;
@@ -120,10 +109,14 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             whsName = getIntent().getStringExtra("whsName");
             amount = getIntent().getDoubleExtra("amount", 0);
             whsListSpinner.setVisibility(View.INVISIBLE);
+
+            loadWhsSumList();
         }
         else
         {
             trxNo = new SimpleDateFormat("yyyyMMddhhmmss", Locale.getDefault()).format(new Date());
+            whsCode = "05";
+            whsName = "İstehsalat anbarı";
 
             loadWhsList();
         }
@@ -136,10 +129,14 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                 whs = (Whs) parent.getItemAtPosition(position);
                 whsCode = whs.getWhsCode();
                 whsName = whs.getWhsName();
+
                 if (docCreated)
                     updateDocSrc();
                 else
                     createNewDoc();
+
+                srcTxt.setText(whs.toString());
+                loadWhsSumList();
             }
 
             @Override
@@ -150,12 +147,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         });
 
         selectInvBtn.setOnClickListener(v ->
-        {
-            if (invList == null)
-                getWhsSumList();
-            else
-                showInvList();
-        });
+                showInvList());
 
         uploadBtn.setOnClickListener(v ->
         {
@@ -272,7 +264,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         ContentValues values = new ContentValues();
         values.put(DBHelper.AMOUNT, amount);
         dbHelper.updateInternalUseDoc(trxNo, values);
-        isReady = !srcTxt.getText().toString().isEmpty();
     }
 
     private void updateDocSrc()
@@ -283,7 +274,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         values.put(DBHelper.WHS_CODE, whs.getWhsCode());
         values.put(DBHelper.WHS_NAME, whs.getWhsName());
         dbHelper.updateInternalUseDoc(trxNo, values);
-        isReady = !srcTxt.getText().toString().isEmpty();
     }
 
     private void loadData()
@@ -291,8 +281,8 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         whs = new Whs();
         whs.setWhsCode(whsCode);
         whs.setWhsName(whsName);
-        srcTxt.setText(whs.toString());
         setTitle(trxNo);
+        srcTxt.setText(whs.toString());
         trxList = dbHelper.getInternalUseTrxList(trxNo);
         TrxAdapter adapter = new TrxAdapter(this, trxList);
         trxListView.setLayoutManager(new LinearLayoutManager(this));
@@ -389,7 +379,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         }).start();
     }
 
-    private void getWhsSumList()
+    private void loadWhsSumList()
     {
         showProgressDialog(true);
         new Thread(() ->
@@ -425,8 +415,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                     showMessageDialog(getString(R.string.info),
                             getString(R.string.connection_error),
                             android.R.drawable.ic_dialog_info);
-                else
-                    showInvList();
             });
         }).start();
     }
@@ -484,7 +472,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             qtyEdit.requestFocus();
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle(inventory.getInvCode())
-                    .setMessage(inventory.getInvName())
+                    .setMessage(inventory.getInvName() + "\nMaksimum limit: " + inventory.getWhsQty())
                     .setCancelable(false)
                     .setView(qtyEdit)
                     .setPositiveButton("OK", (dialog1, which) ->
@@ -493,8 +481,17 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                         {
                             double qty = Double.parseDouble(qtyEdit.getText().toString());
                             Trx containingTrx = containingTrx(inventory.getInvCode());
+                            if (qty + containingTrx.getQty() > inventory.getWhsQty())
+                            {
+                                showMessageDialog("Miqdar aşması",
+                                        "Anbar qalığı kifayət qədər deyil.\nMaksimum limit: "
+                                                + inventory.getWhsQty(),
+                                        android.R.drawable.ic_dialog_info);
+                                return;
+                            }
                             if (containingTrx.getTrxId() > 0)
-                                updateInternalUseTrxQty(containingTrx, qty + containingTrx.getQty());
+                                updateInternalUseTrxQty(containingTrx,
+                                        qty + containingTrx.getQty());
                             else
                             {
                                 Trx trx = Trx.parseFromInv(inventory);
@@ -533,9 +530,10 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             qtyEdit.setText(String.format(Locale.getDefault(), "%.0f", trx.getQty()));
             qtyEdit.selectAll();
             qtyEdit.requestFocus();
+            Inventory inventory = invList.get(invList.indexOf(Inventory.parseFromTrx(trx)));
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle(trx.getInvCode())
-                    .setMessage(trx.getInvName())
+                    .setMessage(trx.getInvName() + "\nMaksimum limit: " + inventory.getWhsQty())
                     .setCancelable(false)
                     .setView(qtyEdit)
                     .setPositiveButton("OK", (dialog1, which) ->
@@ -543,6 +541,14 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                         try
                         {
                             double qty = Double.parseDouble(qtyEdit.getText().toString());
+                            if (qty > inventory.getWhsQty())
+                            {
+                                showMessageDialog("Miqdar aşması",
+                                        "Anbar qalığı kifayət qədər deyil.\nMaksimum limit: "
+                                                + inventory.getWhsQty(),
+                                        android.R.drawable.ic_dialog_info);
+                                return;
+                            }
                             updateInternalUseTrxQty(trx, qty);
                             loadData();
                         }
@@ -595,175 +601,58 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         return new Trx();
     }
 
-    private void print(String html)
-    {
-        WebView webView = new WebView(this);
-        webView.setWebViewClient(new WebViewClient()
-        {
-
-            public boolean shouldOverrideUrlLoading(WebView view, String url)
-            {
-                return false;
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url)
-            {
-                showProgressDialog(false);
-                createWebPrintJob(view);
-            }
-        });
-
-        webView.loadDataWithBaseURL(null, html, "text/HTML", "UTF-8", null);
-    }
-
-    private void createWebPrintJob(WebView webView)
-    {
-        PrintManager printManager = (PrintManager) this
-                .getSystemService(Context.PRINT_SERVICE);
-
-        String jobName = getString(R.string.app_name) + " Document";
-
-        PrintDocumentAdapter printAdapter;
-        PrintAttributes.Builder builder = new PrintAttributes.Builder()
-                .setMediaSize(PrintAttributes.MediaSize.ISO_A4);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-            printAdapter = webView.createPrintDocumentAdapter(jobName);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                builder.setDuplexMode(PrintAttributes.DUPLEX_MODE_LONG_EDGE);
-            printManager.print(jobName, printAdapter, builder.build());
-        }
-        else
-        {
-            try
-            {
-
-                Class<?> printDocumentAdapterClass = Class.forName("android.print.PrintDocumentAdapter");
-                Method createPrintDocumentAdapterMethod = webView.getClass().getMethod("createPrintDocumentAdapter");
-                Object printAdapterObject = createPrintDocumentAdapterMethod.invoke(webView);
-
-                Class<?> printAttributesBuilderClass = Class.forName("android.print.PrintAttributes$Builder");
-                Constructor<?> constructor = printAttributesBuilderClass.getConstructor();
-                Object printAttributes = constructor.newInstance();
-                Method buildMethod = printAttributes.getClass().getMethod("build");
-                Object printAttributesBuild = buildMethod.invoke(printAttributes);
-
-                Method printMethod = printManager.getClass().getMethod("print", String.class, printDocumentAdapterClass, printAttributesBuild.getClass());
-                printMethod.invoke(printManager, jobName, printAdapterObject, builder.build());
-            }
-            catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private String getTransferForm()
-    {
-        String html = "<html><head><style>*{margin:0px; padding:0px}" +
-                "table,tr,th,td{border: 1px solid black;border-collapse: collapse; font-size: 12px}" +
-                "th{background-color: #636d72;color:white}td,th{padding:0 4px 0 4px}</style>" +
-                "</head><body>";
-        html = html.concat("<h3 style='text-align: center'>Anbardan anbara transfer</h3></br>");
-        html = html.concat("<div style='font-size: 14px'><b>Çıxış anbarı: " + whs.toString() + "</br>");
-        html = html.concat("Giriş anbarı: " + whs.toString() + "</b></div></br>");
-        html = html.concat("<table>");
-        html = html.concat("<tr><th>Mal kodu</th>");
-        html = html.concat("<th>Mal adı</th>");
-        html = html.concat("<th>Barkod</th>");
-        html = html.concat("<th>Brend</th>");
-        html = html.concat("<th>Miqdar</th>");
-        html = html.concat("<th>Qiymət</th>");
-        html = html.concat("<th>Məbləğ</th>");
-        Collections.sort(trxList, (trx1, trx2) ->
-                trx1.getPrevTrxNo().compareTo(trx2.getPrevTrxNo()));
-        for (Trx trx : trxList)
-        {
-
-            html = html.concat("<tr><td>" + trx.getInvCode() + "</td><td>" + trx.getInvName() + "</td>");
-            html = html.concat("<td>" + trx.getBarcode() + "</td>");
-            html = html.concat("<td>" + trx.getInvBrand() + "</td>");
-            html = html.concat("<td style='text-align: right'>" + format(trx.getQty()) + "</td>");
-            html = html.concat("<td style='text-align: right'>" + format(trx.getPrice()) + "</td>");
-            html = html.concat("<td style='text-align: right'>" + format(trx.getQty() * trx.getPrice()) + "</td>");
-        }
-
-        html = html.concat("<tr><td colspan='6' style='text-align: right'><b>Cəmi</b></td>");
-        html = html.concat("<td style='text-align: right'><b>" + format(amount) + "</b></td></tr>");
-        html = html.concat("</table></body></head>");
-
-        return html;
-    }
-
-    private String format(double value)
-    {
-        return String.format(Locale.getDefault(), "%.03f", value);
-    }
-
     private void uploadDoc()
     {
         showProgressDialog(true);
-        if (isReady)
+        new Thread(() ->
         {
-            new Thread(() ->
+            String url = url("trx", "create-internal-use");
+
+            HttpHeaders headers = new HttpHeaders();
+            MediaType mediaType = new MediaType("application", "json",
+                    StandardCharsets.UTF_8);
+            headers.setContentType(mediaType);
+
+            RestTemplate template = new RestTemplate();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                    .queryParam("user-id", config().getUser().getId())
+                    .queryParam("whs-code", whsCode)
+                    .queryParam("notes", notes);
+            HttpEntity<List<Trx>> httpEntity = new HttpEntity<>(trxList, headers);
+            try
             {
-                String url = url("trx", "create-internal-use");
+                HttpEntity<Response> responseEntity = template.exchange(
+                        builder.toUriString(),
+                        HttpMethod.POST,
+                        httpEntity,
+                        Response.class);
 
-                HttpHeaders headers = new HttpHeaders();
-                MediaType mediaType = new MediaType("application", "json", StandardCharsets.UTF_8);
-                headers.setContentType(mediaType);
+                runOnUiThread(() -> {
+                    if (responseEntity.getBody().getStatus() == 0) {
+                        dbHelper.deleteInternalUseDoc(trxNo);
+                        finish();
+                    }
+                    else {
+                        String message = responseEntity.getBody().getMessage();
+                        int icon = android.R.drawable.ic_dialog_alert;
 
-                RestTemplate template = new RestTemplate();
-                ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                        .setConnectTimeout(config().getConnectionTimeout() * 1000);
-                template.getMessageConverters().add(new StringHttpMessageConverter());
-
-                UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                        .queryParam("user-id", config().getUser().getId())
-                        .queryParam("whs-code", whsCode)
-                        .queryParam("notes", notes);
-                HttpEntity<List<Trx>> httpEntity = new HttpEntity<>(trxList, headers);
-                try
-                {
-                    HttpEntity<Response> responseEntity = template.exchange(
-                            builder.toUriString(),
-                            HttpMethod.POST,
-                            httpEntity,
-                            Response.class);
-
-                    runOnUiThread(() -> {
-                        if (responseEntity.getBody().getStatus() == 0) {
-                            dbHelper.deleteInternalUseDoc(trxNo);
-                            finish();
-                        }
-                        else {
-                            String message = responseEntity.getBody().getMessage();
-                            int icon = android.R.drawable.ic_dialog_alert;
-
-                            showMessageDialog(getString(R.string.error), message, icon);
-                        }
-                    });
-                }
-                catch (RuntimeException ex)
-                {
-                    ex.printStackTrace();
-                }
-                finally {
-                    runOnUiThread(() ->
-                            showProgressDialog(false));
-                }
-            }).start();
-        }
-        else
-        {
-            showProgressDialog(false);
-            showMessageDialog(getString(R.string.info),
-                    "Mənbə təyin edilməyib",
-                    android.R.drawable.ic_dialog_info);
-        }
+                        showMessageDialog(getString(R.string.error), message, icon);
+                    }
+                });
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+            }
+            finally {
+                runOnUiThread(() ->
+                        showProgressDialog(false));
+            }
+        }).start();
     }
 
     private void showInfoDialog(Inventory inventory)
@@ -917,6 +806,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             holder.invName.setText(trx.getInvName());
             holder.qty.setText(String.valueOf(trx.getQty()));
             holder.invBrand.setText(String.valueOf(trx.getInvBrand()));
+            holder.notes.setVisibility(View.GONE);
             itemView.setTag(trx);
         }
 
@@ -968,6 +858,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             TextView invName;
             TextView qty;
             TextView invBrand;
+            TextView notes;
 
             public Holder(@NonNull View itemView)
             {
@@ -977,6 +868,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                 invName = itemView.findViewById(R.id.inv_name);
                 qty = itemView.findViewById(R.id.qty);
                 invBrand = itemView.findViewById(R.id.inv_brand);
+                notes = itemView.findViewById(R.id.notes);
             }
         }
     }

@@ -12,6 +12,7 @@ public class Inventory
     private String invBrand;
     private String internalCount;
     private double price;
+    private double whsQty;
 
     public static Inventory parseFromTrx(Trx trx)
     {
@@ -19,6 +20,7 @@ public class Inventory
         inventory.setInvCode(trx.getInvCode());
         inventory.setInvName(trx.getInvName());
         inventory.setInvBrand(trx.getInvBrand());
+        inventory.setBarcode(trx.getBarcode());
         inventory.setPrice(trx.getPrice());
 
         return inventory;
@@ -103,5 +105,13 @@ public class Inventory
     @Override
     public int hashCode() {
         return Objects.hash(invCode, barcode);
+    }
+
+    public double getWhsQty() {
+        return whsQty;
+    }
+
+    public void setWhsQty(double whsQty) {
+        this.whsQty = whsQty;
     }
 }
