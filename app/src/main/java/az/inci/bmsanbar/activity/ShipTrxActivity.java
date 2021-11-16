@@ -135,19 +135,10 @@ public class ShipTrxActivity extends ScannerSupportActivity
         this.barcode = barcode;
         if (docCreated)
         {
-            checkShipping(this.barcode);
+            validateShipping(this.barcode);
         }
         else
         {
-            if (barcode.startsWith("ITO") || barcode.startsWith("DLV") || barcode.startsWith("ITD")
-                    || barcode.startsWith("SIN") || barcode.startsWith("ITI"))
-            {
-                showMessageDialog(getString(R.string.info), getString(R.string.driver_or_vehicle_not_defined),
-                        android.R.drawable.ic_dialog_info);
-                playSound(SOUND_FAIL);
-                return;
-            }
-
             if (this.barcode.startsWith("PER"))
             {
                 setDriverCode(this.barcode);
@@ -180,7 +171,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
                     setVehicleCode(barcode);
                     break;
                 case SCAN_NEW_DOC:
-                    checkShipping(barcode);
+                    validateShipping(barcode);
                     break;
             }
         }
@@ -220,29 +211,19 @@ public class ShipTrxActivity extends ScannerSupportActivity
         }
     }
 
-    public void checkShipping(String trxNo)
+    public void validateShipping(String trxNo)
     {
-        if (!trxNo.startsWith("ITO") && !trxNo.startsWith("DLV") && !trxNo.startsWith("ITD")
-                && !trxNo.startsWith("SIN") && !trxNo.startsWith("ITI"))
-        {
-            showMessageDialog(getString(R.string.info), getString(R.string.not_valid_doc_for_shipping),
-                    android.R.drawable.ic_dialog_info);
-            playSound(SOUND_FAIL);
-            return;
-        }
-
         if (dbHelper.isShipped(trxNo))
         {
-            showMessageDialog(getString(R.string.error), getString(R.string.doc_already_loaded),
+            showMessageDialog(getString(R.string.error),
+                    getString(R.string.doc_already_loaded),
                     android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
-        String url = url("trx", "shipped");
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("trx-no", trxNo);
-        url = addRequestParameters(url, parameters);
-        new ShippingCheck(this).execute(url);
+
+
+        isValidDoc(trxNo);
     }
 
     public void addDoc(String trxNo)
@@ -266,50 +247,89 @@ public class ShipTrxActivity extends ScannerSupportActivity
         trxListView.setAdapter(adapter);
     }
 
-    private static class ShippingCheck extends AsyncTask<String, Void, Boolean>
+    private void isValidDoc(String trxNo)
     {
-        WeakReference<ShipTrxActivity> reference;
-
-        public ShippingCheck(ShipTrxActivity activity)
-        {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected Boolean doInBackground(String... url)
-        {
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("doc", "shipment-is-valid");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("trx-no", trxNo);
+            url = addRequestParameters(url, parameters);
             RestTemplate template = new RestTemplate();
             template.getMessageConverters().add(new StringHttpMessageConverter());
             boolean result;
             try
             {
-                result = template.getForObject(url[0], Boolean.class);
+                result = template.getForObject(url, Boolean.class);
             }
             catch (RuntimeException e)
             {
                 e.printStackTrace();
-                return false;
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                });
+                playSound(SOUND_FAIL);
+                return;
             }
-            return result;
-        }
+            finally {
+                runOnUiThread(() -> showProgressDialog(false));
+            }
+            if (result) {
+                checkShipping(trxNo);
+                playSound(SOUND_SUCCESS);
+            } else {
+                runOnUiThread(() -> showMessageDialog(getString(R.string.error),
+                        getString(R.string.not_valid_doc_for_shipping),
+                        android.R.drawable.ic_dialog_alert));
+                playSound(SOUND_FAIL);
+            }
+        }).start();
+    }
 
-        @Override
-        protected void onPostExecute(Boolean aBoolean)
-        {
-            ShipTrxActivity activity = reference.get();
-            if (aBoolean)
+    private void checkShipping(String trxNo)
+    {
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("trx", "shipped");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("trx-no", trxNo);
+            url = addRequestParameters(url, parameters);
+            RestTemplate template = new RestTemplate();
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+            boolean result = false;
+            try
             {
-                activity.showMessageDialog(activity.getString(R.string.error),
-                        activity.getString(R.string.doc_already_loaded),
-                        android.R.drawable.ic_dialog_alert);
-                activity.playSound(SOUND_FAIL);
+                result = template.getForObject(url, Boolean.class);
+            }
+            catch (RuntimeException e)
+            {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                });
+                playSound(SOUND_FAIL);
+                return;
+            }
+            finally {
+                runOnUiThread(() -> showProgressDialog(false));
+            }
+            if (result)
+            {
+                runOnUiThread(() -> showMessageDialog(getString(R.string.error),
+                        getString(R.string.doc_already_loaded),
+                        android.R.drawable.ic_dialog_alert));
+                playSound(SOUND_FAIL);
             }
             else
             {
-                activity.addDoc(activity.barcode);
-                activity.playSound(SOUND_SUCCESS);
+                runOnUiThread(() -> addDoc(barcode));
+                playSound(SOUND_SUCCESS);
             }
-        }
+        }).start();
     }
 
     private static class SendSipping extends AsyncTask<Void, Void, Boolean>

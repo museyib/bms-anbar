@@ -76,7 +76,6 @@ public class AppBaseActivity extends AppCompatActivity
     protected void onPause()
     {
         super.onPause();
-        dbHelper.close();
     }
 
     public void loadFooter()

@@ -41,9 +41,9 @@
                 android:id="@+id/continuous_check"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/serial_scan"
-                android:enabled="false"
-                android:checked="true"/>
+                android:checked="false"
+                android:enabled="true"
+                android:text="@string/serial_scan" />
 
             <CheckBox
                 android:id="@+id/readyToSend"
