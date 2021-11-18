@@ -58,6 +58,8 @@ public class InternalUseDocActivity extends AppBaseActivity
             intent.putExtra("trxTypeId", doc.getTrxTypeId());
             intent.putExtra("whsCode", doc.getWhsCode());
             intent.putExtra("whsName", doc.getWhsName());
+            intent.putExtra("expCenterCode", doc.getExpCenterCode());
+            intent.putExtra("expCenterName", doc.getExpCenterName());
             intent.putExtra("amount", doc.getAmount());
             startActivity(intent);
         });

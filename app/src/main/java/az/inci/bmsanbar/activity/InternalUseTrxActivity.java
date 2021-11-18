@@ -5,7 +5,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -55,6 +57,7 @@ import az.inci.bmsanbar.AppConfig;
 import az.inci.bmsanbar.DBHelper;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Doc;
+import az.inci.bmsanbar.model.ExpCenter;
 import az.inci.bmsanbar.model.Inventory;
 import az.inci.bmsanbar.model.Response;
 import az.inci.bmsanbar.model.Trx;
@@ -68,11 +71,13 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
     ImageButton cameraScanner;
     RecyclerView trxListView;
     Spinner whsListSpinner;
+    Spinner expCenterListSpinner;
     SearchView searchView;
-    TextView srcTxt;
+    EditText notesEdit;
 
     List<Trx> trxList;
     List<Whs> whsList;
+    List<ExpCenter> expCenterList;
     List<Inventory> invList;
 
     int mode;
@@ -83,7 +88,10 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
     String whsCode;
     String whsName;
     Whs whs;
-    private String notes;
+    String expCenterCode;
+    String expCenterName;
+    ExpCenter expCenter;
+    String notes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,7 +104,8 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         cameraScanner = findViewById(R.id.camera_scanner);
         trxListView = findViewById(R.id.trx_list_view);
         whsListSpinner = findViewById(R.id.trg_whs_list);
-        srcTxt = findViewById(R.id.src_text);
+        expCenterListSpinner = findViewById(R.id.exp_center_list);
+        notesEdit = findViewById(R.id.notes);
 
         mode = getIntent().getIntExtra("mode", AppConfig.VIEW_MODE);
         if (mode == AppConfig.VIEW_MODE)
@@ -107,8 +116,10 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             trxTypeId = getIntent().getIntExtra("trxTypeId", 73);
             whsCode = getIntent().getStringExtra("whsCode");
             whsName = getIntent().getStringExtra("whsName");
+            expCenterCode = getIntent().getStringExtra("expCenterCode");
+            expCenterName = getIntent().getStringExtra("expCenterName");
             amount = getIntent().getDoubleExtra("amount", 0);
-            whsListSpinner.setVisibility(View.INVISIBLE);
+            whsListSpinner.setEnabled(false);
 
             loadWhsSumList();
         }
@@ -117,8 +128,9 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             trxNo = new SimpleDateFormat("yyyyMMddhhmmss", Locale.getDefault()).format(new Date());
             whsCode = "05";
             whsName = "İstehsalat anbarı";
-
-            loadWhsList();
+            expCenterCode = "U04";
+            expCenterName = "İSTEHSALAT";
+            notes = "";
         }
 
         whsListSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
@@ -135,7 +147,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                 else
                     createNewDoc();
 
-                srcTxt.setText(whs.toString());
                 loadWhsSumList();
             }
 
@@ -146,18 +157,58 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             }
         });
 
+        expCenterListSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                expCenter = (ExpCenter) parent.getItemAtPosition(position);
+                expCenterCode = expCenter.getExpCenterCode();
+                expCenterName = expCenter.getExpCenterName();
+
+                if (docCreated)
+                    updateDocExpCenter();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {
+
+            }
+        });
+
+        notesEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                notes = s.toString();
+                updateDocNotes();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
         selectInvBtn.setOnClickListener(v ->
                 showInvList());
 
         uploadBtn.setOnClickListener(v ->
         {
-            AlertDialog dialog = new AlertDialog.Builder(InternalUseTrxActivity.this)
-                    .setMessage("Göndərmək istəyirsiniz?")
-                    .setPositiveButton("Bəli", (dialog1, which) ->
-                            uploadDoc())
-                    .setNegativeButton("Xeyr", null)
-                    .create();
-            dialog.show();
+            if (trxList.size()>0) {
+                AlertDialog dialog = new AlertDialog.Builder(InternalUseTrxActivity.this)
+                        .setMessage("Göndərmək istəyirsiniz?")
+                        .setPositiveButton("Bəli", (dialog1, which) ->
+                                uploadDoc())
+                        .setNegativeButton("Xeyr", null)
+                        .create();
+                dialog.show();
+            }
         });
 
         if (config().isCameraScanning())
@@ -168,6 +219,10 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
             startActivityForResult(barcodeIntent, 1);
         });
+
+        loadWhsList();
+
+        loadExpCenterList();
 
         loadData();
 
@@ -269,10 +324,23 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
     private void updateDocSrc()
     {
         ContentValues values = new ContentValues();
-        whsCode = whs.getWhsCode();
-        whsName = whs.getWhsName();
-        values.put(DBHelper.WHS_CODE, whs.getWhsCode());
-        values.put(DBHelper.WHS_NAME, whs.getWhsName());
+        values.put(DBHelper.WHS_CODE, whsCode);
+        values.put(DBHelper.WHS_NAME, whsName);
+        dbHelper.updateInternalUseDoc(trxNo, values);
+    }
+
+    private void updateDocExpCenter()
+    {
+        ContentValues values = new ContentValues();
+        values.put(DBHelper.EXP_CENTER_CODE, expCenterCode);
+        values.put(DBHelper.EXP_CENTER_NAME, expCenterName);
+        dbHelper.updateInternalUseDoc(trxNo, values);
+    }
+
+    private void updateDocNotes()
+    {
+        ContentValues values = new ContentValues();
+        values.put(DBHelper.NOTES, notes);
         dbHelper.updateInternalUseDoc(trxNo, values);
     }
 
@@ -281,12 +349,16 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         whs = new Whs();
         whs.setWhsCode(whsCode);
         whs.setWhsName(whsName);
+
+        expCenter = new ExpCenter();
+        expCenter.setExpCenterCode(expCenterCode);
+        expCenter.setExpCenterName(expCenterName);
         setTitle(trxNo);
-        srcTxt.setText(whs.toString());
         trxList = dbHelper.getInternalUseTrxList(trxNo);
         TrxAdapter adapter = new TrxAdapter(this, trxList);
         trxListView.setLayoutManager(new LinearLayoutManager(this));
         trxListView.setAdapter(adapter);
+        notesEdit.setText(notes);
 
         if (trxList.size() == 0)
             findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
@@ -334,6 +406,45 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                 R.layout.support_simple_spinner_dropdown_item, whsList);
         whsListSpinner.setAdapter(adapter);
         whsListSpinner.setSelection(whsList.indexOf(whs));
+    }
+
+    private void loadExpCenterList()
+    {
+        new Thread(() ->
+        {
+            String url = url("src", "exp-center");
+            RestTemplate template = new RestTemplate();
+            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+            try
+            {
+                String result = template.getForObject(url, String.class);
+                Gson gson = new Gson();
+                Type type = new TypeToken<List<ExpCenter>>()
+                {
+                }.getType();
+                expCenterList = new ArrayList<>(gson.fromJson(result, type));
+            }
+            catch (RuntimeException ex)
+            {
+                ex.printStackTrace();
+                expCenterList = new ArrayList<>();
+                expCenterList.add(expCenter);
+            }
+            finally
+            {
+                runOnUiThread(this::publishExpCenterList);
+            }
+        }).start();
+    }
+
+    private void publishExpCenterList()
+    {
+        ArrayAdapter<ExpCenter> adapter = new ArrayAdapter<>(this,
+                R.layout.support_simple_spinner_dropdown_item, expCenterList);
+        expCenterListSpinner.setAdapter(adapter);
+        expCenterListSpinner.setSelection(expCenterList.indexOf(expCenter));
     }
 
     @Override
@@ -603,6 +714,15 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
 
     private void uploadDoc()
     {
+        if (notes.isEmpty())
+        {
+            AlertDialog dialog = new AlertDialog.Builder(InternalUseTrxActivity.this)
+                    .setMessage("Açıqlama boş ola bilməz!")
+                    .setNeutralButton("OK", null)
+                    .create();
+            dialog.show();
+            return;
+        }
         showProgressDialog(true);
         new Thread(() ->
         {
@@ -621,6 +741,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                     .queryParam("user-id", config().getUser().getId())
                     .queryParam("whs-code", whsCode)
+                    .queryParam("exp-center-code", expCenterCode)
                     .queryParam("notes", notes);
             HttpEntity<List<Trx>> httpEntity = new HttpEntity<>(trxList, headers);
             try

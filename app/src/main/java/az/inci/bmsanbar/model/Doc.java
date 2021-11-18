@@ -32,6 +32,8 @@ public class Doc
     private double amount;
     private String srcWhsCode;
     private String srcWhsName;
+    private String expCenterCode;
+    private String expCenterName;
 
     public String getTrxNo()
     {
@@ -238,6 +240,8 @@ public class Doc
                 ", amount=" + amount +
                 ", srcWhsCode='" + srcWhsCode + '\'' +
                 ", srcWhsName='" + srcWhsName + '\'' +
+                ", expCenterCode='" + expCenterCode + '\'' +
+                ", expCenterName='" + expCenterName + '\'' +
                 '}';
     }
 
@@ -309,5 +313,21 @@ public class Doc
     public void setWhsName(String whsName)
     {
         this.whsName = whsName;
+    }
+
+    public String getExpCenterCode() {
+        return expCenterCode;
+    }
+
+    public void setExpCenterCode(String expCenterCode) {
+        this.expCenterCode = expCenterCode;
+    }
+
+    public String getExpCenterName() {
+        return expCenterName;
+    }
+
+    public void setExpCenterName(String expCenterName) {
+        this.expCenterName = expCenterName;
     }
 }

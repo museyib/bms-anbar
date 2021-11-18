@@ -62,6 +62,8 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String SBE_NAME = "SBE_NAME";
     public static final String WHS_CODE = "WHS_CODE";
     public static final String WHS_NAME = "WHS_NAME";
+    public static final String EXP_CENTER_CODE = "EXP_CENTER_CODE";
+    public static final String EXP_CENTER_NAME = "EXP_CENTER_NAME";
     public static final String UOM = "UOM";
     public static final String UOM_FACTOR = "UOM_FACTOR";
     public static final String QTY = "QTY";
@@ -1438,6 +1440,8 @@ public class DBHelper extends SQLiteOpenHelper
                 "AMOUNT REAL, " +
                 "WHS_CODE TEXT, " +
                 "WHS_NAME TEXT, " +
+                "EXP_CENTER_CODE TEXT, " +
+                "EXP_CENTER_NAME TEXT, " +
                 "NOTES TEXT)");
     }
 
@@ -1450,6 +1454,8 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(AMOUNT, doc.getAmount());
         values.put(WHS_CODE, doc.getWhsCode());
         values.put(WHS_NAME, doc.getWhsName());
+        values.put(EXP_CENTER_CODE, doc.getWhsCode());
+        values.put(EXP_CENTER_NAME, doc.getWhsName());
         values.put(NOTES, doc.getNotes());
 
         db.insert(INTERNAL_USE_DOC, null, values);
@@ -1478,7 +1484,9 @@ public class DBHelper extends SQLiteOpenHelper
                 doc.setAmount(cursor.getDouble(3));
                 doc.setWhsCode(cursor.getString(4));
                 doc.setWhsName(cursor.getString(5));
-                doc.setNotes(cursor.getString(6));
+                doc.setExpCenterCode(cursor.getString(6));
+                doc.setExpCenterName(cursor.getString(7));
+                doc.setNotes(cursor.getString(8));
 
                 docList.add(doc);
             }

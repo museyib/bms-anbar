@@ -38,7 +38,8 @@
             android:contentDescription="@string/send"
             app:layout_constraintEnd_toStartOf="@+id/print"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@android:drawable/ic_menu_upload" />
+            app:srcCompat="@android:drawable/ic_menu_upload"
+            tools:ignore="ImageContrastCheck" />
 
         <ImageButton
             android:id="@+id/inv_list"
@@ -60,42 +61,36 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@android:drawable/ic_menu_camera" />
 
-        <LinearLayout
-            android:id="@+id/linear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/radioGroup">
-
-            <TextView
-                android:id="@+id/src_text"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="3dp"
-                android:layout_weight="1"
-                android:hint="@string/not_defined"
-                android:textColor="@android:color/black"
-                tools:ignore="TextContrastCheck" />
-
-            <Button
-                android:id="@+id/select_src"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="5dp"
-                android:contentDescription="@string/select"
-                android:text="@string/three_dot"
-                tools:ignore="TouchTargetSizeCheck" />
-
-        </LinearLayout>
-
         <Spinner
             android:id="@+id/trg_whs_list"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linear"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="SpeakableTextPresentCheck" />
+
+        <Spinner
+            android:id="@+id/exp_center_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/trg_whs_list"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <EditText
+            android:id="@+id/notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:minHeight="48dp"
+            android:hint="@string/description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exp_center_list"
+            tools:ignore="LabelFor,SpeakableTextPresentCheck"
+            android:importantForAutofill="no" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
