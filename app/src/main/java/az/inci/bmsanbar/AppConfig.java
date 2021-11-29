@@ -5,7 +5,7 @@ import az.inci.bmsanbar.model.User;
 public class AppConfig
 {
     static final String DB_NAME = "BMS_ANBAR";
-    static final int DB_VERSION = 13;
+    static final int DB_VERSION = 14;
 
     public static final int PICK_MODE = 0;
     public static final int PACK_MODE = 1;

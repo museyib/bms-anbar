@@ -15,8 +15,6 @@
         android:id="@+id/uom_factor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="end"
-        android:hint="@string/not_defined"
         android:textColor="@android:color/black"
         android:textSize="20sp" />
 

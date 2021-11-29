@@ -98,8 +98,9 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String TRG_WHS_NAME = "TRG_WHS_NAME";
     public static final String SRC_WHS_CODE = "SRC_WHS_CODE";
     public static final String SRC_WHS_NAME = "SRC_WHS_NAME";
-    private static final String PERMISSION_NAME = "PERMISSION_NAME";
-    private static final String PERMISSION_VALUE = "PERMISSION_VALUE";
+    public static final String PERMISSION_NAME = "PERMISSION_NAME";
+    public static final String PERMISSION_VALUE = "PERMISSION_VALUE";
+    public static final String TAXED_FLAG = "TAXED_FLAG";
 
     private SQLiteDatabase db;
 
@@ -1036,7 +1037,8 @@ public class DBHelper extends SQLiteOpenHelper
                 .append(DRIVER_CODE).append(" TEXT,")
                 .append(SRC_TRX_NO).append(" TEXT,")
                 .append(VEHICLE_CODE).append(" TEXT,")
-                .append(USER_ID).append(" TEXT")
+                .append(USER_ID).append(" TEXT,")
+                .append(TAXED_FLAG).append(" TEXT")
                 .append(")")
                 .toString());
     }
@@ -1050,6 +1052,7 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(SRC_TRX_NO, shipTrx.getSrcTrxNo());
         values.put(VEHICLE_CODE, shipTrx.getVehicleCode());
         values.put(USER_ID, shipTrx.getUserId());
+        values.put(TAXED_FLAG, shipTrx.isTaxed() ? 1 : 0);
 
         db.insert(SHIP_TRX, null, values);
     }
@@ -1091,6 +1094,7 @@ public class DBHelper extends SQLiteOpenHelper
             trx.setSrcTrxNo(cursor.getString(2));
             trx.setVehicleCode(cursor.getString(3));
             trx.setUserId(cursor.getString(4));
+            trx.setTaxed(cursor.getInt(5) == 1);
             shipTrxList.add(trx);
         }
 

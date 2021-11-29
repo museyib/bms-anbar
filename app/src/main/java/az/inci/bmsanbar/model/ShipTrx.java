@@ -11,6 +11,7 @@ public class ShipTrx
     private String srcTrxNo;
     private String vehicleCode;
     private String userId;
+    private boolean taxed;
 
     public String getRegionCode()
     {
@@ -66,7 +67,7 @@ public class ShipTrx
     @Override
     public String toString()
     {
-        return srcTrxNo;
+        return srcTrxNo + (taxed ? "\t : İcazəlidir" : "");
     }
 
     @Override
@@ -82,5 +83,13 @@ public class ShipTrx
     public int hashCode()
     {
         return Objects.hash(srcTrxNo);
+    }
+
+    public boolean isTaxed() {
+        return taxed;
+    }
+
+    public void setTaxed(boolean taxed) {
+        this.taxed = taxed;
     }
 }

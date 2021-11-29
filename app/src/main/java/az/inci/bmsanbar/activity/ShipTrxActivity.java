@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -226,7 +227,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
         isValidDoc(trxNo);
     }
 
-    public void addDoc(String trxNo)
+    public void addDoc(String trxNo, boolean taxed)
     {
         ShipTrx trx = new ShipTrx();
         trx.setSrcTrxNo(trxNo);
@@ -234,6 +235,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
         trx.setVehicleCode(vehicleCode);
         trx.setRegionCode("SHR0000001");
         trx.setUserId(config().getUser().getId());
+        trx.setTaxed(taxed);
         dbHelper.addShipTrx(trx);
         scanVehicleCode.setVisibility(View.GONE);
         scanDriverCode.setVisibility(View.GONE);
@@ -314,9 +316,6 @@ public class ShipTrxActivity extends ScannerSupportActivity
                 playSound(SOUND_FAIL);
                 return;
             }
-            finally {
-                runOnUiThread(() -> showProgressDialog(false));
-            }
             if (result)
             {
                 runOnUiThread(() -> showMessageDialog(getString(R.string.error),
@@ -326,9 +325,48 @@ public class ShipTrxActivity extends ScannerSupportActivity
             }
             else
             {
-                runOnUiThread(() -> addDoc(barcode));
-                playSound(SOUND_SUCCESS);
+                if (trxNo.startsWith("DLV") || trxNo.startsWith("SIN"))
+                    checkTaxed(trxNo);
+                else runOnUiThread(() -> {
+                    addDoc(trxNo, false);
+                    showProgressDialog(false);
+                });
             }
+        }).start();
+    }
+
+    private void checkTaxed(String trxNo)
+    {
+        new Thread(() -> {
+            String url = url("doc", "taxed");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("trx-no", trxNo);
+            url = addRequestParameters(url, parameters);
+            RestTemplate template = new RestTemplate();
+            template.getMessageConverters().add(new StringHttpMessageConverter());
+            boolean result;
+            try
+            {
+                result = template.getForObject(url, Boolean.class);
+            }
+            catch (RuntimeException e)
+            {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error),
+                            getString(R.string.connection_error),
+                            android.R.drawable.ic_dialog_alert);
+                });
+                playSound(SOUND_FAIL);
+                return;
+            }
+            finally {
+                runOnUiThread(() -> showProgressDialog(false));
+            }
+
+            boolean finalResult = result;
+            runOnUiThread(() -> addDoc(trxNo, finalResult));
+            playSound(SOUND_SUCCESS);
         }).start();
     }
 
