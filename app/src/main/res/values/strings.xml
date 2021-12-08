@@ -117,4 +117,5 @@
     <string name="shelf_location">Vitrin yerləşməsi</string>
     <string name="shelf_barcode">Vitrin barkodu</string>
     <string name="internal_use">Daxili istifadə</string>
+    <string name="check_mode">Yoxlama rejimi</string>
 </resources>

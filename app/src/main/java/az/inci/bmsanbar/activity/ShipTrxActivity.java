@@ -4,10 +4,10 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -17,6 +17,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
     static final int SCAN_VEHICLE_CODE = 1;
     static final int SCAN_NEW_DOC = 2;
     int mode;
-    String driverCode;
+    String driverCode = "";
     String vehicleCode;
     String barcode;
     ListView trxListView;
@@ -42,8 +43,10 @@ public class ShipTrxActivity extends ScannerSupportActivity
     EditText driverCodeEditText;
     EditText vehicleCodeEditText;
     ImageButton send;
+    CheckBox checkMode;
     List<ShipTrx> trxList;
-    private boolean docCreated = false;
+    boolean docCreated = false;
+    boolean checkModeOn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -59,17 +62,29 @@ public class ShipTrxActivity extends ScannerSupportActivity
         scanNewDoc = findViewById(R.id.scan_new_doc);
         trxListView = findViewById(R.id.ship_trx_list_view);
         send = findViewById(R.id.send);
+        checkMode = findViewById(R.id.check_mode);
+
+        checkModeOn = checkMode.isChecked();
 
         if (config().isCameraScanning())
         {
             scanDriverCode.setVisibility(View.VISIBLE);
             scanVehicleCode.setVisibility(View.VISIBLE);
             scanNewDoc.setVisibility(View.VISIBLE);
+
+            scanDriverCode.setEnabled(!checkModeOn);
+            scanVehicleCode.setEnabled(!checkModeOn);
         }
+
+        checkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            checkModeOn = isChecked;
+            scanDriverCode.setEnabled(!checkModeOn);
+            scanVehicleCode.setEnabled(!checkModeOn);
+        });
 
         send.setOnClickListener(v ->
         {
-            if (trxList != null)
+            if (trxList.size() > 0 && !checkModeOn && docCreated)
                 new SendSipping(ShipTrxActivity.this).execute();
         });
 
@@ -80,7 +95,10 @@ public class ShipTrxActivity extends ScannerSupportActivity
                     .setPositiveButton(R.string.delete, (dialogInterface, i) ->
                     {
                         ShipTrx trx = (ShipTrx) parent.getItemAtPosition(position);
-                        dbHelper.deleteShipTrxBySrc(trx.getSrcTrxNo());
+                        if (checkModeOn)
+                            trxList.remove(trx);
+                        else
+                            dbHelper.deleteShipTrxBySrc(trx.getSrcTrxNo());
                         loadTrx();
                     })
                     .setNegativeButton(R.string.cancel, null)
@@ -116,7 +134,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
 
         scanNewDoc.setOnClickListener(v ->
         {
-            if (driverCode == null || vehicleCode == null)
+            if ((driverCode == null || vehicleCode == null) && !checkModeOn)
             {
                 showMessageDialog(getString(R.string.info),
                         getString(R.string.driver_or_vehicle_not_defined),
@@ -134,7 +152,8 @@ public class ShipTrxActivity extends ScannerSupportActivity
     public void onScanComplete(String barcode)
     {
         this.barcode = barcode;
-        if (docCreated)
+
+        if (docCreated || checkModeOn)
         {
             validateShipping(this.barcode);
         }
@@ -214,7 +233,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
 
     public void validateShipping(String trxNo)
     {
-        if (dbHelper.isShipped(trxNo))
+        if (!checkModeOn && dbHelper.isShipped(trxNo))
         {
             showMessageDialog(getString(R.string.error),
                     getString(R.string.doc_already_loaded),
@@ -236,7 +255,12 @@ public class ShipTrxActivity extends ScannerSupportActivity
         trx.setRegionCode("SHR0000001");
         trx.setUserId(config().getUser().getId());
         trx.setTaxed(taxed);
-        dbHelper.addShipTrx(trx);
+        if (checkModeOn) {
+            trxList = new ArrayList<>();
+            trxList.add(trx);
+        }
+        else
+            dbHelper.addShipTrx(trx);
         scanVehicleCode.setVisibility(View.GONE);
         scanDriverCode.setVisibility(View.GONE);
         loadTrx();
@@ -244,7 +268,12 @@ public class ShipTrxActivity extends ScannerSupportActivity
 
     void loadTrx()
     {
-        trxList = dbHelper.getShipTrx(driverCode);
+        if (!checkModeOn)
+            trxList = dbHelper.getShipTrx(driverCode);
+
+        if (trxList == null)
+            trxList = new ArrayList<>();
+
         ArrayAdapter<ShipTrx> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, trxList);
         trxListView.setAdapter(adapter);
     }
@@ -300,7 +329,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             RestTemplate template = new RestTemplate();
             template.getMessageConverters().add(new StringHttpMessageConverter());
-            boolean result = false;
+            boolean result;
             try
             {
                 result = template.getForObject(url, Boolean.class);
@@ -316,7 +345,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
                 playSound(SOUND_FAIL);
                 return;
             }
-            if (result)
+            if (!checkModeOn && result)
             {
                 runOnUiThread(() -> showMessageDialog(getString(R.string.error),
                         getString(R.string.doc_already_loaded),
