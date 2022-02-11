@@ -534,7 +534,6 @@ public class PackTrxActivity extends ScannerSupportActivity
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("trxId", trx.getTrxId());
                     jsonObject.put("qty", trx.getPackedQty());
-                    jsonObject.put("pickStatus", "null");
                     jsonArray.put(jsonObject);
                 }
             }
@@ -553,7 +552,7 @@ public class PackTrxActivity extends ScannerSupportActivity
                     .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
             boolean result;
-            String url = url("trx", "collect");
+            String url = url("pack", "collect");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("trx-no", trxNo);
             url = addRequestParameters(url, parameters);

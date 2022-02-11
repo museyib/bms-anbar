@@ -24,12 +24,9 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Doc;
@@ -170,7 +167,7 @@ public class PickDocActivity extends AppBaseActivity
             itemCount.setText(String.valueOf(doc.getItemCount()));
             pickedItemCount.setText(String.valueOf(doc.getPickedItemCount()));
             pickArea.setText(doc.getPickArea());
-            docDesc.setText((!doc.getDescription().equals("null")) ? doc.getDescription() : "");
+            docDesc.setText(doc.getDescription());
             whsCode.setText(doc.getWhsCode());
 
             return convertView;
@@ -231,7 +228,7 @@ public class PickDocActivity extends AppBaseActivity
     {
         showProgressDialog(true);
         new Thread(() -> {
-            String url = url("trx", "pick");
+            String url = url("pick", "get-doc");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("pick-user", config().getUser().getId());
             parameters.put("mode", String.valueOf(mode));
@@ -264,12 +261,11 @@ public class PickDocActivity extends AppBaseActivity
             String finalResult = result;
             runOnUiThread(() -> {
                 Gson gson = new Gson();
-                Type type = new TypeToken<ArrayList<Trx>>()
+                Type type = new TypeToken<Doc>()
                 {
                 }.getType();
-                List<Trx> trxList = new ArrayList<>(gson.fromJson(finalResult, type));
-                Set<String> trxSet = new HashSet<>();
-                if (trxList.isEmpty())
+                Doc doc = gson.fromJson(finalResult, type);
+                if (doc == null)
                 {
                     showMessageDialog(getString(R.string.info),
                             getString(R.string.no_data), android.R.drawable.ic_dialog_info);
@@ -277,17 +273,14 @@ public class PickDocActivity extends AppBaseActivity
                 }
                 else
                 {
-                    for (Trx trx : trxList)
+                    dbHelper.addPickDoc(doc);
+
+                    for (Trx trx : doc.getTrxList())
                     {
                         dbHelper.addPickTrx(trx);
-                        trxSet.add(trx.getTrxNo());
-                    }
-
-                    for (String trxNo : trxSet)
-                    {
-                        loadDocFromServer(trxNo);
                     }
                 }
+                loadDocs();
             });
         }).start();
     }

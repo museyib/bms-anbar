@@ -214,7 +214,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             assert doc != null;
             trxNo.setText(doc.getPrevTrxNo());
             itemCount.setText(String.valueOf(doc.getItemCount()));
-            docDesc.setText((!doc.getDescription().equals("null")) ? doc.getDescription() : "");
+            docDesc.setText(doc.getDescription());
             pickedItemCount.setText(String.valueOf(doc.getPickedItemCount()));
             bpName.setText(doc.getBpName());
             sbeName.setText(doc.getSbeName());
@@ -317,7 +317,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     {
         showProgressDialog(true);
         new Thread(() -> {
-            String url = url("trx", "pack");
+            String url = url("pack", "get-doc");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("approve-user", config().getUser().getId());
             parameters.put("mode", String.valueOf(mode));
@@ -351,12 +351,11 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             runOnUiThread(() -> {
 
                 Gson gson = new Gson();
-                Type type = new TypeToken<ArrayList<Trx>>()
+                Type type = new TypeToken<Doc>()
                 {
                 }.getType();
-                List<Trx> trxList = new ArrayList<>(gson.fromJson(finalResult, type));
-                Set<String> trxSet = new HashSet<>();
-                if (trxList.isEmpty())
+                Doc doc = gson.fromJson(finalResult, type);
+                if (doc == null)
                 {
                     showMessageDialog(getString(R.string.info),
                             getString(R.string.no_data), android.R.drawable.ic_dialog_info);
@@ -364,17 +363,14 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
                 }
                 else
                 {
-                    for (Trx trx : trxList)
+                    dbHelper.addPackDoc(doc);
+
+                    for (Trx trx : doc.getTrxList())
                     {
                         dbHelper.addPackTrx(trx);
-                        trxSet.add(trx.getTrxNo());
-                    }
-
-                    for (String trxNo : trxSet)
-                    {
-                        loadDocFromServer(trxNo);
                     }
                 }
+                loadDocs();
             });
         }).start();
     }

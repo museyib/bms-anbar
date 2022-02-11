@@ -65,7 +65,7 @@ public class WaitingPackDocActivity extends AppBaseActivity
         showProgressDialog(true);
         new Thread(() ->
         {
-            String url = url("doc", "pack", "all");
+            String url = url("pack", "waiting-docs");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("user-id", config().getUser().getId());
             url = addRequestParameters(url, parameters);

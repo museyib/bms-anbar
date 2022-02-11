@@ -578,7 +578,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
                     .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
             boolean result;
-            String url = url("trx", "collect");
+            String url = url("pick", "collect");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("trx-no", null);
             url = addRequestParameters(url, parameters);
@@ -618,7 +618,7 @@ public class PickTrxActivity extends ScannerSupportActivity implements SearchVie
                     .setConnectTimeout(config().getConnectionTimeout() * 1000);
             template.getMessageConverters().add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
             boolean result;
-            String url = url("doc", "pick", "reset");
+            String url = url("pick", "reset");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("trx-no", trxNo);
             parameters.put("user-id", config().getUser().getId());

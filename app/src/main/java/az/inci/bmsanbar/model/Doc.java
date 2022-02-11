@@ -5,6 +5,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Doc
@@ -34,6 +35,7 @@ public class Doc
     private String srcWhsName;
     private String expCenterCode;
     private String expCenterName;
+    private List<Trx> trxList;
 
     public String getTrxNo()
     {
@@ -212,39 +214,6 @@ public class Doc
         this.sbeCode = sbeCode;
     }
 
-    @NonNull
-    @Override
-    public String toString()
-    {
-        return "Doc{" +
-                "trxNo='" + trxNo + '\'' +
-                ", trxDate='" + trxDate + '\'' +
-                ", recStatus=" + recStatus +
-                ", pickStatus='" + pickStatus + '\'' +
-                ", whsCode='" + whsCode + '\'' +
-                ", whsName='" + whsName + '\'' +
-                ", description='" + description + '\'' +
-                ", notes='" + notes + '\'' +
-                ", pickArea='" + pickArea + '\'' +
-                ", pickGroup='" + pickGroup + '\'' +
-                ", pickUser='" + pickUser + '\'' +
-                ", itemCount=" + itemCount +
-                ", pickedItemCount=" + pickedItemCount +
-                ", prevTrxNo='" + prevTrxNo + '\'' +
-                ", bpName='" + bpName + '\'' +
-                ", sbeName='" + sbeName + '\'' +
-                ", bpCode='" + bpCode + '\'' +
-                ", sbeCode='" + sbeCode + '\'' +
-                ", approveUser='" + approveUser + '\'' +
-                ", trxTypeId=" + trxTypeId +
-                ", amount=" + amount +
-                ", srcWhsCode='" + srcWhsCode + '\'' +
-                ", srcWhsName='" + srcWhsName + '\'' +
-                ", expCenterCode='" + expCenterCode + '\'' +
-                ", expCenterName='" + expCenterName + '\'' +
-                '}';
-    }
-
     public String getApproveUser()
     {
         return approveUser;
@@ -329,5 +298,51 @@ public class Doc
 
     public void setExpCenterName(String expCenterName) {
         this.expCenterName = expCenterName;
+    }
+
+    public List<Trx> getTrxList() {
+        return trxList;
+    }
+
+    public void setTrxList(List<Trx> trxList) {
+        this.trxList = trxList;
+    }
+
+    public void addTrx(Trx trx)
+    {
+        trxList.add(trx);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Doc{" +
+                "trxNo='" + trxNo + '\'' +
+                ", trxDate='" + trxDate + '\'' +
+                ", recStatus=" + recStatus +
+                ", pickStatus='" + pickStatus + '\'' +
+                ", whsCode='" + whsCode + '\'' +
+                ", whsName='" + whsName + '\'' +
+                ", description='" + description + '\'' +
+                ", notes='" + notes + '\'' +
+                ", pickArea='" + pickArea + '\'' +
+                ", pickGroup='" + pickGroup + '\'' +
+                ", pickUser='" + pickUser + '\'' +
+                ", itemCount=" + itemCount +
+                ", pickedItemCount=" + pickedItemCount +
+                ", prevTrxNo='" + prevTrxNo + '\'' +
+                ", bpName='" + bpName + '\'' +
+                ", sbeName='" + sbeName + '\'' +
+                ", bpCode='" + bpCode + '\'' +
+                ", sbeCode='" + sbeCode + '\'' +
+                ", approveUser='" + approveUser + '\'' +
+                ", trxTypeId=" + trxTypeId +
+                ", amount=" + amount +
+                ", srcWhsCode='" + srcWhsCode + '\'' +
+                ", srcWhsName='" + srcWhsName + '\'' +
+                ", expCenterCode='" + expCenterCode + '\'' +
+                ", expCenterName='" + expCenterName + '\'' +
+                ", trxList=" + trxList +
+                '}';
     }
 }
