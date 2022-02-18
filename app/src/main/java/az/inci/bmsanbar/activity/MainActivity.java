@@ -154,6 +154,10 @@ public class MainActivity extends AppBaseActivity
     {
         showLoginDialog(AppConfig.PRODUCT_APPROVE_MODE);
     }
+    public void openConfirmDelivery(View view)
+    {
+        showLoginDialog(AppConfig.CONFIRM_DELIVERY_MODE);
+    }
 
     private void showLoginDialog(int mode)
     {
@@ -271,6 +275,16 @@ public class MainActivity extends AppBaseActivity
                     break;
                 case AppConfig.INV_ATTRIBUTE_MODE:
                     aClass = InventoryInfoActivity.class;
+                    break;
+                case AppConfig.CONFIRM_DELIVERY_MODE:
+                    if (!user.isLoading())
+                    {
+                        showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
+                                android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                        return;
+                    }
+                    aClass = ConfirmDeliveryActivity.class;
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + mode);

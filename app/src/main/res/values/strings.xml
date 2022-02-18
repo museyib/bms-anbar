@@ -118,4 +118,10 @@
     <string name="shelf_barcode">Vitrin barkodu</string>
     <string name="internal_use">Daxili istifadə</string>
     <string name="check_mode">Yoxlama rejimi</string>
+    <string name="driver_not_defined">Sürücü seçilməyib!</string>
+    <string name="docs_confirmed_successfully">Sənədlər uğurla təsdiqləndi</string>
+    <string name="server_error">Server xətası!</string>
+    <string name="not_shipped_for_current_driver">Bu sənəd cari sürücü üçün yükləməyə verilməyib!</string>
+    <string name="doc_status_incorrect">Sənədin statusu düzgün deyil!</string>
+    <string name="confirm_delivery">Çatdırılmanın təsdiqi</string>
 </resources>

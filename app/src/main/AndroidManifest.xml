@@ -106,6 +106,7 @@
         <activity android:name=".activity.EditBarcodesActivity" />
         <activity android:name=".activity.InternalUseDocActivity" />
         <activity android:name=".activity.InternalUseTrxActivity" />
+        <activity android:name=".activity.ConfirmDeliveryActivity" />
     </application>
 
 </manifest>
