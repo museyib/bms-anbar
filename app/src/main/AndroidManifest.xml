@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="az.inci.bmsanbar"
     android:installLocation="auto"
     android:requestLegacyExternalStorage="true">
 
@@ -33,8 +32,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
-        tools:targetApi="n">
-        <activity android:name=".activity.EditShelfActivity"></activity>
+        tools:targetApi="s"
+        android:dataExtractionRules="@xml/data_extraction_rules">
+        <activity android:name=".activity.EditShelfActivity" />
         <activity android:name=".activity.ApproveTrxActivity" />
         <activity android:name=".activity.ApproveDocActivity" />
         <activity android:name=".activity.EditAttributesActivity" />
@@ -80,7 +80,8 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity android:name=".activity.MainActivity">
+        <activity android:name=".activity.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

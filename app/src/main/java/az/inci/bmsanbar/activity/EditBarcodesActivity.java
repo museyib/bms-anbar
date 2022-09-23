@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,14 +31,17 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.InvBarcode;
+import az.inci.bmsanbar.model.Uom;
 
 public class EditBarcodesActivity extends ScannerSupportActivity
 {
@@ -44,8 +49,10 @@ public class EditBarcodesActivity extends ScannerSupportActivity
     ListView barcodeListView;
     String invCode;
     String invName;
+    String defaultUomCode;
     String result;
     List<InvBarcode> barcodeList;
+    List<Uom> uomList;
     private static DecimalFormat decimalFormat;
 
     @Override
@@ -60,6 +67,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
 
         invCode = getIntent().getStringExtra("invCode");
         invName = getIntent().getStringExtra("invName");
+        defaultUomCode = getIntent().getStringExtra("defaultUomCode");
         setTitle(invName);
 
         Button scanBtn = findViewById(R.id.scan);
@@ -99,6 +107,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         invBarcode.setInvCode(invCode);
         invBarcode.setBarcode(barcode);
         invBarcode.setUomFactor(1);
+        invBarcode.setUom(defaultUomCode);
         View dialog = LayoutInflater.from(this)
                 .inflate(R.layout.edit_barcode_dialog, null, false);
         showAddBarcodeDialog(invBarcode, dialog);
@@ -110,6 +119,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         new Thread(() ->
         {
             barcodeList = getBarcodeList();
+            uomList = getUomList();
             runOnUiThread(this::loadData);
         }).start();
     }
@@ -140,12 +150,21 @@ public class EditBarcodesActivity extends ScannerSupportActivity
 
         EditText uomFactorEdit = dialog.findViewById(R.id.uom_factor);
         uomFactorEdit.setText(decimalFormat.format(barcode.getUomFactor()));
+
+        Spinner uomListSpinner = dialog.findViewById(R.id.uom);
+        ArrayAdapter<Uom> adapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, uomList);
+        uomListSpinner.setAdapter(adapter);
+        Log.e("UOM-1", barcode.getUom());
+        uomListSpinner.setSelection(uomList.indexOf(new Uom(barcode.getUom())));
+
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setView(dialog)
                 .setPositiveButton("OK", (dialog1, which) ->
                 {
                     double uomFactor=Double.parseDouble(uomFactorEdit.getText().toString());
+                    String uomCode = ((Uom) uomListSpinner.getSelectedItem()).getUomCode();
                     barcode.setUomFactor(uomFactor);
+                    barcode.setUom(uomCode);
                     barcodeList.add(barcode);
                     loadData();
                 })
@@ -159,6 +178,11 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         barcodeStringEdit.setEnabled(false);
         barcodeStringEdit.setText(barcode.getBarcode());
 
+        Spinner uomListSpinner = dialog.findViewById(R.id.uom);
+        ArrayAdapter<Uom> adapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, uomList);
+        uomListSpinner.setAdapter(adapter);
+        uomListSpinner.setSelection(uomList.indexOf(new Uom(barcode.getUom())));
+
         EditText uomFactorEdit = dialog.findViewById(R.id.uom_factor);
         uomFactorEdit.setText(decimalFormat.format(barcode.getUomFactor()));
         AlertDialog alertDialog = new AlertDialog.Builder(this)
@@ -166,7 +190,9 @@ public class EditBarcodesActivity extends ScannerSupportActivity
                 .setPositiveButton("OK", (dialog1, which) ->
                 {
                     double uomFactor=Double.parseDouble(uomFactorEdit.getText().toString());
+                    String uomCode = ((Uom) uomListSpinner.getSelectedItem()).getUomCode();
                     barcode.setUomFactor(uomFactor);
+                    barcode.setUom(uomCode);
                     loadData();
                 })
                 .create();
@@ -201,6 +227,33 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         return result;
     }
 
+    private List<Uom> getUomList()
+    {
+        List<Uom> result;
+
+        String url = url("uom", "all");
+        Map<String, String> parameters = new HashMap<>();
+        url = addRequestParameters(url, parameters);
+        RestTemplate template = new RestTemplate();
+        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
+                .setConnectTimeout(config().getConnectionTimeout() * 1000);
+        template.getMessageConverters().add(new StringHttpMessageConverter());
+        try
+        {
+            String content = template.getForObject(url, String.class);
+            Gson gson = new Gson();
+            result = new ArrayList<>(gson.fromJson(content, new TypeToken<List<Uom>>()
+            {
+            }.getType()));
+        }
+        catch (RuntimeException ex)
+        {
+            ex.printStackTrace();
+            return new ArrayList<>();
+        }
+        return result;
+    }
+
     private void updateBarcodes()
     {
         showProgressDialog(true);
@@ -215,6 +268,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("invCode", barcode.getInvCode());
                     jsonObject.put("barcode", barcode.getBarcode());
+                    jsonObject.put("uom", barcode.getUom());
                     jsonObject.put("uomFactor", barcode.getUomFactor());
                     jsonObject.put("defined", barcode.isDefined());
                     jsonArray.put(jsonObject);
@@ -227,12 +281,14 @@ public class EditBarcodesActivity extends ScannerSupportActivity
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            headers.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
 
             HttpEntity<String> entity = new HttpEntity<>(jsonArray.toString(), headers);
             RestTemplate template = new RestTemplate();
             ((SimpleClientHttpRequestFactory) template.getRequestFactory())
                     .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
+            template.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
             try
             {
                 template.postForObject(url, entity, Boolean.class);
@@ -274,8 +330,10 @@ public class EditBarcodesActivity extends ScannerSupportActivity
             ViewHolder holder = new ViewHolder();
             holder.barcodeStringText = convertView.findViewById(R.id.barcode_string);
             holder.uomFactorText = convertView.findViewById(R.id.uom_factor);
+            holder.uomText = convertView.findViewById(R.id.uom);
             holder.barcodeStringText.setText(barcode.getBarcode());
             holder.uomFactorText.setText(decimalFormat.format(barcode.getUomFactor()));
+            holder.uomText.setText(barcode.getUom());
 
             return convertView;
         }
@@ -284,6 +342,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         {
             TextView barcodeStringText;
             TextView uomFactorText;
+            TextView uomText;
         }
     }
 

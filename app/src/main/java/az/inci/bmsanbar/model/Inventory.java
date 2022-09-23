@@ -11,6 +11,7 @@ public class Inventory
     private String barcode;
     private String invBrand;
     private String internalCount;
+    private String defaultUomCode;
     private double price;
     private double whsQty;
 
@@ -113,5 +114,13 @@ public class Inventory
 
     public void setWhsQty(double whsQty) {
         this.whsQty = whsQty;
+    }
+
+    public String getDefaultUomCode() {
+        return defaultUomCode;
+    }
+
+    public void setDefaultUomCode(String defaultUomCode) {
+        this.defaultUomCode = defaultUomCode;
     }
 }

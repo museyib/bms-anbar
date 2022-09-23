@@ -2,7 +2,9 @@ package az.inci.bmsanbar;
 
 import android.app.Application;
 
-public class App extends Application
+import androidx.multidex.MultiDexApplication;
+
+public class App extends MultiDexApplication
 {
     private AppConfig config;
 

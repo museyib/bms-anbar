@@ -6,6 +6,7 @@ public class InvBarcode
 {
     private String invCode;
     private String barcode;
+    private String uom;
     private double uomFactor;
     private boolean defined;
 
@@ -62,5 +63,13 @@ public class InvBarcode
     public void setDefined(boolean defined)
     {
         this.defined = defined;
+    }
+
+    public String getUom() {
+        return uom;
+    }
+
+    public void setUom(String uom) {
+        this.uom = uom;
     }
 }

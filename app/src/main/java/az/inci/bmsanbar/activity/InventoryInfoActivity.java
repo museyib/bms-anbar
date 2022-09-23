@@ -3,6 +3,7 @@ package az.inci.bmsanbar.activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -47,6 +48,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     String invCode;
     String invName;
+    String defaultUomCode;
     String keyword;
     String result = "";
 
@@ -167,6 +169,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         {
             Inventory inventory = (Inventory) adapterView.getItemAtPosition(i);
             invCode = inventory.getInvCode();
+            defaultUomCode = inventory.getDefaultUomCode();
             getDataByInvCode(invCode);
 
             dialog.dismiss();
@@ -179,6 +182,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         invCode = info.substring(10, firstIndex);
         invName = info.substring(firstIndex + invCode.length() + 4,
                 info.indexOf(';', firstIndex + invCode.length() + 4));
+        defaultUomCode = info.substring(info.indexOf("Əsas ölçü vahidi: ")+18);
         info = info.replaceAll("; ", "\n");
         info = info.replaceAll("\\\\n", "\n");
         infoText.setText(info);
@@ -204,6 +208,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             Intent intent = new Intent(this, EditAttributesActivity.class);
             intent.putExtra("invCode", invCode);
             intent.putExtra("invName", invName);
+            intent.putExtra("defaultUomCode", defaultUomCode);
             startActivity(intent);
         }
     }
@@ -361,6 +366,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             Intent intent = new Intent(this, EditBarcodesActivity.class);
             intent.putExtra("invCode", invCode);
             intent.putExtra("invName", invName);
+            intent.putExtra("defaultUomCode", defaultUomCode);
             startActivity(intent);
         }
     }
