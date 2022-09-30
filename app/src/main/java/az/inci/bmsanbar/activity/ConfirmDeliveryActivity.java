@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -34,6 +35,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
     Button cancel;
     EditText driverCodeEditText;
     ImageButton send;
+    CheckBox incomeModeCheck;
     List<String> docList;
     boolean docCreated = false;
     private String note;
@@ -50,6 +52,13 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         docListView = findViewById(R.id.ship_trx_list_view);
         send = findViewById(R.id.send);
         cancel = findViewById(R.id.cancel_button);
+        incomeModeCheck = findViewById(R.id.income_mode_check);
+
+        if (config().isCameraScanning())
+        {
+            scanDriverCode.setVisibility(View.VISIBLE);
+            scanNewDoc.setVisibility(View.VISIBLE);
+        }
 
         docList = new ArrayList<>();
 
@@ -191,7 +200,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
             }
             if (result) {
                 checkShipping(trxNo);
-                playSound(SOUND_SUCCESS);
             } else {
                 runOnUiThread(() -> {
                     showMessageDialog(getString(R.string.error),
@@ -325,10 +333,11 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         {
             for (String trxNo : docList) {
                 note = "İstifadəçi: " + config().getUser().getId();
+                String shipStatus = incomeModeCheck.isChecked() ? "MD" : "MC";
                 String url = url("logistics", "change-doc-status");
                 Map<String, String> parameters = new HashMap<>();
                 parameters.put("trx-no", trxNo);
-                parameters.put("status", "MC");
+                parameters.put("status", shipStatus);
                 parameters.put("note", note);
                 parameters.put("deliver-person", "");
                 url = addRequestParameters(url, parameters);
@@ -384,6 +393,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
     {
         driverCode = "";
         driverCodeEditText.setText("");
+        incomeModeCheck.setChecked(false);
         docCreated = false;
         docList.clear();
         scanDriverCode.setVisibility(View.VISIBLE);

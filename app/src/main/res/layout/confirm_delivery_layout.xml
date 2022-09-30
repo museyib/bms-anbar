@@ -26,6 +26,7 @@
         android:layout_margin="5dp"
         android:contentDescription="@string/driver"
         android:text="@string/scan"
+        android:visibility="gone"
         app:layout_constraintStart_toEndOf="@id/driver"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -34,6 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/add_new_doc"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@id/ship_trx_list_view"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,8 +46,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/send"
-        app:layout_constraintEnd_toStartOf="@+id/scan_new_doc"
-        app:layout_constraintHorizontal_bias="0.06"
+        android:layout_marginStart="5dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/driver"
         app:srcCompat="@android:drawable/ic_menu_upload"
@@ -73,4 +74,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/doc_list" />
+
+    <CheckBox
+        android:id="@+id/income_mode_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Anbara giriş"
+        app:layout_constraintBottom_toTopOf="@+id/ship_trx_list_view"
+        app:layout_constraintStart_toEndOf="@+id/send"
+        app:layout_constraintTop_toBottomOf="@+id/driver"
+        android:layout_marginStart="5dp"
+        tools:ignore="TouchTargetSizeCheck" />
 </androidx.constraintlayout.widget.ConstraintLayout>

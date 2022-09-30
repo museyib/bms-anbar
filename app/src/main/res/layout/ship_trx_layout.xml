@@ -69,11 +69,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/send"
+        android:layout_marginStart="5dp"
         app:layout_constraintEnd_toStartOf="@+id/scan_new_doc"
-        app:layout_constraintHorizontal_bias="0.06"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/vehicle"
-        app:srcCompat="@android:drawable/ic_menu_upload" />
+        app:srcCompat="@android:drawable/ic_menu_upload"
+        tools:ignore="ImageContrastCheck" />
 
     <ListView
         android:id="@+id/ship_trx_list_view"
@@ -97,5 +99,17 @@
         android:text="@string/check_mode"
         app:layout_constraintBottom_toTopOf="@+id/ship_trx_list_view"
         app:layout_constraintStart_toEndOf="@+id/send"
-        app:layout_constraintTop_toBottomOf="@+id/vehicle" />
+        app:layout_constraintTop_toBottomOf="@+id/vehicle"
+        tools:ignore="TouchTargetSizeCheck" />
+
+    <CheckBox
+        android:id="@+id/to_central_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/to_central_whs"
+        app:layout_constraintBottom_toTopOf="@+id/ship_trx_list_view"
+        app:layout_constraintStart_toEndOf="@+id/check_mode"
+        app:layout_constraintTop_toBottomOf="@+id/vehicle"
+        android:layout_marginStart="5dp"
+        tools:ignore="TouchTargetSizeCheck" />
 </androidx.constraintlayout.widget.ConstraintLayout>

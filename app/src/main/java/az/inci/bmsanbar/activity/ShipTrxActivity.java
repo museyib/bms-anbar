@@ -44,9 +44,11 @@ public class ShipTrxActivity extends ScannerSupportActivity
     EditText vehicleCodeEditText;
     ImageButton send;
     CheckBox checkMode;
+    CheckBox toCentralCheck;
     List<ShipTrx> trxList;
     boolean docCreated = false;
     boolean checkModeOn;
+    boolean toCentral;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -63,6 +65,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
         trxListView = findViewById(R.id.ship_trx_list_view);
         send = findViewById(R.id.send);
         checkMode = findViewById(R.id.check_mode);
+        toCentralCheck = findViewById(R.id.to_central_check);
 
         checkModeOn = checkMode.isChecked();
 
@@ -81,6 +84,8 @@ public class ShipTrxActivity extends ScannerSupportActivity
             scanDriverCode.setEnabled(!checkModeOn);
             scanVehicleCode.setEnabled(!checkModeOn);
         });
+
+        toCentralCheck.setOnCheckedChangeListener((buttonView, isChecked) -> toCentral = isChecked);
 
         send.setOnClickListener(v ->
         {
@@ -168,7 +173,8 @@ public class ShipTrxActivity extends ScannerSupportActivity
                 setVehicleCode(this.barcode);
             }
 
-            if (driverCode != null && vehicleCode != null)
+            if (driverCode != null && !driverCode.isEmpty()
+                    && vehicleCode != null && !vehicleCode.isEmpty())
                 docCreated = true;
         }
     }
@@ -309,7 +315,6 @@ public class ShipTrxActivity extends ScannerSupportActivity
             }
             if (result) {
                 checkShipping(trxNo);
-                playSound(SOUND_SUCCESS);
             } else {
                 runOnUiThread(() -> showMessageDialog(getString(R.string.error),
                         getString(R.string.not_valid_doc_for_shipping),
@@ -354,6 +359,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
             }
             else
             {
+                playSound(SOUND_SUCCESS);
                 if (trxNo.startsWith("DLV") || trxNo.startsWith("SIN"))
                     checkTaxed(trxNo);
                 else runOnUiThread(() -> {
@@ -395,7 +401,6 @@ public class ShipTrxActivity extends ScannerSupportActivity
 
             boolean finalResult = result;
             runOnUiThread(() -> addDoc(trxNo, finalResult));
-            playSound(SOUND_SUCCESS);
         }).start();
     }
 
@@ -424,6 +429,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
             template.getMessageConverters().add(new StringHttpMessageConverter());
             ((SimpleClientHttpRequestFactory) template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
             boolean result = false;
+            String shipStatus = activity.toCentral ? "MG" : "AC";
             for (Object item : trxList)
             {
                 ShipTrx trx = (ShipTrx) item;
@@ -434,6 +440,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
                 parameters.put("src-trx-no", trx.getSrcTrxNo());
                 parameters.put("vehicle-code", trx.getVehicleCode());
                 parameters.put("user-id", trx.getUserId());
+                parameters.put("ship-status", shipStatus);
                 url = activity.addRequestParameters(url, parameters);
 
                 try

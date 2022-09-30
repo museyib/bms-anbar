@@ -22,7 +22,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 32
         multiDexEnabled true
-        versionCode 47
+        versionCode 48
         versionName "1.0"
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_8
