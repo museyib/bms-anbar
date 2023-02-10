@@ -13,11 +13,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +33,7 @@ public class WaitingPackDocActivity extends AppBaseActivity
         setContentView(R.layout.activity_open_pack_doc);
 
         docListView = findViewById(R.id.doc_list);
-        docListView.setOnItemClickListener((adapterView, view, i, l) ->
-        {
+        docListView.setOnItemClickListener((adapterView, view, i, l) -> {
             Doc doc = (Doc) view.getTag();
             Intent intent = new Intent(this, WaitingPackTrxActivity.class);
             intent.putExtra("trxNo", doc.getTrxNo());
@@ -50,41 +44,33 @@ public class WaitingPackDocActivity extends AppBaseActivity
         loadFooter();
     }
 
-    public void loadDocs()
+    @Override
+    public void loadData()
     {
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
         if (docList.size() == 0)
+        {
             findViewById(R.id.header).setVisibility(View.GONE);
+        }
         else
+        {
             findViewById(R.id.header).setVisibility(View.VISIBLE);
+        }
     }
 
     public void getNewDocs()
     {
         showProgressDialog(true);
-        new Thread(() ->
-        {
+        new Thread(() -> {
             String url = url("pack", "waiting-docs");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("user-id", config().getUser().getId());
             url = addRequestParameters(url, parameters);
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            try
+            docList = getListData(url, "GET", null, Doc[].class);
+            if (docList != null)
             {
-                docList = Arrays.asList(template.getForObject(url, Doc[].class));
-                runOnUiThread(this::loadDocs);
-            }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-            }
-            finally
-            {
-                showProgressDialog(false);
+                runOnUiThread(this::loadData);
             }
         }).start();
     }
@@ -121,7 +107,7 @@ public class WaitingPackDocActivity extends AppBaseActivity
             if (convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
-                        .inflate(R.layout.pack_doc_item_layout, parent, false);
+                                            .inflate(R.layout.pack_doc_item_layout, parent, false);
             }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);

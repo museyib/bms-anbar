@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="search_field_list" >
+    <string-array name="search_field_list">
         <item>Ad</item>
         <item>Kod</item>
     </string-array>

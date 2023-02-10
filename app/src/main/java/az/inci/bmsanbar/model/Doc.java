@@ -2,7 +2,6 @@ package az.inci.bmsanbar.model;
 
 import android.os.Build;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import java.util.List;
@@ -35,6 +34,7 @@ public class Doc
     private String srcWhsName;
     private String expCenterCode;
     private String expCenterName;
+    private int activeSeconds;
     private List<Trx> trxList;
 
     public String getTrxNo()
@@ -284,27 +284,33 @@ public class Doc
         this.whsName = whsName;
     }
 
-    public String getExpCenterCode() {
+    public String getExpCenterCode()
+    {
         return expCenterCode;
     }
 
-    public void setExpCenterCode(String expCenterCode) {
+    public void setExpCenterCode(String expCenterCode)
+    {
         this.expCenterCode = expCenterCode;
     }
 
-    public String getExpCenterName() {
+    public String getExpCenterName()
+    {
         return expCenterName;
     }
 
-    public void setExpCenterName(String expCenterName) {
+    public void setExpCenterName(String expCenterName)
+    {
         this.expCenterName = expCenterName;
     }
 
-    public List<Trx> getTrxList() {
+    public List<Trx> getTrxList()
+    {
         return trxList;
     }
 
-    public void setTrxList(List<Trx> trxList) {
+    public void setTrxList(List<Trx> trxList)
+    {
         this.trxList = trxList;
     }
 
@@ -313,36 +319,13 @@ public class Doc
         trxList.add(trx);
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return "Doc{" +
-                "trxNo='" + trxNo + '\'' +
-                ", trxDate='" + trxDate + '\'' +
-                ", recStatus=" + recStatus +
-                ", pickStatus='" + pickStatus + '\'' +
-                ", whsCode='" + whsCode + '\'' +
-                ", whsName='" + whsName + '\'' +
-                ", description='" + description + '\'' +
-                ", notes='" + notes + '\'' +
-                ", pickArea='" + pickArea + '\'' +
-                ", pickGroup='" + pickGroup + '\'' +
-                ", pickUser='" + pickUser + '\'' +
-                ", itemCount=" + itemCount +
-                ", pickedItemCount=" + pickedItemCount +
-                ", prevTrxNo='" + prevTrxNo + '\'' +
-                ", bpName='" + bpName + '\'' +
-                ", sbeName='" + sbeName + '\'' +
-                ", bpCode='" + bpCode + '\'' +
-                ", sbeCode='" + sbeCode + '\'' +
-                ", approveUser='" + approveUser + '\'' +
-                ", trxTypeId=" + trxTypeId +
-                ", amount=" + amount +
-                ", srcWhsCode='" + srcWhsCode + '\'' +
-                ", srcWhsName='" + srcWhsName + '\'' +
-                ", expCenterCode='" + expCenterCode + '\'' +
-                ", expCenterName='" + expCenterName + '\'' +
-                ", trxList=" + trxList +
-                '}';
+    public int getActiveSeconds()
+    {
+        return activeSeconds;
+    }
+
+    public void setActiveSeconds(int activeSeconds)
+    {
+        this.activeSeconds = activeSeconds;
     }
 }

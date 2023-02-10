@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="5dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
 
     <TextView
-        android:id="@+id/attribute_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="@android:color/black"
-        android:textSize="16sp" />
+            android:id="@+id/attribute_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
     <TextView
-        android:id="@+id/attribute_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:autofillHints="@string/attribute_value"
-        android:ems="10"
-        android:enabled="false"
-        android:hint="@string/not_defined"
-        android:textColor="@android:color/black"
-        android:visibility="gone" />
+            android:id="@+id/attribute_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autofillHints="@string/attribute_value"
+            android:ems="10"
+            android:enabled="false"
+            android:hint="@string/not_defined"
+            android:textColor="@android:color/black"
+            android:visibility="gone" />
 
     <CheckBox
-        android:id="@+id/attribute_value_check"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:visibility="gone" />
+            android:id="@+id/attribute_value_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="gone" />
 </TableRow>

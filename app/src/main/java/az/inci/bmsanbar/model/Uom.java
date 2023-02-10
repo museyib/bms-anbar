@@ -36,12 +36,14 @@ public class Uom
 
     @NonNull
     @Override
-    public String toString() {
-        return  uomCode;
+    public String toString()
+    {
+        return uomCode;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Uom uom = (Uom) o;
@@ -49,7 +51,8 @@ public class Uom
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(uomCode);
     }
 }

@@ -3,7 +3,6 @@ package az.inci.bmsanbar.activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -14,25 +13,38 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import java.lang.ref.WeakReference;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URL;
 import java.sql.Date;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import az.inci.bmsanbar.App;
 import az.inci.bmsanbar.AppConfig;
 import az.inci.bmsanbar.DBHelper;
+import az.inci.bmsanbar.OnExecuteComplete;
 import az.inci.bmsanbar.OnInvBarcodeFetched;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.User;
+import az.inci.bmsanbar.model.v2.Response;
+import az.inci.bmsanbar.model.v2.ResponseMessage;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 
-public class AppBaseActivity extends AppCompatActivity
+public abstract class AppBaseActivity extends AppCompatActivity
 {
 
     protected static int SOUND_SUCCESS = R.raw.barcodebeep;
@@ -41,15 +53,25 @@ public class AppBaseActivity extends AppCompatActivity
     protected SoundPool soundPool;
     protected AudioManager audioManager;
     protected int sound;
+    protected DecimalFormat decimalFormat;
 
     AlertDialog progressDialog;
+    AlertDialog.Builder dialogBuilder;
     int mode;
     DBHelper dbHelper;
+
+    Gson gson = new Gson();
+    Type responseType = new TypeToken<Response>()
+    {}.getType();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        decimalFormat = new DecimalFormat();
+        decimalFormat.setGroupingUsed(false);
+
         dbHelper = new DBHelper(this);
         dbHelper.open();
 
@@ -65,19 +87,6 @@ public class AppBaseActivity extends AppCompatActivity
         dbHelper.open();
     }
 
-    @Override
-    protected void onDestroy()
-    {
-        super.onDestroy();
-        dbHelper.close();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        super.onPause();
-    }
-
     public void loadFooter()
     {
         TextView userId = findViewById(R.id.user_info_id);
@@ -89,13 +98,11 @@ public class AppBaseActivity extends AppCompatActivity
     public void showProgressDialog(boolean b)
     {
         View view = getLayoutInflater().inflate(R.layout.progress_dialog_layout,
-                findViewById(android.R.id.content), false);
+                                                findViewById(android.R.id.content), false);
         if (progressDialog == null)
         {
-            progressDialog = new AlertDialog.Builder(this)
-                    .setView(view)
-                    .setCancelable(false)
-                    .create();
+            progressDialog = new AlertDialog.Builder(this).setView(view).setCancelable(false)
+                                                          .create();
         }
         if (b)
         {
@@ -110,7 +117,7 @@ public class AppBaseActivity extends AppCompatActivity
     public String url(String... value)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(config().getServerUrl());
+        sb.append(config().getServerUrl()).append("/v2");
         for (String s : value)
         {
             sb.append("/").append(s);
@@ -125,10 +132,7 @@ public class AppBaseActivity extends AppCompatActivity
 
         for (Map.Entry<String, String> entry : requestParameters.entrySet())
         {
-            builder.append(entry.getKey())
-                    .append("=")
-                    .append(entry.getValue())
-                    .append("&");
+            builder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
         }
 
         builder.delete(builder.length() - 1, builder.length());
@@ -157,16 +161,17 @@ public class AppBaseActivity extends AppCompatActivity
 
     protected void showMessageDialog(String title, String message, int icon)
     {
-        new android.app.AlertDialog.Builder(this)
-                .setIcon(icon)
-                .setTitle(title)
-                .setMessage(message).show();
+        if (dialogBuilder == null)
+        {
+            dialogBuilder = new AlertDialog.Builder(this);
+        }
+        dialogBuilder.setIcon(icon).setTitle(title).setMessage(message).show();
     }
 
     protected void showPickDateDialog(String reportType)
     {
         View view = getLayoutInflater().inflate(R.layout.pick_date_dialog,
-                findViewById(android.R.id.content), false);
+                                                findViewById(android.R.id.content), false);
 
         EditText fromText = view.findViewById(R.id.from_date);
         EditText toText = view.findViewById(R.id.to_date);
@@ -174,23 +179,34 @@ public class AppBaseActivity extends AppCompatActivity
         fromText.setText(new Date(System.currentTimeMillis()).toString());
         toText.setText(new Date(System.currentTimeMillis()).toString());
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setView(view)
-                .setTitle("Tarix intervalı")
-                .setPositiveButton("OK", (dialogInterface, i) ->
-                {
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(view).setTitle("Tarix intervalı")
+                                                          .setPositiveButton("OK",
+                                                                             (dialogInterface, i) -> {
 
-                    String startDate = fromText.getText().toString();
-                    String endDate = toText.getText().toString();
-                    String url = url("inv", reportType);
-                    Map<String, String> parameters = new HashMap<>();
-                    parameters.put("start-date", startDate);
-                    parameters.put("end-date", endDate);
-                    parameters.put("user-id", config().getUser().getId());
-                    url = addRequestParameters(url, parameters);
-                    new GetPickReport(this).execute(url);
-                })
-                .create();
+                                                                                 String startDate = fromText.getText()
+                                                                                                            .toString();
+                                                                                 String endDate = toText.getText()
+                                                                                                        .toString();
+                                                                                 String url = url(
+                                                                                         "inv",
+                                                                                         reportType);
+                                                                                 Map<String, String> parameters = new HashMap<>();
+                                                                                 parameters.put(
+                                                                                         "start-date",
+                                                                                         startDate);
+                                                                                 parameters.put(
+                                                                                         "end-date",
+                                                                                         endDate);
+                                                                                 parameters.put(
+                                                                                         "user-id",
+                                                                                         config().getUser()
+                                                                                                 .getId());
+                                                                                 url = addRequestParameters(
+                                                                                         url,
+                                                                                         parameters);
+                                                                                 showStringData(url,
+                                                                                                "ığım hesabatı");
+                                                                             }).create();
         dialog.show();
     }
 
@@ -198,160 +214,225 @@ public class AppBaseActivity extends AppCompatActivity
     {
         int volume = audioManager.getStreamMaxVolume(3);
         sound = soundPool.load(this, resourceId, 1);
-        soundPool.setOnLoadCompleteListener((soundPool1, i, i1) ->
-                soundPool.play(sound, volume, volume, 1, 0, 1));
+        soundPool.setOnLoadCompleteListener(
+                (soundPool1, i, i1) -> soundPool.play(sound, volume, volume, 1, 0, 1));
     }
 
-    protected static class ShowQuantity extends AsyncTask<String, Void, String>
+    okhttp3.Response sendRequest(URL url, String method, @Nullable Object requestBodyData)
+            throws IOException
     {
-        WeakReference<AppBaseActivity> reference;
+        OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(
+                config().getConnectionTimeout(), TimeUnit.SECONDS).build();
 
-        ShowQuantity(AppBaseActivity activity)
-        {
-            reference = new WeakReference<>(activity);
-        }
+        RequestBody requestBody = null;
 
-        @Override
-        protected void onPreExecute()
+        if (method.equals("POST"))
         {
-            reference.get().showProgressDialog(true);
+            requestBody = RequestBody.create(new Gson().toJson(requestBodyData),
+                                             MediaType.get("application/json;charset=UTF-8"));
         }
+        Request request = new Request.Builder().method(method, requestBody).url(url).build();
 
-        @Override
-        protected String doInBackground(String... url)
-        {
-            RestTemplate template = new RestTemplate();
-            AppBaseActivity activity = reference.get();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            String result;
-            try
-            {
-                result = template.getForObject(url[0], String.class);
-            }
-            catch (ResourceAccessException ex)
-            {
-                return null;
-            }
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(String result)
-        {
-            AppBaseActivity activity = reference.get();
-            String title = "Anbarda say";
-            int type = android.R.drawable.ic_dialog_info;
-            if (result == null)
-            {
-                title = activity.getString(R.string.error);
-                result = activity.getString(R.string.connection_error);
-                type = android.R.drawable.ic_dialog_alert;
-                activity.playSound(SOUND_FAIL);
-            }
-            activity.showMessageDialog(title, result, type);
-            activity.showProgressDialog(false);
-        }
+        return httpClient.newCall(request).execute();
     }
 
-    protected static class GetPickReport extends AsyncTask<String, Boolean, String>
+    public void executeUpdate(String urlString, Object requestData,
+                              OnExecuteComplete executeComplete)
     {
-        WeakReference<AppBaseActivity> reference;
-
-        public GetPickReport(AppBaseActivity activity)
-        {
-            reference = new WeakReference<>(activity);
-        }
-
-        @Override
-        protected void onProgressUpdate(Boolean... b)
-        {
-            reference.get().showProgressDialog(true);
-        }
-
-        @Override
-        protected String doInBackground(String... url)
-        {
-            publishProgress(true);
-            RestTemplate template = new RestTemplate();
-            AppBaseActivity activity = reference.get();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory()).setConnectTimeout(activity.config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            String result;
-            try
+        new Thread(() -> {
+            try (okhttp3.Response httpResponse = sendRequest(new URL(urlString), "POST",
+                                                             requestData))
             {
-                result = template.getForObject(url[0], String.class);
+                ResponseBody responseBody = httpResponse.body();
+                Response response = gson.fromJson(responseBody.string(), responseType);
+                String title;
+                String message;
+                int iconId;
+                if (response.getStatusCode() == 0)
+                {
+                    title = getString(R.string.info);
+                    message = response.getDeveloperMessage();
+                    iconId = android.R.drawable.ic_dialog_info;
+                }
+                else if (response.getStatusCode() == 2)
+                {
+                    title = getString(R.string.error);
+                    message = response.getDeveloperMessage();
+                    iconId = android.R.drawable.ic_dialog_alert;
+                }
+                else
+                {
+                    title = getString(R.string.error);
+                    message = response.getDeveloperMessage() + ": " + response.getSystemMessage();
+                    iconId = android.R.drawable.ic_dialog_alert;
+                }
+
+                ResponseMessage responseMessage = new ResponseMessage();
+                responseMessage.setStatusCode(response.getStatusCode());
+                responseMessage.setTitle(title);
+                responseMessage.setBody(message);
+                responseMessage.setIconId(iconId);
+
+                runOnUiThread(() -> executeComplete.executeComplete(responseMessage));
             }
-            catch (RuntimeException ex)
+            catch (IOException e)
             {
-                ex.printStackTrace();
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error), e.getMessage(),
+                                      android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
+            }
+            finally
+            {
+                runOnUiThread(() -> {
+                    loadData();
+                    showProgressDialog(false);
+                });
+            }
+        }).start();
+    }
+
+    protected void loadData()
+    {
+
+    }
+
+    protected void showStringData(String url, String title)
+    {
+        showProgressDialog(true);
+        new Thread(() -> {
+            String result = getSimpleObject(url, "GET", null, String.class);
+            if (result != null)
+            {
+                runOnUiThread(
+                        () -> showMessageDialog(title, result, android.R.drawable.ic_dialog_info));
+            }
+        }).start();
+    }
+
+    protected <T> T getSimpleObject(String url, String method, Object request, Class<T> tClass)
+    {
+        try (okhttp3.Response httpResponse = sendRequest(new URL(url), method, request))
+        {
+            ResponseBody responseBody = httpResponse.body();
+            Response response = gson.fromJson(responseBody.string(), responseType);
+            if (response.getStatusCode() == 0)
+            {
+                return gson.fromJson(gson.toJson(response.getData()), tClass);
+            }
+            else if (response.getStatusCode() == 2)
+            {
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
+                                      android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
                 return null;
-            }
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(String result)
-        {
-
-            AppBaseActivity activity = reference.get();
-            if (result == null)
-            {
-                activity.showMessageDialog(activity.getString(R.string.error),
-                        activity.getString(R.string.connection_error),
-                        android.R.drawable.ic_dialog_alert);
-                activity.playSound(SOUND_FAIL);
             }
             else
             {
-                activity.showMessageDialog(activity.getString(R.string.info),
-                        "Yığım hesabatı: " + result, android.R.drawable.ic_dialog_info);
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error),
+                                      response.getDeveloperMessage() + ": " +
+                                      response.getSystemMessage(),
+                                      android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
+                return null;
             }
-            activity.showProgressDialog(false);
+        }
+        catch (IOException e)
+        {
+            runOnUiThread(() -> {
+                showMessageDialog(getString(R.string.error),
+                                  getString(R.string.internal_error) + ": " + e.getMessage(),
+                                  android.R.drawable.ic_dialog_alert);
+                playSound(SOUND_FAIL);
+            });
+            return null;
+        }
+        finally
+        {
+            runOnUiThread(() -> showProgressDialog(false));
+        }
+    }
+
+    protected <T> List<T> getListData(String url, String method, Object request, Class<T[]> tClass)
+    {
+        try (okhttp3.Response httpResponse = sendRequest(new URL(url), method, request))
+        {
+            ResponseBody responseBody = httpResponse.body();
+            Response response = gson.fromJson(responseBody.string(), responseType);
+            if (response.getStatusCode() == 0)
+            {
+                return new ArrayList<>(
+                        Arrays.asList(gson.fromJson(gson.toJson(response.getData()), tClass)));
+            }
+            else if (response.getStatusCode() == 2)
+            {
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
+                                      android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
+                return null;
+            }
+            else
+            {
+                runOnUiThread(() -> {
+                    showMessageDialog(getString(R.string.error),
+                                      response.getDeveloperMessage() + ": " +
+                                      response.getSystemMessage(),
+                                      android.R.drawable.ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                });
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            runOnUiThread(() -> {
+                showMessageDialog(getString(R.string.error),
+                                  getString(R.string.internal_error) + ": " + e.getMessage(),
+                                  android.R.drawable.ic_dialog_alert);
+                playSound(SOUND_FAIL);
+            });
+            return null;
+        }
+        finally
+        {
+            runOnUiThread(() -> showProgressDialog(false));
         }
     }
 
     protected void getInvBarcodeFromServer(String barcode, OnInvBarcodeFetched onInvBarcodeFetched)
     {
         showProgressDialog(true);
-        new Thread(() ->
-        {
+        new Thread(() -> {
             String url = url("inv", "inv-barcode");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("barcode", barcode);
             url = addRequestParameters(url, parameters);
 
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            InvBarcode invBarcodeFromServer = null;
-            try
+            InvBarcode invBarcode = getSimpleObject(url, "GET", null, InvBarcode.class);
+
+            if (invBarcode != null)
             {
-                invBarcodeFromServer = template.getForObject(url, InvBarcode.class);
+                runOnUiThread(() -> {
+                    if (invBarcode.getBarcode() == null)
+                    {
+                        showMessageDialog(getString(R.string.info),
+                                          getString(R.string.good_not_found),
+                                          android.R.drawable.ic_dialog_info);
+                        playSound(SOUND_FAIL);
+                    }
+                    else
+                    {
+                        onInvBarcodeFetched.invBarcodeFetched(invBarcode);
+                    }
+                });
             }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-            }
-            InvBarcode finalInvBarcodeFromServer = invBarcodeFromServer;
-            runOnUiThread(() ->
-            {
-                showProgressDialog(false);
-                if (finalInvBarcodeFromServer == null
-                        || finalInvBarcodeFromServer.getInvCode() == null)
-                {
-                    showMessageDialog(getString(R.string.info),
-                            getString(R.string.good_not_found),
-                            android.R.drawable.ic_dialog_info);
-                    playSound(SOUND_FAIL);
-                }
-                else
-                {
-                    onInvBarcodeFetched.invBarcodeFetched(finalInvBarcodeFromServer);
-                }
-            });
         }).start();
     }
 }

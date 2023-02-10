@@ -16,11 +16,10 @@ import az.inci.bmsanbar.ScanTask;
 public abstract class ScannerSupportActivity extends AppBaseActivity
 {
 
+    public Barcode2DWithSoft barcode2DWithSoft;
     protected String model;
     protected boolean isContinuous = true;
-
     protected ScanManager scanManager;
-    public Barcode2DWithSoft barcode2DWithSoft;
     protected ScanTask scanTask;
     protected boolean busy = false;
     private final BroadcastReceiver urovoScanReceiver = new BroadcastReceiver()
@@ -139,7 +138,8 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
             e.printStackTrace();
         }
 
-        if (scanTask.getStatus() == AsyncTask.Status.FINISHED && barcode2DWithSoft != null && model.equals("C4000_6582"))
+        if (scanTask.getStatus() == AsyncTask.Status.FINISHED && barcode2DWithSoft != null &&
+            model.equals("C4000_6582"))
         {
             try
             {
@@ -159,9 +159,13 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
         if (keyCode == 139)
+        {
             toggleS98Scanner();
+        }
         if (keyCode == 520 || keyCode == 521 || keyCode == 522)
+        {
             toggleUrovoScanner();
+        }
         return super.onKeyDown(keyCode, event);
     }
 

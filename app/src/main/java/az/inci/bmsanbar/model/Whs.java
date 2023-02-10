@@ -13,6 +13,7 @@ public class Whs
     {
 
     }
+
     public Whs(String whsCode)
     {
         this.whsCode = whsCode;
@@ -43,9 +44,13 @@ public class Whs
     public String toString()
     {
         if (whsCode != null && (!whsCode.isEmpty() && !whsName.isEmpty()))
+        {
             return whsCode + " - " + whsName;
+        }
         else
+        {
             return "";
+        }
     }
 
     @Override

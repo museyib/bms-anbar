@@ -1,7 +1,5 @@
 package az.inci.bmsanbar.model;
 
-import androidx.annotation.NonNull;
-
 public class User
 {
 
@@ -42,11 +40,13 @@ public class User
         this.password = password;
     }
 
-    public String getWhsCode() {
+    public String getWhsCode()
+    {
         return whsCode;
     }
 
-    public void setWhsCode(String whsCode) {
+    public void setWhsCode(String whsCode)
+    {
         this.whsCode = whsCode;
     }
 
@@ -161,25 +161,26 @@ public class User
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "User{" +
-                "id='" + id + '\'' +
-                ", password='" + password + '\'' +
-                ", name='" + name + '\'' +
-                ", whsCode='" + whsCode + '\'' +
-                ", pickGroup='" + pickGroup + '\'' +
-                ", collectFlag=" + collectFlag +
-                ", pickFlag=" + pickFlag +
-                ", checkFlag=" + checkFlag +
-                ", countFlag=" + countFlag +
-                ", attributeFlag=" + attributeFlag +
-                ", locationFlag=" + locationFlag +
-                ", packFlag=" + packFlag +
-                ", docFlag=" + docFlag +
-                ", loadingFlag=" + loadingFlag +
-                ", approveFlag=" + approveFlag +
-                ", approvePrdFlag=" + approvePrdFlag +
-                '}';
+               "id='" + id + '\'' +
+               ", password='" + password + '\'' +
+               ", name='" + name + '\'' +
+               ", whsCode='" + whsCode + '\'' +
+               ", pickGroup='" + pickGroup + '\'' +
+               ", collectFlag=" + collectFlag +
+               ", pickFlag=" + pickFlag +
+               ", checkFlag=" + checkFlag +
+               ", countFlag=" + countFlag +
+               ", attributeFlag=" + attributeFlag +
+               ", locationFlag=" + locationFlag +
+               ", packFlag=" + packFlag +
+               ", docFlag=" + docFlag +
+               ", loadingFlag=" + loadingFlag +
+               ", approveFlag=" + approveFlag +
+               ", approvePrdFlag=" + approvePrdFlag +
+               '}';
     }
 
     public boolean isApprovePrd()
@@ -192,11 +193,13 @@ public class User
         this.approvePrdFlag = approvePrdFlag;
     }
 
-    public boolean isAttribute() {
+    public boolean isAttribute()
+    {
         return attributeFlag;
     }
 
-    public void setAttributeFlag(boolean attributeFlag) {
+    public void setAttributeFlag(boolean attributeFlag)
+    {
         this.attributeFlag = attributeFlag;
     }
 }

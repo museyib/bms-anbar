@@ -1,39 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:installLocation="auto"
-    android:requestLegacyExternalStorage="true">
+        xmlns:tools="http://schemas.android.com/tools"
+        android:installLocation="auto"
+        android:requestLegacyExternalStorage="true">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
+    <uses-permission
+            android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+            tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
+    <uses-permission
+            android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+            tools:ignore="ScopedStorage" />
 
     <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
+            android:name="android.hardware.camera"
+            android:required="false" />
     <uses-feature android:name="android.hardware.usb.accessory" />
 
     <application
-        android:name=".App"
-        android:allowBackup="true"
-        android:fullBackupContent="@xml/backup_descriptor"
-        android:hardwareAccelerated="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:networkSecurityConfig="@xml/network_security_config"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true"
-        tools:targetApi="s"
-        android:dataExtractionRules="@xml/data_extraction_rules">
+            android:name=".App"
+            android:allowBackup="true"
+            android:fullBackupContent="@xml/backup_descriptor"
+            android:hardwareAccelerated="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:networkSecurityConfig="@xml/network_security_config"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme"
+            android:usesCleartextTraffic="true"
+            tools:targetApi="s"
+            android:dataExtractionRules="@xml/data_extraction_rules">
         <activity android:name=".activity.EditShelfActivity" />
         <activity android:name=".activity.ApproveTrxActivity" />
         <activity android:name=".activity.ApproveDocActivity" />
@@ -41,47 +43,48 @@
         <activity android:name=".activity.WaitingPackTrxActivity" />
 
         <uses-library
-            android:name="org.apache.http.legacy"
-            android:required="false" />
+                android:name="org.apache.http.legacy"
+                android:required="false" />
 
         <activity
-            android:name=".activity.WaitingPackDocActivity"
-            android:label="@string/waiting_docs" />
+                android:name=".activity.WaitingPackDocActivity"
+                android:label="@string/waiting_docs" />
 
         <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.provider"
+                android:exported="false"
+                android:grantUriPermissions="true">
             <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/provider_paths" />
         </provider>
 
         <activity
-            android:name=".activity.InventoryInfoActivity"
-            android:label="@string/inv_attributes" />
+                android:name=".activity.InventoryInfoActivity"
+                android:label="@string/inv_attributes" />
         <activity android:name=".activity.ScannerSupportActivity" />
         <activity android:name=".activity.SettingsActivity" />
         <activity
-            android:name=".activity.ShipTrxActivity"
-            android:label="@string/ship_doc"
-            android:windowSoftInputMode="stateHidden" />
+                android:name=".activity.ShipTrxActivity"
+                android:label="@string/ship_doc"
+                android:windowSoftInputMode="stateHidden" />
         <activity
-            android:name=".activity.PhotoActivity"
-            android:label="@string/image" />
+                android:name=".activity.PhotoActivity"
+                android:label="@string/image" />
         <activity android:name=".activity.PackTrxActivity" />
 
         <meta-data
-            android:name="com.google.android.gms.vision.DEPENDENCIES"
-            android:value="barcode" />
+                android:name="com.google.android.gms.vision.DEPENDENCIES"
+                android:value="barcode" />
 
         <uses-library
-            android:name="org.apache.http.legacy"
-            android:required="false" />
+                android:name="org.apache.http.legacy"
+                android:required="false" />
 
-        <activity android:name=".activity.MainActivity"
-            android:exported="true">
+        <activity
+                android:name=".activity.MainActivity"
+                android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -89,19 +92,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.PickDocActivity"
-            android:label="@string/picking" />
+                android:name=".activity.PickDocActivity"
+                android:label="@string/picking" />
         <activity
-            android:name=".activity.PackDocActivity"
-            android:label="@string/packing" />
+                android:name=".activity.PackDocActivity"
+                android:label="@string/packing" />
         <activity
-            android:name=".activity.ShipDocActivity"
-            android:label="@string/transport" />
+                android:name=".activity.ShipDocActivity"
+                android:label="@string/transport" />
         <activity android:name=".activity.AppBaseActivity" />
         <activity android:name=".activity.PickTrxActivity" />
         <activity
-            android:name=".activity.BarcodeScannerCamera"
-            android:label="@string/camera_scanner" />
+                android:name=".activity.BarcodeScannerCamera"
+                android:label="@string/camera_scanner" />
         <activity android:name=".activity.ProductApproveDocActivity" />
         <activity android:name=".activity.ProductApproveTrxActivity" />
         <activity android:name=".activity.EditBarcodesActivity" />

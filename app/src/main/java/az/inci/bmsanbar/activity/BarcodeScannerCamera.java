@@ -76,12 +76,20 @@ public class BarcodeScannerCamera extends AppBaseActivity
         surfaceHolder = surfaceView.getHolder();
 
         surfaceView.setOnClickListener(v ->
-        {
-            if (setCamera(cameraSource))
-                camera.autoFocus(myAutoFocusCallback);
-        });
+                                       {
+                                           if (setCamera(cameraSource))
+                                           {
+                                               camera.autoFocus(myAutoFocusCallback);
+                                           }
+                                       });
 
         initialiseDetectorsAndSources();
+    }
+
+    @Override
+    protected void loadData()
+    {
+
     }
 
     public void onScanComplete(String barcode)
@@ -93,12 +101,12 @@ public class BarcodeScannerCamera extends AppBaseActivity
         else
         {
             runOnUiThread(() ->
-            {
-                add.setEnabled(true);
-                add.setText(barcode);
-                add.setOnClickListener(view ->
-                        getAndContinue(barcode));
-            });
+                          {
+                              add.setEnabled(true);
+                              add.setText(barcode);
+                              add.setOnClickListener(view ->
+                                                             getAndContinue(barcode));
+                          });
         }
     }
 
@@ -116,7 +124,9 @@ public class BarcodeScannerCamera extends AppBaseActivity
                 {
                     camera = (Camera) field.get(cameraSource);
                     if (camera != null)
+                    {
                         return true;
+                    }
                 }
                 catch (IllegalAccessException e)
                 {
@@ -149,7 +159,8 @@ public class BarcodeScannerCamera extends AppBaseActivity
                 try
                 {
                     if (ActivityCompat.checkSelfPermission(BarcodeScannerCamera.this,
-                            Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+                                                           Manifest.permission.CAMERA) ==
+                        PackageManager.PERMISSION_GRANTED)
                     {
                         cameraSource.start(surfaceView.getHolder());
                     }
@@ -168,7 +179,8 @@ public class BarcodeScannerCamera extends AppBaseActivity
             }
 
             @Override
-            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height)
+            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width,
+                                       int height)
             {
 
             }
@@ -231,8 +243,8 @@ public class BarcodeScannerCamera extends AppBaseActivity
         if (trx == null)
         {
             showMessageDialog(getString(R.string.info),
-                    getString(R.string.good_not_found),
-                    android.R.drawable.ic_dialog_info);
+                              getString(R.string.good_not_found),
+                              android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
         }
         else
@@ -248,8 +260,8 @@ public class BarcodeScannerCamera extends AppBaseActivity
         if (trx == null)
         {
             showMessageDialog(getString(R.string.info),
-                    getString(R.string.good_not_found),
-                    android.R.drawable.ic_dialog_info);
+                              getString(R.string.good_not_found),
+                              android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
         }
         else
@@ -290,15 +302,17 @@ public class BarcodeScannerCamera extends AppBaseActivity
         if (trx.getPickedQty() >= trx.getQty())
         {
             showMessageDialog(getString(R.string.info),
-                    getString(R.string.already_picked),
-                    android.R.drawable.ic_dialog_info);
+                              getString(R.string.already_picked),
+                              android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
         }
         else
         {
-            double qty=trx.getPickedQty() + trx.getUomFactor();
-            if (qty>trx.getPickedQty())
-                qty=trx.getQty();
+            double qty = trx.getPickedQty() + trx.getUomFactor();
+            if (qty > trx.getPickedQty())
+            {
+                qty = trx.getQty();
+            }
             trx.setPickedQty(qty);
             dbHelper.updatePickTrx(trx);
             playSound(SOUND_SUCCESS);
@@ -311,15 +325,17 @@ public class BarcodeScannerCamera extends AppBaseActivity
         if (trx.getPackedQty() >= trx.getQty())
         {
             showMessageDialog(getString(R.string.info),
-                    getString(R.string.already_packed),
-                    android.R.drawable.ic_dialog_info);
+                              getString(R.string.already_packed),
+                              android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
         }
         else
         {
-            double qty=trx.getPackedQty() + trx.getUomFactor();
-            if (qty>trx.getQty())
-                qty=trx.getQty();
+            double qty = trx.getPackedQty() + trx.getUomFactor();
+            if (qty > trx.getQty())
+            {
+                qty = trx.getQty();
+            }
             trx.setPackedQty(qty);
             dbHelper.updatePackTrx(trx);
             playSound(SOUND_SUCCESS);

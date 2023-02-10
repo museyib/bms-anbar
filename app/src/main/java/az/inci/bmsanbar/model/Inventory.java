@@ -95,32 +95,38 @@ public class Inventory
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Inventory inventory = (Inventory) o;
         return Objects.equals(invCode, inventory.invCode) &&
-                Objects.equals(barcode, inventory.barcode);
+               Objects.equals(barcode, inventory.barcode);
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(invCode, barcode);
     }
 
-    public double getWhsQty() {
+    public double getWhsQty()
+    {
         return whsQty;
     }
 
-    public void setWhsQty(double whsQty) {
+    public void setWhsQty(double whsQty)
+    {
         this.whsQty = whsQty;
     }
 
-    public String getDefaultUomCode() {
+    public String getDefaultUomCode()
+    {
         return defaultUomCode;
     }
 
-    public void setDefaultUomCode(String defaultUomCode) {
+    public void setDefaultUomCode(String defaultUomCode)
+    {
         this.defaultUomCode = defaultUomCode;
     }
 }

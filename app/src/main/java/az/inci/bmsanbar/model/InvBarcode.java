@@ -65,11 +65,13 @@ public class InvBarcode
         this.defined = defined;
     }
 
-    public String getUom() {
+    public String getUom()
+    {
         return uom;
     }
 
-    public void setUom(String uom) {
+    public void setUom(String uom)
+    {
         this.uom = uom;
     }
 }

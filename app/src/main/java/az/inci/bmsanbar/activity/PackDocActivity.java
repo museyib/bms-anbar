@@ -19,20 +19,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Doc;
@@ -55,47 +45,54 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
 
         docListView = findViewById(R.id.doc_list);
         docListView.setOnItemClickListener((parent, view, position, id1) ->
-        {
-            Intent intent = new Intent(this, PackTrxActivity.class);
-            Doc doc = (Doc) view.getTag();
-            intent.putExtra("trxNo", doc.getTrxNo());
-            intent.putExtra("orderTrxNo", doc.getPrevTrxNo());
-            intent.putExtra("bpName", doc.getBpName());
-            intent.putExtra("notes", doc.getNotes());
-            startActivity(intent);
-        });
+                                           {
+                                               Intent intent = new Intent(this,
+                                                                          PackTrxActivity.class);
+                                               Doc doc = (Doc) view.getTag();
+                                               intent.putExtra("trxNo", doc.getTrxNo());
+                                               intent.putExtra("orderTrxNo", doc.getPrevTrxNo());
+                                               intent.putExtra("bpName", doc.getBpName());
+                                               intent.putExtra("notes", doc.getNotes());
+                                               intent.putExtra("activeSeconds",
+                                                               doc.getActiveSeconds());
+                                               startActivity(intent);
+                                           });
 
         loadFooter();
-        loadDocs();
+        loadData();
 
         newDocs = findViewById(R.id.newDocs);
         newDocs.setOnClickListener(v ->
-                loadTrxFromServer(1));
+                                           loadTrxFromServer(1));
 
         newDocsIncomplete = findViewById(R.id.newDocsIncomplete);
         newDocsIncomplete.setOnClickListener(v ->
-                {
-                    List<String> list=dbHelper.getIncompletePackDocList(config().getUser().getId());
-                    if (list.size()==0)
-                    {
-                        showMessageDialog(getString(R.string.info),
-                                getString(R.string.no_incomplete_doc),
-                                android.R.drawable.ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                    }
-                    else
-                    {
-                        for (String trxNo : list)
-                            loadDocFromServer(trxNo);
-                    }
-                });
+                                             {
+                                                 List<String> list = dbHelper.getIncompletePackDocList(
+                                                         config().getUser().getId());
+                                                 if (list.size() == 0)
+                                                 {
+                                                     showMessageDialog(getString(R.string.info),
+                                                                       getString(
+                                                                               R.string.no_incomplete_doc),
+                                                                       android.R.drawable.ic_dialog_alert);
+                                                     playSound(SOUND_FAIL);
+                                                 }
+                                                 else
+                                                 {
+                                                     for (String trxNo : list)
+                                                     {
+                                                         loadDocFromServer(trxNo);
+                                                     }
+                                                 }
+                                             });
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        loadDocs();
+        loadData();
     }
 
     @Override
@@ -104,15 +101,20 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         super.onSaveInstanceState(outState);
     }
 
-    public void loadDocs()
+    @Override
+    public void loadData()
     {
         docList = dbHelper.getPackDocsByApproveUser(config().getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
         if (docList.size() == 0)
+        {
             findViewById(R.id.header).setVisibility(View.GONE);
+        }
         else
+        {
             findViewById(R.id.header).setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -126,7 +128,9 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     {
         DocAdapter adapter = (DocAdapter) docListView.getAdapter();
         if (adapter != null)
+        {
             adapter.getFilter().filter(s);
+        }
         return true;
     }
 
@@ -134,9 +138,13 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     public void onBackPressed()
     {
         if (!searchView.isIconified())
+        {
             searchView.setIconified(true);
+        }
         else
+        {
             super.onBackPressed();
+        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -146,24 +154,26 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
 
         MenuItem item = menu.findItem(R.id.inv_attributes);
         item.setOnMenuItemClickListener(item1 ->
-        {
-            startActivity(new Intent(this, InventoryInfoActivity.class));
-            return true;
-        });
+                                        {
+                                            startActivity(
+                                                    new Intent(this, InventoryInfoActivity.class));
+                                            return true;
+                                        });
 
         MenuItem report = menu.findItem(R.id.pick_report);
         report.setOnMenuItemClickListener(item1 ->
-        {
-            showPickDateDialog("pack-report");
-            return true;
-        });
+                                          {
+                                              showPickDateDialog("pack-report");
+                                              return true;
+                                          });
 
         MenuItem docList = menu.findItem(R.id.doc_list);
         docList.setOnMenuItemClickListener(item1 ->
-        {
-            startActivity(new Intent(this, WaitingPackDocActivity.class));
-            return true;
-        });
+                                           {
+                                               startActivity(new Intent(this,
+                                                                        WaitingPackDocActivity.class));
+                                               return true;
+                                           });
 
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
@@ -172,9 +182,65 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         return true;
     }
 
+    private void loadDocFromServer(String trxNo)
+    {
+        showProgressDialog(true);
+        new Thread(() ->
+                   {
+                       String url = url("doc", "pack");
+                       Map<String, String> parameters = new HashMap<>();
+                       parameters.put("trx-no", trxNo);
+                       url = addRequestParameters(url, parameters);
+                       Doc doc = getSimpleObject(url, "GET", null, Doc.class);
+
+                       if (doc != null)
+                       {
+                           runOnUiThread(() ->
+                                         {
+                                             dbHelper.addPackDoc(doc);
+                                             dbHelper.updatePackTrxStatus(doc.getTrxNo(), 1);
+                                             loadData();
+                                         });
+                       }
+                   }).start();
+    }
+
+    private void loadTrxFromServer(int mode)
+    {
+        showProgressDialog(true);
+        new Thread(() ->
+                   {
+                       String url = url("pack", "get-doc");
+                       Map<String, String> parameters = new HashMap<>();
+                       parameters.put("approve-user", config().getUser().getId());
+                       parameters.put("mode", String.valueOf(mode));
+                       url = addRequestParameters(url, parameters);
+                       Doc doc = getSimpleObject(url, "GET", null, Doc.class);
+
+                       runOnUiThread(() ->
+                                     {
+                                         if (doc != null)
+                                         {
+                                             dbHelper.addPackDoc(doc);
+                                             for (Trx trx : doc.getTrxList())
+                                             {
+                                                 dbHelper.addPackTrx(trx);
+                                             }
+                                         }
+                                         else
+                                         {
+                                             showMessageDialog(getString(R.string.info),
+                                                               getString(R.string.no_data),
+                                                               android.R.drawable.ic_dialog_info);
+                                             playSound(SOUND_FAIL);
+                                         }
+                                         loadData();
+                                     });
+                   }).start();
+    }
+
     static class DocAdapter extends ArrayAdapter<Doc> implements Filterable
     {
-
         PackDocActivity activity;
         List<Doc> list;
 
@@ -200,7 +266,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             if (convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
-                        .inflate(R.layout.pack_doc_item_layout, parent, false);
+                                            .inflate(R.layout.pack_doc_item_layout, parent, false);
             }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);
@@ -239,10 +305,12 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
 
                     for (Doc doc : activity.docList)
                     {
-                        if (doc.getTrxNo().concat(doc.getPrevTrxNo())
-                                .concat(doc.getBpName()).concat(doc.getSbeName()
-                                        .concat(doc.getDescription()))
-                                .toLowerCase().contains(constraint))
+                        if (doc.getTrxNo()
+                               .concat(doc.getPrevTrxNo())
+                               .concat(doc.getBpName())
+                               .concat(doc.getSbeName())
+                               .concat(doc.getDescription())
+                               .toLowerCase().contains(constraint))
                         {
                             filteredArrayData.add(doc);
                         }
@@ -262,117 +330,6 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
                 }
             };
         }
-    }
-
-    private void loadDocFromServer(String trxNo)
-    {
-        showProgressDialog(true);
-        new Thread(() -> {
-            String url = url("doc", "pack");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("trx-no", trxNo);
-            url = addRequestParameters(url, parameters);
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            String result = null;
-            try
-            {
-                result = template.getForObject(url, String.class);
-            }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-                runOnUiThread(() ->
-                {
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.connection_error),
-                            android.R.drawable.ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                });
-            }
-            finally
-            {
-                runOnUiThread(() -> showProgressDialog(false));
-            }
-            String finalResult = result;
-            runOnUiThread(() -> {
-                if (finalResult!=null)
-                {
-                    Gson gson = new Gson();
-                    Type type = new TypeToken<Doc>()
-                    {
-                    }.getType();
-                    Doc doc = gson.fromJson(finalResult, type);
-                    dbHelper.addPackDoc(doc);
-                    dbHelper.updatePackTrxStatus(doc.getTrxNo(), 1);
-                    loadDocs();
-                }
-            });
-        }).start();
-    }
-
-    private void loadTrxFromServer(int mode)
-    {
-        showProgressDialog(true);
-        new Thread(() -> {
-            String url = url("pack", "get-doc");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("approve-user", config().getUser().getId());
-            parameters.put("mode", String.valueOf(mode));
-            url = addRequestParameters(url, parameters);
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            String result;
-            try
-            {
-                result=template.getForObject(url, String.class);
-            }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-                runOnUiThread(() -> {
-
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.connection_error),
-                            android.R.drawable.ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                });
-                return;
-            }
-            finally
-            {
-                runOnUiThread(() -> showProgressDialog(false));
-            }
-            String finalResult = result;
-            runOnUiThread(() -> {
-
-                Gson gson = new Gson();
-                Type type = new TypeToken<Doc>()
-                {
-                }.getType();
-                Doc doc = gson.fromJson(finalResult, type);
-                if (doc == null)
-                {
-                    showMessageDialog(getString(R.string.info),
-                            getString(R.string.no_data), android.R.drawable.ic_dialog_info);
-                    playSound(SOUND_FAIL);
-                }
-                else
-                {
-                    dbHelper.addPackDoc(doc);
-
-                    for (Trx trx : doc.getTrxList())
-                    {
-                        dbHelper.addPackTrx(trx);
-                    }
-                }
-                loadDocs();
-            });
-        }).start();
     }
 
 }

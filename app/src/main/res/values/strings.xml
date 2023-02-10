@@ -125,4 +125,5 @@
     <string name="doc_status_incorrect">Sənədin statusu düzgün deyil!</string>
     <string name="confirm_delivery">Çatdırılmanın təsdiqi</string>
     <string name="to_central_whs">Mərkəzə</string>
+    <string name="internal_error">Daxili xəta</string>
 </resources>

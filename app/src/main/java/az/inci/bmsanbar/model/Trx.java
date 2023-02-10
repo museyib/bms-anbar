@@ -42,6 +42,7 @@ public class Trx
     private double prevQtySum;
     private String prevTrxDate;
     private int prevTrxId;
+    private int minutes;
 
     public static Trx parseFromInv(Inventory inventory)
     {
@@ -281,40 +282,40 @@ public class Trx
     public String toString()
     {
         return "Trx{" +
-                "position=" + position +
-                ", trxId=" + trxId +
-                ", trxNo='" + trxNo + '\'' +
-                ", trxDate='" + trxDate + '\'' +
-                ", pickStatus='" + pickStatus + '\'' +
-                ", invCode='" + invCode + '\'' +
-                ", invName='" + invName + '\'' +
-                ", qty=" + qty +
-                ", pickedQty=" + pickedQty +
-                ", packedQty=" + packedQty +
-                ", whsCode='" + whsCode + '\'' +
-                ", pickArea='" + pickArea + '\'' +
-                ", pickGroup='" + pickGroup + '\'' +
-                ", pickUser='" + pickUser + '\'' +
-                ", approveUser='" + approveUser + '\'' +
-                ", uom='" + uom + '\'' +
-                ", uomFactor=" + uomFactor +
-                ", invBrand='" + invBrand + '\'' +
-                ", bpName='" + bpName + '\'' +
-                ", sbeName='" + sbeName + '\'' +
-                ", barcode='" + barcode + '\'' +
-                ", prevTrxNo='" + prevTrxNo + '\'' +
-                ", notes='" + notes + '\'' +
-                ", priority=" + priority +
-                ", trxTypeId=" + trxTypeId +
-                ", amount=" + amount +
-                ", price=" + price +
-                ", discountRatio=" + discountRatio +
-                ", discount=" + discount +
-                ", prevQty=" + prevQty +
-                ", prevQtySum=" + prevQtySum +
-                ", prevTrxDate='" + prevTrxDate + '\'' +
-                ", prevTrxId=" + prevTrxId +
-                '}';
+               "position=" + position +
+               ", trxId=" + trxId +
+               ", trxNo='" + trxNo + '\'' +
+               ", trxDate='" + trxDate + '\'' +
+               ", pickStatus='" + pickStatus + '\'' +
+               ", invCode='" + invCode + '\'' +
+               ", invName='" + invName + '\'' +
+               ", qty=" + qty +
+               ", pickedQty=" + pickedQty +
+               ", packedQty=" + packedQty +
+               ", whsCode='" + whsCode + '\'' +
+               ", pickArea='" + pickArea + '\'' +
+               ", pickGroup='" + pickGroup + '\'' +
+               ", pickUser='" + pickUser + '\'' +
+               ", approveUser='" + approveUser + '\'' +
+               ", uom='" + uom + '\'' +
+               ", uomFactor=" + uomFactor +
+               ", invBrand='" + invBrand + '\'' +
+               ", bpName='" + bpName + '\'' +
+               ", sbeName='" + sbeName + '\'' +
+               ", barcode='" + barcode + '\'' +
+               ", prevTrxNo='" + prevTrxNo + '\'' +
+               ", notes='" + notes + '\'' +
+               ", priority=" + priority +
+               ", trxTypeId=" + trxTypeId +
+               ", amount=" + amount +
+               ", price=" + price +
+               ", discountRatio=" + discountRatio +
+               ", discount=" + discount +
+               ", prevQty=" + prevQty +
+               ", prevQtySum=" + prevQtySum +
+               ", prevTrxDate='" + prevTrxDate + '\'' +
+               ", prevTrxId=" + prevTrxId +
+               '}';
     }
 
     @Override
@@ -446,5 +447,15 @@ public class Trx
     public boolean isReturned()
     {
         return prevTrxId != 0;
+    }
+
+    public int getMinutes()
+    {
+        return minutes;
+    }
+
+    public void setMinutes(int minutes)
+    {
+        this.minutes = minutes;
     }
 }

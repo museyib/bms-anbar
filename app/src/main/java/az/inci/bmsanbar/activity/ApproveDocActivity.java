@@ -29,7 +29,6 @@ public class ApproveDocActivity extends AppBaseActivity
 
     ListView docListView;
     ImageButton add;
-
     List<Doc> docList;
 
     @Override
@@ -42,15 +41,13 @@ public class ApproveDocActivity extends AppBaseActivity
         docListView = findViewById(R.id.doc_list);
         add = findViewById(R.id.add);
 
-        add.setOnClickListener(v ->
-        {
+        add.setOnClickListener(v -> {
             Intent intent = new Intent(this, ApproveTrxActivity.class);
             intent.putExtra("mode", AppConfig.NEW_MODE);
             startActivity(intent);
         });
 
-        docListView.setOnItemClickListener((parent, view, position, id) ->
-        {
+        docListView.setOnItemClickListener((parent, view, position, id) -> {
             Doc doc = (Doc) parent.getItemAtPosition(position);
             Intent intent = new Intent(this, ApproveTrxActivity.class);
             intent.putExtra("trxNo", doc.getTrxNo());
@@ -67,23 +64,23 @@ public class ApproveDocActivity extends AppBaseActivity
             startActivity(intent);
         });
 
-        docListView.setOnItemLongClickListener((parent, view, position, id) ->
-        {
-            AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setMessage("Silmək istəyirsiniz?")
-                    .setPositiveButton("Bəli", (dialog1, which) ->
-                    {
-                        Doc doc = (Doc) parent.getItemAtPosition(position);
-                        dbHelper.deleteApproveDoc(doc.getTrxNo());
-                        loadDocs();
-                    })
-                    .setNegativeButton("Xeyr", null)
-                    .create();
+        docListView.setOnItemLongClickListener((parent, view, position, id) -> {
+            AlertDialog dialog = new AlertDialog.Builder(this).setMessage("Silmək istəyirsiniz?")
+                                                              .setPositiveButton("Bəli",
+                                                                                 (dialog1, which) -> {
+                                                                                     Doc doc = (Doc) parent.getItemAtPosition(
+                                                                                             position);
+                                                                                     dbHelper.deleteApproveDoc(
+                                                                                             doc.getTrxNo());
+                                                                                     loadData();
+                                                                                 })
+                                                              .setNegativeButton("Xeyr", null)
+                                                              .create();
             dialog.show();
             return true;
         });
 
-        loadDocs();
+        loadData();
 
         loadFooter();
     }
@@ -92,7 +89,7 @@ public class ApproveDocActivity extends AppBaseActivity
     protected void onResume()
     {
         super.onResume();
-        loadDocs();
+        loadData();
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -101,8 +98,7 @@ public class ApproveDocActivity extends AppBaseActivity
         getMenuInflater().inflate(R.menu.pick_menu, menu);
         MenuItem attributes = menu.findItem(R.id.inv_attributes);
         attributes.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        attributes.setOnMenuItemClickListener(item1 ->
-        {
+        attributes.setOnMenuItemClickListener(item1 -> {
             startActivity(new Intent(this, InventoryInfoActivity.class));
             return true;
         });
@@ -114,7 +110,7 @@ public class ApproveDocActivity extends AppBaseActivity
         return true;
     }
 
-    private void loadDocs()
+    public void loadData()
     {
         docList = dbHelper.getApproveDocList();
         if (docList.size() == 0)
@@ -152,7 +148,8 @@ public class ApproveDocActivity extends AppBaseActivity
             if (convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
-                        .inflate(R.layout.approve_doc_item_layout, parent, false);
+                                            .inflate(R.layout.approve_doc_item_layout, parent,
+                                                     false);
             }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);

@@ -15,15 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +28,6 @@ public class WaitingPackTrxActivity extends AppBaseActivity
 
     List<Trx> trxList;
     ListView trxListView;
-
     String trxNo;
     String orderTrxNo;
     String bpName;
@@ -59,8 +50,7 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         bpName = intent.getStringExtra("bpName");
         setTitle(orderTrxNo + ": " + bpName);
 
-        trxListView.setOnItemClickListener((parent, view, position, id) ->
-        {
+        trxListView.setOnItemClickListener((parent, view, position, id) -> {
             Trx trx = (Trx) view.getTag();
             showInfoDialog(trx);
         });
@@ -75,27 +65,29 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         info += "\n\nÖlçü vahidi: " + trx.getUom();
         info += "\n\nBrend: " + trx.getInvBrand();
         if (!trx.getPickUser().equals("null"))
+        {
             info += "\n\nYığan: " + trx.getPickUser();
+        }
         else
+        {
             info += "\n\nYığım qrupu: " + trx.getPickGroup();
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Məlumat");
         builder.setMessage(info);
-        builder.setPositiveButton("Şəkil", (dialog, which) ->
-        {
+        builder.setPositiveButton("Şəkil", (dialog, which) -> {
             Intent photoIntent = new Intent(this, PhotoActivity.class);
             photoIntent.putExtra("invCode", trx.getInvCode());
             photoIntent.putExtra("notes", trx.getNotes());
             startActivity(photoIntent);
         });
-        builder.setNeutralButton("Say", (dialog, which) ->
-        {
+        builder.setNeutralButton("Say", (dialog, which) -> {
             String url = url("inv", "qty");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("whs-code", trx.getWhsCode());
             parameters.put("inv-code", trx.getInvCode());
             url = addRequestParameters(url, parameters);
-            new ShowQuantity(this).execute(url);
+            showStringData(url, "Anbarda say");
         });
         builder.show();
     }
@@ -103,16 +95,15 @@ public class WaitingPackTrxActivity extends AppBaseActivity
     public void getData()
     {
         showProgressDialog(true);
-        new Thread(() ->
-        {
+        new Thread(() -> {
             trxList = getTrxList();
-            runOnUiThread(this::loadData);
+            if (trxList != null) runOnUiThread(this::loadData);
         }).start();
     }
 
-    private void loadData()
+    @Override
+    protected void loadData()
     {
-        showProgressDialog(false);
         if (trxList.size() > 0)
         {
             TrxAdapter trxAdapter = new TrxAdapter(this, R.layout.pack_trx_item_layout, trxList);
@@ -122,30 +113,11 @@ public class WaitingPackTrxActivity extends AppBaseActivity
 
     private List<Trx> getTrxList()
     {
-        List<Trx> result;
-
-        String url = url("trx", "pack-waiting");
+        String url = url("pack", "waiting-doc-items");
         Map<String, String> parameters = new HashMap<>();
         parameters.put("trx-no", trxNo);
         url = addRequestParameters(url, parameters);
-        RestTemplate template = new RestTemplate();
-        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                .setConnectTimeout(config().getConnectionTimeout() * 1000);
-        template.getMessageConverters().add(new StringHttpMessageConverter());
-        try
-        {
-            String content = template.getForObject(url, String.class);
-            Gson gson = new Gson();
-            result = new ArrayList<>(gson.fromJson(content, new TypeToken<ArrayList<Trx>>()
-            {
-            }.getType()));
-        }
-        catch (RuntimeException ex)
-        {
-            ex.printStackTrace();
-            return new ArrayList<>();
-        }
-        return result;
+        return getListData(url, "GET", null, Trx[].class);
     }
 
     static class TrxAdapter extends ArrayAdapter<Trx>
@@ -175,7 +147,8 @@ public class WaitingPackTrxActivity extends AppBaseActivity
             if (convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
-                        .inflate(R.layout.waiting_pack_trx_item_layout, parent, false);
+                                            .inflate(R.layout.waiting_pack_trx_item_layout, parent,
+                                                     false);
             }
 
             switch (trx.getPickStatus())

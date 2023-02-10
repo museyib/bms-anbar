@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="5dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp">
 
     <TextView
-        android:id="@+id/barcode_string"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:textSize="20sp" />
+            android:id="@+id/barcode_string"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="20sp" />
 
     <TextView
-        android:id="@+id/uom_factor"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:textSize="20sp"
-        android:gravity="end" />
+            android:id="@+id/uom_factor"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:gravity="end" />
 
     <TextView
-        android:id="@+id/uom"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:textSize="20sp"
-        android:gravity="end"/>
+            android:id="@+id/uom"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:gravity="end" />
 
 </TableRow>

@@ -15,20 +15,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,22 +47,20 @@ public class EditAttributesActivity extends AppBaseActivity
     protected void onResume()
     {
         super.onResume();
-        getData();
+        loadData();
     }
 
-    private void getData()
+    public void loadData()
     {
-        showProgressDialog(true);
-        new Thread(() ->
+        attributeList = getAttributeList();
+        if (attributeList != null)
         {
-            attributeList = getAttributeList();
-            runOnUiThread(this::loadData);
-        }).start();
+            runOnUiThread(this::updatePage);
+        }
     }
 
-    private void loadData()
+    public void updatePage()
     {
-        showProgressDialog(false);
         if (attributeList.size() > 0)
         {
             findViewById(R.id.save).setOnClickListener(v -> updateAttributes());
@@ -84,12 +68,16 @@ public class EditAttributesActivity extends AppBaseActivity
         AttributeAdapter adapter = new AttributeAdapter(this, attributeList);
         attributeListView.setAdapter(adapter);
         attributeListView.setOnItemClickListener((parent, view, position, id) ->
-        {
-            View dialog = LayoutInflater.from(this)
-                    .inflate(R.layout.edit_attribute_dialog, parent, false);
-            InvAttribute attribute = attributeList.get(position);
-            showEditAttributeDialog(attribute, dialog);
-        });
+                                                 {
+                                                     View dialog = LayoutInflater.from(this)
+                                                                                 .inflate(
+                                                                                         R.layout.edit_attribute_dialog,
+                                                                                         parent,
+                                                                                         false);
+                                                     InvAttribute attribute = attributeList.get(
+                                                             position);
+                                                     showEditAttributeDialog(attribute, dialog);
+                                                 });
     }
 
     private void showEditAttributeDialog(InvAttribute attribute, View dialog)
@@ -103,7 +91,7 @@ public class EditAttributesActivity extends AppBaseActivity
                 .setPositiveButton("OK", (dialog1, which) ->
                 {
                     attribute.setAttributeValue(valueEdit.getText().toString());
-                    loadData();
+                    updatePage();
                 })
                 .create();
         alertDialog.show();
@@ -111,81 +99,26 @@ public class EditAttributesActivity extends AppBaseActivity
 
     private List<InvAttribute> getAttributeList()
     {
-        List<InvAttribute> result;
-
         String url = url("inv", "attribute-list-by-whs");
         Map<String, String> parameters = new HashMap<>();
         parameters.put("inv-code", invCode);
         parameters.put("user-id", config().getUser().getId());
         url = addRequestParameters(url, parameters);
-        RestTemplate template = new RestTemplate();
-        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                .setConnectTimeout(config().getConnectionTimeout() * 1000);
-        template.getMessageConverters().add(new StringHttpMessageConverter());
-        try
-        {
-            String content = template.getForObject(url, String.class);
-            Gson gson = new Gson();
-            result = new ArrayList<>(gson.fromJson(content, new TypeToken<List<InvAttribute>>()
-            {
-            }.getType()));
-        }
-        catch (RuntimeException ex)
-        {
-            ex.printStackTrace();
-            return new ArrayList<>();
-        }
-        return result;
+        return getListData(url, "GET", null, InvAttribute[].class);
     }
 
     private void updateAttributes()
     {
         showProgressDialog(true);
-        new Thread(() ->
+        String url = url("inv", "update-attributes");
+        executeUpdate(url, attributeList, message ->
         {
-            String url = url("inv", "update-attributes");
-            JSONArray jsonArray = new JSONArray();
-            try
-            {
-                for (InvAttribute attribute : attributeList)
-                {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("attributeId", attribute.getAttributeId());
-                    jsonObject.put("invCode", attribute.getInvCode());
-                    jsonObject.put("attributeValue", attribute.getAttributeValue());
-                    jsonObject.put("attributeType", attribute.getAttributeType());
-                    jsonObject.put("whsCode", attribute.getWhsCode());
-                    jsonObject.put("defined", attribute.isDefined());
-                    jsonArray.put(jsonObject);
-                }
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<String> entity = new HttpEntity<>(jsonArray.toString(), headers);
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            try
-            {
-                template.postForObject(url, entity, Boolean.class);
-            }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-            }
-            runOnUiThread(() ->
-            {
-                showProgressDialog(false);
-                finish();
-            });
-        }).start();
+            finish();
+            showMessageDialog(
+                    message.getTitle(),
+                    message.getBody(),
+                    message.getIconId());
+        });
     }
 
     private static class AttributeAdapter extends ArrayAdapter<InvAttribute>
@@ -207,7 +140,8 @@ public class EditAttributesActivity extends AppBaseActivity
             InvAttribute attribute = attributeList.get(position);
             if (convertView == null)
             {
-                convertView = LayoutInflater.from(context).inflate(R.layout.attribute_item, parent, false);
+                convertView = LayoutInflater.from(context)
+                                            .inflate(R.layout.attribute_item, parent, false);
             }
 
             ViewHolder holder = new ViewHolder();
@@ -220,7 +154,9 @@ public class EditAttributesActivity extends AppBaseActivity
             {
                 holder.valueCheck.setChecked(attribute.getAttributeValue().equals("1"));
                 holder.valueCheck.setOnCheckedChangeListener((buttonView, isChecked) ->
-                        attribute.setAttributeValue(String.valueOf(isChecked ? 1 : 0)));
+                                                                     attribute.setAttributeValue(
+                                                                             String.valueOf(
+                                                                                     isChecked ? 1 : 0)));
                 holder.valueCheck.setVisibility(View.VISIBLE);
                 holder.valueEdit.setVisibility(View.GONE);
             }
@@ -231,13 +167,17 @@ public class EditAttributesActivity extends AppBaseActivity
                 holder.valueCheck.setVisibility(View.GONE);
             }
 
-            if (((EditAttributesActivity)context).config().getUser().isLocation() &&
-                    (attribute.getAttributeId().equals("AT010")
-                    || attribute.getAttributeId().equals("AT011"))
-            || !((EditAttributesActivity)context).config().getUser().isLocation())
+            if (((EditAttributesActivity) context).config().getUser().isLocation() &&
+                (attribute.getAttributeId().equals("AT010")
+                 || attribute.getAttributeId().equals("AT011"))
+                || !((EditAttributesActivity) context).config().getUser().isLocation())
+            {
                 convertView.setVisibility(View.VISIBLE);
+            }
             else
+            {
                 convertView.setVisibility(View.GONE);
+            }
 
             return convertView;
         }

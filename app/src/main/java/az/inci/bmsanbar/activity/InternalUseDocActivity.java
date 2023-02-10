@@ -43,44 +43,51 @@ public class InternalUseDocActivity extends AppBaseActivity
         add = findViewById(R.id.add);
 
         add.setOnClickListener(v ->
-        {
-            Intent intent = new Intent(this, InternalUseTrxActivity.class);
-            intent.putExtra("mode", AppConfig.NEW_MODE);
-            startActivity(intent);
-        });
+                               {
+                                   Intent intent = new Intent(this, InternalUseTrxActivity.class);
+                                   intent.putExtra("mode", AppConfig.NEW_MODE);
+                                   startActivity(intent);
+                               });
 
         docListView.setOnItemClickListener((parent, view, position, id) ->
-        {
-            Doc doc = (Doc) parent.getItemAtPosition(position);
-            Intent intent = new Intent(this, InternalUseTrxActivity.class);
-            intent.putExtra("trxNo", doc.getTrxNo());
-            intent.putExtra("notes", doc.getNotes());
-            intent.putExtra("trxTypeId", doc.getTrxTypeId());
-            intent.putExtra("whsCode", doc.getWhsCode());
-            intent.putExtra("whsName", doc.getWhsName());
-            intent.putExtra("expCenterCode", doc.getExpCenterCode());
-            intent.putExtra("expCenterName", doc.getExpCenterName());
-            intent.putExtra("amount", doc.getAmount());
-            startActivity(intent);
-        });
+                                           {
+                                               Doc doc = (Doc) parent.getItemAtPosition(position);
+                                               Intent intent = new Intent(this,
+                                                                          InternalUseTrxActivity.class);
+                                               intent.putExtra("trxNo", doc.getTrxNo());
+                                               intent.putExtra("notes", doc.getNotes());
+                                               intent.putExtra("trxTypeId", doc.getTrxTypeId());
+                                               intent.putExtra("whsCode", doc.getWhsCode());
+                                               intent.putExtra("whsName", doc.getWhsName());
+                                               intent.putExtra("expCenterCode",
+                                                               doc.getExpCenterCode());
+                                               intent.putExtra("expCenterName",
+                                                               doc.getExpCenterName());
+                                               intent.putExtra("amount", doc.getAmount());
+                                               startActivity(intent);
+                                           });
 
         docListView.setOnItemLongClickListener((parent, view, position, id) ->
-        {
-            AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setMessage("Silmək istəyirsiniz?")
-                    .setPositiveButton("Bəli", (dialog1, which) ->
-                    {
-                        Doc doc = (Doc) parent.getItemAtPosition(position);
-                        dbHelper.deleteInternalUseDoc(doc.getTrxNo());
-                        loadDocs();
-                    })
-                    .setNegativeButton("Xeyr", null)
-                    .create();
-            dialog.show();
-            return true;
-        });
+                                               {
+                                                   AlertDialog dialog = new AlertDialog.Builder(
+                                                           this)
+                                                           .setMessage("Silmək istəyirsiniz?")
+                                                           .setPositiveButton("Bəli",
+                                                                              (dialog1, which) ->
+                                                                              {
+                                                                                  Doc doc = (Doc) parent.getItemAtPosition(
+                                                                                          position);
+                                                                                  dbHelper.deleteInternalUseDoc(
+                                                                                          doc.getTrxNo());
+                                                                                  loadData();
+                                                                              })
+                                                           .setNegativeButton("Xeyr", null)
+                                                           .create();
+                                                   dialog.show();
+                                                   return true;
+                                               });
 
-        loadDocs();
+        loadData();
 
         loadFooter();
     }
@@ -89,7 +96,7 @@ public class InternalUseDocActivity extends AppBaseActivity
     protected void onResume()
     {
         super.onResume();
-        loadDocs();
+        loadData();
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -99,10 +106,11 @@ public class InternalUseDocActivity extends AppBaseActivity
         MenuItem attributes = menu.findItem(R.id.inv_attributes);
         attributes.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         attributes.setOnMenuItemClickListener(item1 ->
-        {
-            startActivity(new Intent(this, InventoryInfoActivity.class));
-            return true;
-        });
+                                              {
+                                                  startActivity(new Intent(this,
+                                                                           InventoryInfoActivity.class));
+                                                  return true;
+                                              });
 
         menu.findItem(R.id.pick_report).setVisible(false);
         menu.findItem(R.id.search).setVisible(false);
@@ -111,7 +119,7 @@ public class InternalUseDocActivity extends AppBaseActivity
         return true;
     }
 
-    private void loadDocs()
+    public void loadData()
     {
         docList = dbHelper.getInternalUseDocList();
         if (docList.size() == 0)
@@ -121,7 +129,8 @@ public class InternalUseDocActivity extends AppBaseActivity
         else
         {
             findViewById(R.id.doc_list_scroll).setVisibility(View.VISIBLE);
-            DocAdapter adapter = new DocAdapter(this, R.layout.internal_use_doc_item_layout, docList);
+            DocAdapter adapter = new DocAdapter(this, R.layout.internal_use_doc_item_layout,
+                                                docList);
             docListView.setAdapter(adapter);
         }
     }
@@ -149,7 +158,8 @@ public class InternalUseDocActivity extends AppBaseActivity
             if (convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
-                        .inflate(R.layout.internal_use_doc_item_layout, parent, false);
+                                            .inflate(R.layout.internal_use_doc_item_layout, parent,
+                                                     false);
             }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);

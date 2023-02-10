@@ -24,20 +24,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +34,7 @@ import az.inci.bmsanbar.DBHelper;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.Trx;
+import az.inci.bmsanbar.model.v2.CollectTrxRequest;
 
 public class PackTrxActivity extends ScannerSupportActivity
         implements SearchView.OnQueryTextListener
@@ -66,18 +54,18 @@ public class PackTrxActivity extends ScannerSupportActivity
     String orderTrxNo;
     String bpName;
     String notes;
+    int activeSeconds;
+    int currentSeconds;
+    long startTime;
     private boolean onFocus;
     private int focusPosition;
     private boolean packedAll;
-    private DecimalFormat decimalFormat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pack_trx_layout);
-        decimalFormat = new DecimalFormat();
-        decimalFormat.setGroupingUsed(false);
 
         sendButton = findViewById(R.id.send);
         barcodeButton = findViewById(R.id.barcode);
@@ -87,21 +75,28 @@ public class PackTrxActivity extends ScannerSupportActivity
         continuousCheck = findViewById(R.id.continuous_check);
         readyCheck = findViewById(R.id.readyToSend);
 
+        currentSeconds = 0;
+        startTime = System.currentTimeMillis();
+
         trxListView.setItemsCanFocus(true);
         sendButton.setEnabled(false);
         sendButton.setBackgroundColor(getResources().getColor(R.color.colorZeroQty));
 
         continuousCheck.setOnCheckedChangeListener((compoundButton, b) -> isContinuous = b);
         readyCheck.setOnCheckedChangeListener((compoundButton, b) ->
-                {
-                    sendButton.setEnabled(b);
-                    sendButton.setBackgroundColor(b ? Color.GREEN : getResources().getColor(R.color.colorZeroQty));
-                }
+                                              {
+                                                  sendButton.setEnabled(b);
+                                                  sendButton.setBackgroundColor(
+                                                          b ? Color.GREEN : getResources().getColor(
+                                                                  R.color.colorZeroQty));
+                                              }
         );
 
 
         if (config().isCameraScanning())
+        {
             barcodeButton.setVisibility(View.VISIBLE);
+        }
 
         loadFooter();
 
@@ -110,89 +105,95 @@ public class PackTrxActivity extends ScannerSupportActivity
         orderTrxNo = intent.getStringExtra("orderTrxNo");
         bpName = intent.getStringExtra("bpName");
         notes = intent.getStringExtra("notes");
+        activeSeconds = dbHelper.getPackActiveSeconds(trxNo);
         setTitle(orderTrxNo + ": " + bpName);
 
         trxListView.setOnItemClickListener((parent, view, position, id) ->
-        {
-            onFocus = true;
-            Trx trx = (Trx) view.getTag();
-            showEditPackedQtyDialog(trx);
-        });
+                                           {
+                                               onFocus = true;
+                                               Trx trx = (Trx) view.getTag();
+                                               showEditPackedQtyDialog(trx);
+                                           });
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) ->
-        {
-            Trx trx = (Trx) view.getTag();
-            showInfoDialog(trx);
-            return true;
-        });
+                                               {
+                                                   Trx trx = (Trx) view.getTag();
+                                                   showInfoDialog(trx);
+                                                   return true;
+                                               });
 
         sendButton.setOnClickListener(v ->
-        {
-            if (trxList.size() > 0 && packedAll)
-                sendTrx();
-            else
-            {
-                AlertDialog dialog = new AlertDialog.Builder(this)
-                        .setMessage("Mallar tam yığılmayıb. Göndərmək istəyirsiniz?")
-                        .setNegativeButton("Bəli", (dialogInterface, i) -> sendTrx())
-                        .setPositiveButton("Xeyr", null)
-                        .create();
+                                      {
+                                          if (trxList.size() > 0 && packedAll)
+                                          {
+                                              sendTrx();
+                                          }
+                                          else
+                                          {
+                                              AlertDialog dialog = new AlertDialog.Builder(this)
+                                                      .setMessage(
+                                                              "Mallar tam yığılmayıb. Göndərmək istəyirsiniz?")
+                                                      .setNegativeButton("Bəli",
+                                                                         (dialogInterface, i) -> sendTrx())
+                                                      .setPositiveButton("Xeyr", null)
+                                                      .create();
 
-                dialog.show();
-                playSound(SOUND_FAIL);
-            }
-        });
+                                              dialog.show();
+                                              playSound(SOUND_FAIL);
+                                          }
+                                      });
 
         barcodeButton.setOnClickListener(v ->
-        {
-            Intent barcodeIntent = new Intent(PackTrxActivity.this, BarcodeScannerCamera.class);
-            barcodeIntent.putExtra("serialScan", isContinuous);
-            barcodeIntent.putExtra("trxNo", trxNo);
-            barcodeIntent.putExtra("trxType", "pack");
-            startActivityForResult(barcodeIntent, 1);
-        });
+                                         {
+                                             Intent barcodeIntent = new Intent(PackTrxActivity.this,
+                                                                               BarcodeScannerCamera.class);
+                                             barcodeIntent.putExtra("serialScan", isContinuous);
+                                             barcodeIntent.putExtra("trxNo", trxNo);
+                                             barcodeIntent.putExtra("trxType", "pack");
+                                             startActivityForResult(barcodeIntent, 1);
+                                         });
 
         equateAll.setOnClickListener(v ->
-        {
-            playSound(SOUND_FAIL);
-            AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
-                    .setNegativeButton("Bəli", (dialogInterface, i) ->
-                    {
-                        for (Trx trx : trxList)
-                        {
-                            trx.setPackedQty(trx.getPickedQty());
-                            dbHelper.updatePackTrx(trx);
-                        }
+                                     {
+                                         playSound(SOUND_FAIL);
+                                         AlertDialog dialog = new AlertDialog.Builder(this)
+                                                 .setMessage("Sayları eyniləşdirmək istəyirsiniz?")
+                                                 .setNegativeButton("Bəli", (dialogInterface, i) ->
+                                                 {
+                                                     for (Trx trx : trxList)
+                                                     {
+                                                         trx.setPackedQty(trx.getPickedQty());
+                                                         dbHelper.updatePackTrx(trx);
+                                                     }
 
-                        loadTrx();
-                    })
-                    .setPositiveButton("Xeyr", null)
-                    .create();
-            dialog.show();
-        });
+                                                     loadData();
+                                                 })
+                                                 .setPositiveButton("Xeyr", null)
+                                                 .create();
+                                         dialog.show();
+                                     });
 
         reload.setOnClickListener(view ->
-        {
-            playSound(SOUND_FAIL);
-            AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setMessage("Sayları sıfırlamaq istəyirsiniz?")
-                    .setNegativeButton("Bəli", (dialogInterface, i) ->
-                    {
-                        for (Trx trx : trxList)
-                        {
-                            trx.setPackedQty(0);
-                            dbHelper.updatePackTrx(trx);
-                        }
+                                  {
+                                      playSound(SOUND_FAIL);
+                                      AlertDialog dialog = new AlertDialog.Builder(this)
+                                              .setMessage("Sayları sıfırlamaq istəyirsiniz?")
+                                              .setNegativeButton("Bəli", (dialogInterface, i) ->
+                                              {
+                                                  for (Trx trx : trxList)
+                                                  {
+                                                      trx.setPackedQty(0);
+                                                      dbHelper.updatePackTrx(trx);
+                                                  }
 
-                        loadTrx();
-                    })
-                    .setPositiveButton("Xeyr", null)
-                    .create();
-            dialog.show();
-        });
+                                                  loadData();
+                                              })
+                                              .setPositiveButton("Xeyr", null)
+                                              .create();
+                                      dialog.show();
+                                  });
 
-        loadTrx();
+        loadData();
     }
 
     private void showInfoDialog(Trx trx)
@@ -214,6 +215,7 @@ public class PackTrxActivity extends ScannerSupportActivity
             photoIntent.putExtra("notes", trx.getNotes());
             startActivity(photoIntent);
         });
+
         builder.setNeutralButton("Say", (dialog, which) ->
         {
             String url = url("inv", "qty");
@@ -221,7 +223,7 @@ public class PackTrxActivity extends ScannerSupportActivity
             parameters.put("whs-code", trx.getWhsCode());
             parameters.put("inv-code", trx.getInvCode());
             url = addRequestParameters(url, parameters);
-            new ShowQuantity(PackTrxActivity.this).execute(url);
+            showStringData(url, "Anbarda say");
         });
         builder.show();
     }
@@ -232,8 +234,8 @@ public class PackTrxActivity extends ScannerSupportActivity
         if (trx == null)
         {
             showMessageDialog(getString(R.string.info),
-                    getString(R.string.good_not_found),
-                    android.R.drawable.ic_dialog_info);
+                              getString(R.string.good_not_found),
+                              android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
         }
         else
@@ -250,8 +252,8 @@ public class PackTrxActivity extends ScannerSupportActivity
         if (trx.getPackedQty() >= trx.getQty())
         {
             showMessageDialog(getString(R.string.info),
-                    getString(R.string.already_packed),
-                    android.R.drawable.ic_dialog_info);
+                              getString(R.string.already_packed),
+                              android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
         }
         else
@@ -262,16 +264,18 @@ public class PackTrxActivity extends ScannerSupportActivity
             }
             else
             {
-                double qty=trx.getPackedQty() + trx.getUomFactor();
-                if (qty>trx.getQty())
-                    qty=trx.getQty();
+                double qty = trx.getPackedQty() + trx.getUomFactor();
+                if (qty > trx.getQty())
+                {
+                    qty = trx.getQty();
+                }
                 trx.setPackedQty(qty);
                 dbHelper.updatePackTrx(trx);
             }
             playSound(SOUND_SUCCESS);
         }
 
-        loadTrx();
+        loadData();
     }
 
     @Override
@@ -288,7 +292,8 @@ public class PackTrxActivity extends ScannerSupportActivity
         }
     }
 
-    public void loadTrx()
+    @Override
+    public void loadData()
     {
         packedAll = true;
         trxList = dbHelper.getPackTrxByApproveUser(trxNo);
@@ -303,7 +308,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         focusPosition = trxList.indexOf(trx);
         View view = getLayoutInflater()
                 .inflate(R.layout.edit_packed_qty_dialog_layout,
-                        findViewById(android.R.id.content), false);
+                         findViewById(android.R.id.content), false);
 
 
         TextView invCodeView = view.findViewById(R.id.inv_code);
@@ -332,9 +337,13 @@ public class PackTrxActivity extends ScannerSupportActivity
                 {
                     double packedQty;
                     if (!packedQtyEdit.getText().toString().isEmpty())
+                    {
                         packedQty = Double.parseDouble(packedQtyEdit.getText().toString());
+                    }
                     else
+                    {
                         packedQty = -1;
+                    }
 
                     if (packedQty < 0 || packedQty > trx.getQty())
                     {
@@ -345,7 +354,7 @@ public class PackTrxActivity extends ScannerSupportActivity
                     {
                         trx.setPackedQty(packedQty);
                         dbHelper.updatePackTrx(trx);
-                        loadTrx();
+                        loadData();
                     }
                 })
                 .setNegativeButton(R.string.cancel, (dialog1, which) -> dialog1.dismiss())
@@ -353,12 +362,12 @@ public class PackTrxActivity extends ScannerSupportActivity
                 {
                     trx.setPackedQty(trx.getPickedQty());
                     dbHelper.updatePackTrx(trx);
-                    loadTrx();
+                    loadData();
                 })
                 .create();
 
         Objects.requireNonNull(dialog.getWindow())
-                .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+               .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         dialog.show();
     }
 
@@ -384,7 +393,9 @@ public class PackTrxActivity extends ScannerSupportActivity
     {
         TrxAdapter adapter = (TrxAdapter) trxListView.getAdapter();
         if (adapter != null)
+        {
             adapter.getFilter().filter(newText);
+        }
         return true;
     }
 
@@ -392,9 +403,13 @@ public class PackTrxActivity extends ScannerSupportActivity
     public void onBackPressed()
     {
         if (!searchView.isIconified())
+        {
             searchView.setIconified(true);
+        }
         else
+        {
             super.onBackPressed();
+        }
     }
 
     @Override
@@ -415,7 +430,53 @@ public class PackTrxActivity extends ScannerSupportActivity
     protected void onResume()
     {
         super.onResume();
-        loadTrx();
+        loadData();
+        startTime = System.currentTimeMillis();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        currentSeconds += (System.currentTimeMillis() - startTime) / 1000;
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        activeSeconds += currentSeconds;
+        dbHelper.updatePackActiveSeconds(trxNo, activeSeconds);
+    }
+
+    private void sendTrx()
+    {
+        showProgressDialog(true);
+        List<CollectTrxRequest> requestList = new ArrayList<>();
+        currentSeconds += (System.currentTimeMillis() - startTime) / 1000;
+        activeSeconds += currentSeconds;
+        for (Trx trx : trxList)
+        {
+            CollectTrxRequest request = new CollectTrxRequest();
+            request.setTrxId(trx.getTrxId());
+            request.setQty(trx.getPackedQty());
+            request.setSeconds(activeSeconds);
+            requestList.add(request);
+        }
+
+        String url = url("pack", "collect");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("trx-no", trxNo);
+        url = addRequestParameters(url, parameters);
+        executeUpdate(url, requestList, message ->
+        {
+            dbHelper.deletePackTrx(trxNo);
+            finish();
+            showMessageDialog(
+                    message.getTitle(),
+                    message.getBody(),
+                    message.getIconId());
+        });
     }
 
     static class TrxAdapter extends ArrayAdapter<Trx> implements Filterable
@@ -445,7 +506,7 @@ public class PackTrxActivity extends ScannerSupportActivity
             if (convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
-                        .inflate(R.layout.pack_trx_item_layout, parent, false);
+                                            .inflate(R.layout.pack_trx_item_layout, parent, false);
             }
 
             if (position == activity.focusPosition && activity.onFocus)
@@ -458,9 +519,14 @@ public class PackTrxActivity extends ScannerSupportActivity
             }
 
             if (trx.getPackedQty() == 0)
-                convertView.setBackgroundColor(activity.getResources().getColor(R.color.colorZeroQty));
+            {
+                convertView.setBackgroundColor(
+                        activity.getResources().getColor(R.color.colorZeroQty));
+            }
             else if (trx.getPackedQty() < trx.getQty())
+            {
                 convertView.setBackgroundColor(Color.YELLOW);
+            }
 
             TextView invCode = convertView.findViewById(R.id.inv_code);
             TextView invName = convertView.findViewById(R.id.inv_name);
@@ -478,7 +544,9 @@ public class PackTrxActivity extends ScannerSupportActivity
             convertView.setTag(trx);
 
             if (trx.getPackedQty() < trx.getQty())
+            {
                 activity.packedAll = false;
+            }
 
             return convertView;
         }
@@ -499,7 +567,7 @@ public class PackTrxActivity extends ScannerSupportActivity
                     for (Trx trx : activity.trxList)
                     {
                         if (trx.getInvCode().concat(trx.getInvName()).concat(trx.getBarcode())
-                                .toLowerCase().contains(constraint))
+                               .toLowerCase().contains(constraint))
                         {
                             filteredArrayData.add(trx);
                         }
@@ -519,68 +587,5 @@ public class PackTrxActivity extends ScannerSupportActivity
                 }
             };
         }
-    }
-
-    private void sendTrx()
-    {
-        showProgressDialog(true);
-        new Thread(() -> {
-
-            JSONArray jsonArray = new JSONArray();
-            try
-            {
-                for (Trx trx : trxList)
-                {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("trxId", trx.getTrxId());
-                    jsonObject.put("qty", trx.getPackedQty());
-                    jsonArray.put(jsonObject);
-                }
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-            HttpHeaders headers = new HttpHeaders();
-            MediaType mediaType = new MediaType("application", "json", StandardCharsets.UTF_8);
-            headers.setContentType(mediaType);
-            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-            headers.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
-            HttpEntity<String> entity = new HttpEntity<>(jsonArray.toString(), headers);
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
-            boolean result;
-            String url = url("pack", "collect");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("trx-no", trxNo);
-            url = addRequestParameters(url, parameters);
-            try
-            {
-                result = template.postForObject(url, entity, Boolean.class);
-            }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-                result=false;
-            }
-            boolean finalResult = result;
-            runOnUiThread(() -> {
-                if (!finalResult)
-                {
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.connection_error),
-                            android.R.drawable.ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                }
-                else
-                {
-                    dbHelper.deletePackTrx(trxNo);
-                    finish();
-                }
-                showProgressDialog(false);
-            });
-        }).start();
     }
 }

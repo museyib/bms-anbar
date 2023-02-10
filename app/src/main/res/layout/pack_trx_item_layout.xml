@@ -1,98 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
     <View
-        android:layout_width="3dp"
-        android:layout_height="match_parent"
-        android:background="?android:attr/listDivider"
-        android:foreground="@android:color/black" />
+            android:layout_width="3dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/listDivider"
+            android:foreground="@android:color/black" />
 
     <TextView
-        android:id="@+id/inv_code"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
-        android:textColor="@android:color/black" />
+            android:id="@+id/inv_code"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:textColor="@android:color/black" />
 
     <View
-        android:layout_width="2dp"
-        android:layout_height="match_parent"
-        android:background="?android:attr/listDivider"
-        android:foreground="@android:color/black" />
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/listDivider"
+            android:foreground="@android:color/black" />
 
     <TextView
-        android:id="@+id/inv_name"
-        android:layout_width="110dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
-        android:textColor="@android:color/black" />
+            android:id="@+id/inv_name"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:textColor="@android:color/black" />
 
     <View
-        android:layout_width="2dp"
-        android:layout_height="match_parent"
-        android:background="?android:attr/listDivider"
-        android:foreground="@android:color/black" />
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/listDivider"
+            android:foreground="@android:color/black" />
 
     <TextView
-        android:id="@+id/qty"
-        android:layout_width="45dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
-        android:gravity="end"
-        android:textColor="@android:color/black" />
+            android:id="@+id/qty"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:gravity="end"
+            android:textColor="@android:color/black" />
 
     <View
-        android:layout_width="2dp"
-        android:layout_height="match_parent"
-        android:background="?android:attr/listDivider"
-        android:foreground="@android:color/black" />
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/listDivider"
+            android:foreground="@android:color/black" />
 
     <TextView
-        android:id="@+id/picked"
-        android:layout_width="45dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
-        android:gravity="end"
-        android:textColor="@android:color/black" />
+            android:id="@+id/picked"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:gravity="end"
+            android:textColor="@android:color/black" />
 
     <View
-        android:layout_width="2dp"
-        android:layout_height="match_parent"
-        android:background="?android:attr/listDivider"
-        android:foreground="@android:color/black" />
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/listDivider"
+            android:foreground="@android:color/black" />
 
     <TextView
-        android:id="@+id/packed"
-        android:layout_width="45dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
-        android:gravity="end"
-        android:textColor="@android:color/black" />
+            android:id="@+id/packed"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:gravity="end"
+            android:textColor="@android:color/black" />
 
     <View
-        android:layout_width="2dp"
-        android:layout_height="match_parent"
-        android:background="?android:attr/listDivider"
-        android:foreground="@android:color/black" />
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/listDivider"
+            android:foreground="@android:color/black" />
 
     <TextView
-        android:id="@+id/inv_brand"
-        android:layout_width="80dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
-        android:textColor="@android:color/black" />
+            android:id="@+id/inv_brand"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:textColor="@android:color/black" />
 
     <View
-        android:layout_width="3dp"
-        android:layout_height="match_parent"
-        android:background="?android:attr/listDivider"
-        android:foreground="@android:color/black" />
+            android:layout_width="3dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/listDivider"
+            android:foreground="@android:color/black" />
 </TableRow>

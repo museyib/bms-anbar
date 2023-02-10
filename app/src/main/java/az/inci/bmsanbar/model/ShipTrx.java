@@ -8,6 +8,7 @@ public class ShipTrx
 {
     private String regionCode;
     private String driverCode;
+    private String driverName;
     private String srcTrxNo;
     private String vehicleCode;
     private String userId;
@@ -31,6 +32,16 @@ public class ShipTrx
     public void setDriverCode(String driverCode)
     {
         this.driverCode = driverCode;
+    }
+
+    public String getDriverName()
+    {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName)
+    {
+        this.driverName = driverName;
     }
 
     public String getSrcTrxNo()
@@ -85,11 +96,13 @@ public class ShipTrx
         return Objects.hash(srcTrxNo);
     }
 
-    public boolean isTaxed() {
+    public boolean isTaxed()
+    {
         return taxed;
     }
 
-    public void setTaxed(boolean taxed) {
+    public void setTaxed(boolean taxed)
+    {
         this.taxed = taxed;
     }
 }

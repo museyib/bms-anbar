@@ -19,7 +19,7 @@ public class PhotoActivity extends AppBaseActivity
         String invCode = getIntent().getStringExtra("invCode");
         String imgUrl = config().getImageUrl() + "/" + invCode + ".jpg";
         String htmlCode = "<html><head><style>img {max-width: 100%}" +
-                "</style></head><body><img src='" + imgUrl + "'/></body></html>";
+                          "</style></head><body><img src='" + imgUrl + "'/></body></html>";
         webView.loadData(htmlCode, "text/html", "UTF-8");
     }
 }

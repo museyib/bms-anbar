@@ -1,146 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+            android:id="@+id/buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
-            android:id="@+id/newDocs"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription="@string/refresh"
-            android:src="@drawable/refresh" />
+                android:id="@+id/newDocs"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:contentDescription="@string/refresh"
+                android:src="@drawable/refresh" />
 
         <ImageButton
-            android:id="@+id/newDocsIncomplete"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription="@string/refresh"
-            android:src="@android:drawable/stat_sys_download" />
+                android:id="@+id/newDocsIncomplete"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="5dp"
+                android:contentDescription="@string/refresh"
+                android:src="@android:drawable/stat_sys_download" />
+
+        <ImageButton
+                android:id="@+id/newDocsByUserId"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="5dp"
+                android:contentDescription="@string/refresh"
+                android:src="@android:drawable/ic_menu_more" />
     </LinearLayout>
 
     <HorizontalScrollView
-        android:id="@+id/doc_list_scroll"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttons">
+            android:id="@+id/doc_list_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/buttons">
 
         <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
             <TableRow
-                android:id="@+id/header"
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                android:background="#D3F6FA">
+                    android:id="@+id/header"
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:background="#D3F6FA">
 
                 <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
+                        android:layout_width="3dp"
+                        android:layout_height="match_parent"
+                        android:background="?android:attr/listDivider"
+                        android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="110dp"
-                    android:layout_height="match_parent"
-                    android:text="@string/trx_no_label"
-                    android:textColor="@android:color/black" />
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:text="@string/trx_no_label"
+                        android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
+                        android:layout_width="3dp"
+                        android:layout_height="match_parent"
+                        android:background="?android:attr/listDivider"
+                        android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="40dp"
-                    android:layout_height="match_parent"
-                    android:text="@string/pick_area"
-                    android:textColor="@android:color/black" />
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:text="@string/pick_area"
+                        android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
+                        android:layout_width="3dp"
+                        android:layout_height="match_parent"
+                        android:background="?android:attr/listDivider"
+                        android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="40dp"
-                    android:layout_height="match_parent"
-                    android:text="@string/item_count"
-                    android:textColor="@android:color/black" />
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:text="@string/item_count"
+                        android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
+                        android:layout_width="3dp"
+                        android:layout_height="match_parent"
+                        android:background="?android:attr/listDivider"
+                        android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="40dp"
-                    android:layout_height="match_parent"
-                    android:text="@string/picked"
-                    android:textColor="@android:color/black" />
+                        android:layout_width="40dp"
+                        android:layout_height="match_parent"
+                        android:text="@string/picked"
+                        android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
+                        android:layout_width="3dp"
+                        android:layout_height="match_parent"
+                        android:background="?android:attr/listDivider"
+                        android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="250dp"
-                    android:layout_height="match_parent"
-                    android:text="@string/description"
-                    android:textColor="@android:color/black" />
+                        android:layout_width="250dp"
+                        android:layout_height="match_parent"
+                        android:text="@string/description"
+                        android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
+                        android:layout_width="3dp"
+                        android:layout_height="match_parent"
+                        android:background="?android:attr/listDivider"
+                        android:foreground="@android:color/black" />
 
                 <TextView
-                    android:layout_width="40dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/whs"
-                    android:textColor="@android:color/black" />
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/whs"
+                        android:textColor="@android:color/black" />
 
                 <View
-                    android:layout_width="3dp"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/listDivider"
-                    android:foreground="@android:color/black" />
+                        android:layout_width="3dp"
+                        android:layout_height="match_parent"
+                        android:background="?android:attr/listDivider"
+                        android:foreground="@android:color/black" />
             </TableRow>
 
             <ListView
-                android:id="@+id/doc_list"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:divider="@android:color/black"
-                android:dividerHeight="3dp" />
+                    android:id="@+id/doc_list"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:divider="@android:color/black"
+                    android:dividerHeight="3dp" />
         </RelativeLayout>
 
     </HorizontalScrollView>
 
     <include
-        layout="@layout/footer_layout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/doc_list_scroll" />
+            layout="@layout/footer_layout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/doc_list_scroll" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

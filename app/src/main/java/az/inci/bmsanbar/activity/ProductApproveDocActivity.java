@@ -17,14 +17,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.lang.reflect.Type;
 import java.util.List;
 
 import az.inci.bmsanbar.AppConfig;
@@ -38,7 +30,6 @@ public class ProductApproveDocActivity extends AppBaseActivity
     ListView docListView;
     ImageButton add;
     ImageButton download;
-
     List<Doc> docList;
 
     @Override
@@ -53,43 +44,51 @@ public class ProductApproveDocActivity extends AppBaseActivity
         download = findViewById(R.id.download);
 
         if (config().getUser().isApprove())
+        {
             download.setVisibility(View.VISIBLE);
+        }
 
         add.setOnClickListener(v ->
-        {
-            Intent intent = new Intent(this, ProductApproveTrxActivity.class);
-            intent.putExtra("mode", AppConfig.NEW_MODE);
-            startActivity(intent);
-        });
+                               {
+                                   Intent intent = new Intent(this,
+                                                              ProductApproveTrxActivity.class);
+                                   intent.putExtra("mode", AppConfig.NEW_MODE);
+                                   startActivity(intent);
+                               });
 
         download.setOnClickListener(view -> loadDocsFromServer());
 
         docListView.setOnItemClickListener((parent, view, position, id) ->
-        {
-            Doc doc = (Doc) parent.getItemAtPosition(position);
-            Intent intent = new Intent(this, ProductApproveTrxActivity.class);
-            intent.putExtra("trxNo", doc.getTrxNo());
-            intent.putExtra("notes", doc.getNotes());
-            startActivity(intent);
-        });
+                                           {
+                                               Doc doc = (Doc) parent.getItemAtPosition(position);
+                                               Intent intent = new Intent(this,
+                                                                          ProductApproveTrxActivity.class);
+                                               intent.putExtra("trxNo", doc.getTrxNo());
+                                               intent.putExtra("notes", doc.getNotes());
+                                               startActivity(intent);
+                                           });
 
         docListView.setOnItemLongClickListener((parent, view, position, id) ->
-        {
-            AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setMessage("Silmək istəyirsiniz?")
-                    .setPositiveButton("Bəli", (dialog1, which) ->
-                    {
-                        Doc doc = (Doc) parent.getItemAtPosition(position);
-                        dbHelper.deleteApproveDoc(doc.getTrxNo());
-                        loadDocs();
-                    })
-                    .setNegativeButton("Xeyr", null)
-                    .create();
-            dialog.show();
-            return true;
-        });
+                                               {
+                                                   AlertDialog dialog = new AlertDialog.Builder(
+                                                           this)
+                                                           .setMessage("Silmək istəyirsiniz?")
+                                                           .setPositiveButton("Bəli",
+                                                                              (dialog1, which) ->
+                                                                              {
+                                                                                  Doc doc = (Doc) parent.getItemAtPosition(
+                                                                                          position);
+                                                                                  dbHelper.deleteApproveDoc(
+                                                                                          doc.getTrxNo());
+                                                                                  loadData();
+                                                                              })
+                                                           .setNegativeButton("Xeyr", null)
+                                                           .create();
+                                                   dialog.show();
+                                                   return true;
+                                               });
 
-        loadDocs();
+        loadData();
 
         loadFooter();
     }
@@ -98,7 +97,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
     protected void onResume()
     {
         super.onResume();
-        loadDocs();
+        loadData();
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -108,10 +107,11 @@ public class ProductApproveDocActivity extends AppBaseActivity
         MenuItem attributes = menu.findItem(R.id.inv_attributes);
         attributes.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         attributes.setOnMenuItemClickListener(item1 ->
-        {
-            startActivity(new Intent(this, InventoryInfoActivity.class));
-            return true;
-        });
+                                              {
+                                                  startActivity(new Intent(this,
+                                                                           InventoryInfoActivity.class));
+                                                  return true;
+                                              });
 
         menu.findItem(R.id.pick_report).setVisible(false);
         menu.findItem(R.id.search).setVisible(false);
@@ -120,7 +120,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
         return true;
     }
 
-    private void loadDocs()
+    public void loadData()
     {
         docList = dbHelper.getProductApproveDocList();
         if (docList.size() == 0)
@@ -130,7 +130,8 @@ public class ProductApproveDocActivity extends AppBaseActivity
         else
         {
             findViewById(R.id.doc_list_scroll).setVisibility(View.VISIBLE);
-            DocAdapter adapter = new DocAdapter(this, R.layout.product_approve_doc_item_layout, docList);
+            DocAdapter adapter = new DocAdapter(this, R.layout.product_approve_doc_item_layout,
+                                                docList);
             docListView.setAdapter(adapter);
         }
     }
@@ -138,103 +139,50 @@ public class ProductApproveDocActivity extends AppBaseActivity
     private void loadDocsFromServer()
     {
         showProgressDialog(true);
-        new Thread(this::loadTrxListFromServer).start();
-    }
+        new Thread(() ->
+                   {
+                       String url = url("inv-move", "approve-prd", "trx-list");
+                       List<Trx> trxList = getListData(url, "GET", null, Trx[].class);
 
-    private void loadTrxListFromServer()
-    {
-        String url = url("trx", "approve-prd", "list");
-        RestTemplate template = new RestTemplate();
-        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                .setConnectTimeout(config().getConnectionTimeout() * 1000);
-        template.getMessageConverters().add(new StringHttpMessageConverter());
-        String result;
-        try
-        {
-            result = template.getForObject(url, String.class);
-            Gson gson = new Gson();
-            Type type = new TypeToken<List<Trx>>()
-            {
-            }.getType();
-            List<Trx> trxList = gson.fromJson(result, type);
-            if (trxList.size() > 0)
-            {
-                for (Trx trx : trxList)
-                    dbHelper.addApproveTrx(trx);
-                loadDocListFromServer(trxList);
-            }
-            else
-            {
-                runOnUiThread(() -> showMessageDialog(getString(R.string.info),
-                        getString(R.string.no_data),
-                        android.R.drawable.ic_dialog_info));
-            }
-
-        }
-        catch (RuntimeException ex)
-        {
-            ex.printStackTrace();
-            runOnUiThread(() ->
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.connection_error),
-                            android.R.drawable.ic_dialog_alert));
-        }
-        finally
-        {
-            showProgressDialog(false);
-        }
+                       if (trxList != null)
+                       {
+                           if (trxList.size() > 0)
+                           {
+                               loadDocListFromServer(trxList);
+                           }
+                           else
+                           {
+                               runOnUiThread(() -> showMessageDialog(getString(R.string.info),
+                                                                     getString(R.string.no_data),
+                                                                     android.R.drawable.ic_dialog_info));
+                           }
+                       }
+                   }).start();
     }
 
     private void loadDocListFromServer(List<Trx> trxList)
     {
 
-        String url = url("doc", "approve-prd", "list");
-        RestTemplate template = new RestTemplate();
-        ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                .setConnectTimeout(config().getConnectionTimeout() * 1000);
-        template.getMessageConverters().add(new StringHttpMessageConverter());
-        String result;
-        try
-        {
-            result = template.getForObject(url, String.class);
-            Gson gson = new Gson();
-            Type type = new TypeToken<List<Doc>>()
-            {
-            }.getType();
-            List<Doc> docList = gson.fromJson(result, type);
-            for (Doc doc : docList)
-            {
-                doc.setTrxTypeId(4);
-                dbHelper.addApproveDoc(doc);
-            }
-            runOnUiThread(() ->
-            {
-                showProgressDialog(false);
-                loadDocs();
-            });
+        String url = url("inv-move", "approve-prd", "doc-list");
+        List<Doc> docList = getListData(url, "GET", null, Doc[].class);
+        runOnUiThread(() ->
+                      {
+                          for (Doc doc : docList)
+                          {
+                              doc.setTrxTypeId(4);
+                              dbHelper.addApproveDoc(doc);
+                          }
 
-        }
-        catch (RuntimeException ex)
-        {
-            ex.printStackTrace();
-            for (Trx trx : trxList)
-            {
-                dbHelper.deleteApproveTrxByTrxNo(trx.getTrxNo());
-            }
-            runOnUiThread(() ->
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.connection_error),
-                            android.R.drawable.ic_dialog_alert));
-        }
-        finally
-        {
-            showProgressDialog(false);
-        }
+                          for (Trx trx : trxList)
+                          {
+                              dbHelper.addApproveTrx(trx);
+                          }
+                          loadData();
+                      });
     }
 
     static class DocAdapter extends ArrayAdapter<Doc>
     {
-
         ProductApproveDocActivity activity;
         List<Doc> list;
 
@@ -254,7 +202,8 @@ public class ProductApproveDocActivity extends AppBaseActivity
             if (convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
-                        .inflate(R.layout.product_approve_doc_item_layout, parent, false);
+                                            .inflate(R.layout.product_approve_doc_item_layout,
+                                                     parent, false);
             }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);

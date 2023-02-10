@@ -3,7 +3,6 @@ package az.inci.bmsanbar.activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -16,22 +15,13 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Inventory;
+import az.inci.bmsanbar.model.v2.InvInfo;
 
 public class InventoryInfoActivity extends ScannerSupportActivity
 {
@@ -50,7 +40,6 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     String invName;
     String defaultUomCode;
     String keyword;
-    String result = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -68,11 +57,13 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         viewImage = findViewById(R.id.photo);
 
         if (config().isCameraScanning())
+        {
             findViewById(R.id.camera_scanner).setVisibility(View.VISIBLE);
+        }
 
         searchField.setAdapter(
                 ArrayAdapter.createFromResource(this, R.array.search_field_list,
-                        R.layout.spinner_item));
+                                                R.layout.spinner_item));
 
         searchBtn.setOnClickListener(v -> searchKeyword());
         cameraBtn.setOnClickListener(v -> scanWithCamera());
@@ -87,7 +78,9 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     {
         super.onResume();
         if (invCode != null)
+        {
             getDataByInvCode(invCode);
+        }
     }
 
     @Override
@@ -98,7 +91,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     public void viewImage()
     {
-        if (invCode != null) {
+        if (invCode != null)
+        {
             Intent intent = new Intent(this, PhotoActivity.class);
             intent.putExtra("invCode", invCode);
             startActivity(intent);
@@ -117,7 +111,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
         if (keyword.isEmpty())
         {
-            showMessageDialog(getString(R.string.info), getString(R.string.keyword_not_entered), android.R.drawable.ic_dialog_info);
+            showMessageDialog(getString(R.string.info), getString(R.string.keyword_not_entered),
+                              android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
         }
         else
@@ -128,16 +123,17 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     private void showResultListDialog(List<Inventory> list)
     {
-        if (list.size()==0) {
+        if (list.size() == 0)
+        {
             showMessageDialog(getString(R.string.info),
-                    getString(R.string.good_not_found),
-                    android.R.drawable.ic_dialog_alert);
+                              getString(R.string.good_not_found),
+                              android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
 
         View view = LayoutInflater.from(this).inflate(R.layout.result_list_dialog,
-                findViewById(android.R.id.content), false);
+                                                      findViewById(android.R.id.content), false);
 
         ListView listView = view.findViewById(R.id.result_list);
         ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, list);
@@ -166,26 +162,46 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         dialog.show();
 
         listView.setOnItemClickListener((adapterView, view1, i, l) ->
-        {
-            Inventory inventory = (Inventory) adapterView.getItemAtPosition(i);
-            invCode = inventory.getInvCode();
-            defaultUomCode = inventory.getDefaultUomCode();
-            getDataByInvCode(invCode);
+                                        {
+                                            Inventory inventory = (Inventory) adapterView.getItemAtPosition(
+                                                    i);
+                                            invCode = inventory.getInvCode();
+                                            defaultUomCode = inventory.getDefaultUomCode();
+                                            getDataByInvCode(invCode);
 
-            dialog.dismiss();
-        });
+                                            dialog.dismiss();
+                                        });
     }
 
-    private void printInfo(String info)
+    private void getInfo(String url)
     {
-        int firstIndex = info.indexOf(';');
-        invCode = info.substring(10, firstIndex);
-        invName = info.substring(firstIndex + invCode.length() + 4,
-                info.indexOf(';', firstIndex + invCode.length() + 4));
-        defaultUomCode = info.substring(info.indexOf("Əsas ölçü vahidi: ")+18);
+        InvInfo invInfo = getSimpleObject(url, "GET", null, InvInfo.class);
+        if (invInfo != null)
+        {
+            runOnUiThread(() ->
+                                  printInfo(invInfo));
+        }
+    }
+
+    private void printInfo(InvInfo invInfo)
+    {
+        if (invInfo.getInvCode() == null)
+        {
+            showMessageDialog(getString(R.string.error),
+                              getString(R.string.good_not_found),
+                              android.R.drawable.ic_dialog_alert);
+            playSound(SOUND_FAIL);
+            return;
+        }
+        invCode = invInfo.getInvCode();
+        invName = invInfo.getInvName();
+        String info =
+                "Mal kodu: " + invCode + "\n" + "Mal adı: " + invName + "\n" + invInfo.getInfo();
+        defaultUomCode = invInfo.getDefaultUomCode();
         info = info.replaceAll("; ", "\n");
         info = info.replaceAll("\\\\n", "\n");
         infoText.setText(info);
+        playSound(SOUND_SUCCESS);
     }
 
     public void scanWithCamera()
@@ -199,7 +215,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         if (!config().getUser().isAttribute())
         {
             showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
-                    android.R.drawable.ic_dialog_alert);
+                              android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
@@ -217,132 +233,50 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     {
         showProgressDialog(true);
         new Thread(() ->
-        {
-            String url = url("inv", "info-by-inv-code");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("inv-code", invCode);
-            parameters.put("user-id", config().getUser().getId());
-            url = addRequestParameters(url, parameters);
-
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            try
-            {
-                result = template.getForObject(url, String.class);
-            }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-            }
-            runOnUiThread(() ->
-            {
-                showProgressDialog(false);
-                if (result == null)
-                {
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.good_not_found),
-                            android.R.drawable.ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                }
-                else
-                {
-                    printInfo(result);
-                    playSound(SOUND_SUCCESS);
-                }
-            });
-        }).start();
+                   {
+                       String url = url("inv", "info-by-inv-code");
+                       Map<String, String> parameters = new HashMap<>();
+                       parameters.put("inv-code", invCode);
+                       parameters.put("user-id", config().getUser().getId());
+                       url = addRequestParameters(url, parameters);
+                       getInfo(url);
+                   }).start();
     }
 
     private void getDataByBarcode(String barcode)
     {
         showProgressDialog(true);
         new Thread(() ->
-        {
-            String url = url("inv", "info-by-barcode");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("barcode", barcode);
-            parameters.put("user-id", config().getUser().getId());
-            url = addRequestParameters(url, parameters);
-
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            try
-            {
-                result = template.getForObject(url, String.class);
-            }
-            catch (RuntimeException ex)
-            {
-                ex.printStackTrace();
-            }
-            runOnUiThread(() ->
-            {
-                showProgressDialog(false);
-                if (result == null)
-                {
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.good_not_found),
-                            android.R.drawable.ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                }
-                else
-                {
-                    printInfo(result);
-                    playSound(SOUND_SUCCESS);
-                }
-            });
-        }).start();
+                   {
+                       String url = url("inv", "info-by-barcode");
+                       Map<String, String> parameters = new HashMap<>();
+                       parameters.put("barcode", barcode);
+                       parameters.put("user-id", config().getUser().getId());
+                       url = addRequestParameters(url, parameters);
+                       getInfo(url);
+                   }).start();
     }
 
     private void searchForKeyword(String keyword)
     {
         showProgressDialog(true);
         new Thread(() ->
-        {
-            List<Inventory> inventoryList = null;
-            String url = url("inv", "search");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("keyword", keyword);
-            parameters.put("in", (String) searchField.getSelectedItem());
-            url = addRequestParameters(url, parameters);
-            RestTemplate template = new RestTemplate();
-            ((SimpleClientHttpRequestFactory) template.getRequestFactory())
-                    .setConnectTimeout(config().getConnectionTimeout() * 1000);
-            template.getMessageConverters().add(new StringHttpMessageConverter());
-            try
-            {
-                result = template.getForObject(url, String.class);
-                Gson gson = new Gson();
-                Type type = new TypeToken<List<Inventory>>()
-                {
-                }.getType();
-                inventoryList = new ArrayList<>(gson.fromJson(result, type));
-            }
-            catch (ResourceAccessException ex)
-            {
-                ex.printStackTrace();
-
-                runOnUiThread(() -> {
-                    showProgressDialog(false);
-
-                    showMessageDialog(getString(R.string.error),
-                            getString(R.string.connection_error),
-                            android.R.drawable.ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                });
-                return;
-            }
-            List<Inventory> finalInventoryList = inventoryList;
-            runOnUiThread(() ->
-            {
-                showProgressDialog(false);
-
-                showResultListDialog(finalInventoryList);
-            });
-        }).start();
+                   {
+                       String url = url("inv", "search");
+                       Map<String, String> parameters = new HashMap<>();
+                       parameters.put("keyword", keyword);
+                       parameters.put("in", (String) searchField.getSelectedItem());
+                       url = addRequestParameters(url, parameters);
+                       List<Inventory> inventoryList = getListData(url, "GET", null,
+                                                                   Inventory[].class);
+                       runOnUiThread(() ->
+                                     {
+                                         if (inventoryList != null)
+                                         {
+                                             showResultListDialog(inventoryList);
+                                         }
+                                     });
+                   }).start();
     }
 
     @Override

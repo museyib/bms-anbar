@@ -70,11 +70,13 @@ public class InvAttribute
         this.attributeId = attributeId;
     }
 
-    public String getWhsCode() {
+    public String getWhsCode()
+    {
         return whsCode;
     }
 
-    public void setWhsCode(String whsCode) {
+    public void setWhsCode(String whsCode)
+    {
         this.whsCode = whsCode;
     }
 }

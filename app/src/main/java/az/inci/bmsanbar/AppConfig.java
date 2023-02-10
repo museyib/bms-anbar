@@ -4,9 +4,6 @@ import az.inci.bmsanbar.model.User;
 
 public class AppConfig
 {
-    static final String DB_NAME = "BMS_ANBAR";
-    static final int DB_VERSION = 14;
-
     public static final int PICK_MODE = 0;
     public static final int PACK_MODE = 1;
     public static final int SHIP_MODE = 2;
@@ -14,10 +11,10 @@ public class AppConfig
     public static final int PRODUCT_APPROVE_MODE = 4;
     public static final int INV_ATTRIBUTE_MODE = 5;
     public static final int CONFIRM_DELIVERY_MODE = 6;
-
     public static final int VIEW_MODE = 0;
     public static final int NEW_MODE = 1;
-
+    static final String DB_NAME = "BMS_ANBAR";
+    static final int DB_VERSION = 15;
     private User user;
     private String serverUrl = "http://185.129.0.46:8022";
     private String imageUrl = "http://185.129.0.46:8025";

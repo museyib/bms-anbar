@@ -54,8 +54,12 @@ public class Customer
     public String toString()
     {
         if ((bpCode != null && bpName != null) && (!bpCode.isEmpty() && !bpName.isEmpty()))
+        {
             return bpCode + " - " + bpName;
+        }
         else
+        {
             return "";
+        }
     }
 }

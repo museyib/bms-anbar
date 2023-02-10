@@ -86,6 +86,7 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String SRC_TRX_NO = "SRC_TRX_NO";
     public static final String VEHICLE_CODE = "VEHICLE_CODE";
     public static final String DRIVER_CODE = "DRIVER_CODE";
+    public static final String DRIVER_NAME = "DRIVER_NAME";
     public static final String NAME = "NAME";
     public static final String VALUE = "VALUE";
     public static final String TRX_TYPE_ID = "TRX_TYPE_ID";
@@ -101,13 +102,14 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String PERMISSION_NAME = "PERMISSION_NAME";
     public static final String PERMISSION_VALUE = "PERMISSION_VALUE";
     public static final String TAXED_FLAG = "TAXED_FLAG";
+    public static final String ACTIVE_SECONDS = "ACTIVE_SECONDS";
 
     private SQLiteDatabase db;
 
     public DBHelper(Context context)
     {
         super(context, Objects.requireNonNull(context.getExternalFilesDir("/"))
-                .getPath() + "/" + AppConfig.DB_NAME, null, AppConfig.DB_VERSION);
+                              .getPath() + "/" + AppConfig.DB_NAME, null, AppConfig.DB_VERSION);
     }
 
     @Override
@@ -158,14 +160,14 @@ public class DBHelper extends SQLiteOpenHelper
         db.execSQL("DROP TABLE IF EXISTS " + TERMINAL_USER);
 
         db.execSQL(sb.append("CREATE TABLE ")
-                .append(TERMINAL_USER).append("(")
-                .append(USER_ID).append(" TEXT,")
-                .append(USER_NAME).append(" TEXT,")
-                .append(PASS_WORD).append(" TEXT,")
-                .append(WHS_CODE).append(" TEXT,")
-                .append(PICK_GROUP).append(" TEXT")
-                .append(")")
-                .toString());
+                     .append(TERMINAL_USER).append("(")
+                     .append(USER_ID).append(" TEXT,")
+                     .append(USER_NAME).append(" TEXT,")
+                     .append(PASS_WORD).append(" TEXT,")
+                     .append(WHS_CODE).append(" TEXT,")
+                     .append(PICK_GROUP).append(" TEXT")
+                     .append(")")
+                     .toString());
     }
 
     public void addUser(User user)
@@ -188,11 +190,11 @@ public class DBHelper extends SQLiteOpenHelper
 
         try (Cursor cursor = db.rawQuery(
                 "SELECT USER_ID, " +
-                        "USER_NAME, " +
-                        "PASS_WORD, " +
-                        "WHS_CODE, " +
-                        "PICK_GROUP " +
-                        "FROM TERMINAL_USER WHERE USER_ID=?",
+                "USER_NAME, " +
+                "PASS_WORD, " +
+                "WHS_CODE, " +
+                "PICK_GROUP " +
+                "FROM TERMINAL_USER WHERE USER_ID=?",
                 new String[]{id}))
         {
             if (cursor.moveToFirst())
@@ -210,8 +212,8 @@ public class DBHelper extends SQLiteOpenHelper
         {
             try (Cursor cursor = db.rawQuery(
                     "SELECT PERMISSION_NAME, " +
-                            "PERMISSION_VALUE " +
-                            "FROM TERMINAL_PERMISSION WHERE USER_ID=?",
+                    "PERMISSION_VALUE " +
+                    "FROM TERMINAL_PERMISSION WHERE USER_ID=?",
                     new String[]{id}))
             {
                 while (cursor.moveToNext())
@@ -268,12 +270,12 @@ public class DBHelper extends SQLiteOpenHelper
         db.execSQL("DROP TABLE IF EXISTS " + TERMINAL_PERMISSION);
 
         db.execSQL(sb.append("CREATE TABLE ")
-                .append(TERMINAL_PERMISSION).append("(")
-                .append(USER_ID).append(" TEXT,")
-                .append(PERMISSION_NAME).append(" TEXT,")
-                .append(PERMISSION_VALUE).append(" INTEGER")
-                .append(")")
-                .toString());
+                     .append(TERMINAL_PERMISSION).append("(")
+                     .append(USER_ID).append(" TEXT,")
+                     .append(PERMISSION_NAME).append(" TEXT,")
+                     .append(PERMISSION_VALUE).append(" INTEGER")
+                     .append(")")
+                     .toString());
     }
 
     public void addUserPermission(User user)
@@ -356,20 +358,21 @@ public class DBHelper extends SQLiteOpenHelper
         {
 
             db.execSQL(sb.append("CREATE TABLE ")
-                    .append(PICK_DOC).append("(")
-                    .append(TRX_NO).append(" TEXT,")
-                    .append(TRX_DATE).append(" TEXT,")
-                    .append(ITEM_COUNT).append(" INTEGER,")
-                    .append(PICK_GROUP).append(" TEXT,")
-                    .append(PICK_AREA).append(" TEXT,")
-                    .append(DOC_DESC).append(" TEXT,")
-                    .append(WHS_CODE).append(" TEXT,")
-                    .append(PICK_USER).append(" TEXT,")
-                    .append(PICK_STATUS).append(" TEXT,")
-                    .append(REC_STATUS).append(" INTEGER,")
-                    .append(PREV_TRX_NO).append(" TEXT")
-                    .append(")")
-                    .toString());
+                         .append(PICK_DOC).append("(")
+                         .append(TRX_NO).append(" TEXT,")
+                         .append(TRX_DATE).append(" TEXT,")
+                         .append(ITEM_COUNT).append(" INTEGER,")
+                         .append(PICK_GROUP).append(" TEXT,")
+                         .append(PICK_AREA).append(" TEXT,")
+                         .append(DOC_DESC).append(" TEXT,")
+                         .append(WHS_CODE).append(" TEXT,")
+                         .append(PICK_USER).append(" TEXT,")
+                         .append(PICK_STATUS).append(" TEXT,")
+                         .append(REC_STATUS).append(" INTEGER,")
+                         .append(PREV_TRX_NO).append(" TEXT,")
+                         .append(ACTIVE_SECONDS).append(" INTEGER")
+                         .append(")")
+                         .toString());
         }
         catch (Exception e)
         {
@@ -382,21 +385,22 @@ public class DBHelper extends SQLiteOpenHelper
         List<Doc> docList = new ArrayList<>();
 
         String query = "SELECT PD.TRX_NO," +
-                "PD.TRX_DATE," +
-                "PT_ITEM.ITEM_COUNT," +
-                "PT_PICKED_ITEM.ITEM_COUNT," +
-                "PD.DOC_DESC," +
-                "PD.PREV_TRX_NO," +
-                "PD.PICK_USER," +
-                "PD.PICK_AREA," +
-                "PD.PICK_GROUP, " +
-                "PD.WHS_CODE " +
-                " FROM PICK_DOC PD " +
-                "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
-                "FROM PICK_TRX GROUP BY TRX_NO) PT_ITEM ON PD.TRX_NO=PT_ITEM.TRX_NO " +
-                "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
-                "FROM PICK_TRX WHERE PICKED_QTY>0 GROUP BY TRX_NO) PT_PICKED_ITEM " +
-                "ON PD.TRX_NO=PT_PICKED_ITEM.TRX_NO WHERE PD.PICK_USER=?";
+                       "PD.TRX_DATE," +
+                       "PT_ITEM.ITEM_COUNT," +
+                       "PT_PICKED_ITEM.ITEM_COUNT," +
+                       "PD.DOC_DESC," +
+                       "PD.PREV_TRX_NO," +
+                       "PD.PICK_USER," +
+                       "PD.PICK_AREA," +
+                       "PD.PICK_GROUP, " +
+                       "PD.WHS_CODE, " +
+                       "PD.ACTIVE_SECONDS " +
+                       " FROM PICK_DOC PD " +
+                       "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
+                       "FROM PICK_TRX GROUP BY TRX_NO) PT_ITEM ON PD.TRX_NO=PT_ITEM.TRX_NO " +
+                       "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
+                       "FROM PICK_TRX WHERE PICKED_QTY>0 GROUP BY TRX_NO) PT_PICKED_ITEM " +
+                       "ON PD.TRX_NO=PT_PICKED_ITEM.TRX_NO WHERE PD.PICK_USER=?";
 
         try
         {
@@ -414,6 +418,7 @@ public class DBHelper extends SQLiteOpenHelper
                 doc.setPickArea(cursor.getString(7));
                 doc.setPickGroup(cursor.getString(8));
                 doc.setWhsCode(cursor.getString(9));
+                doc.setActiveSeconds(cursor.getInt(10));
 
                 docList.add(doc);
             }
@@ -441,8 +446,30 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(PICK_USER, doc.getPickUser());
         values.put(PICK_STATUS, doc.getPickStatus());
         values.put(PREV_TRX_NO, doc.getPrevTrxNo());
+        values.put(ACTIVE_SECONDS, 0);
 
         db.insert(PICK_DOC, null, values);
+    }
+
+    public void updatePickActiveSeconds(String trxNo, int seconds)
+    {
+        ContentValues values = new ContentValues();
+        values.put(ACTIVE_SECONDS, seconds);
+        db.update(PICK_DOC, values, TRX_NO + "=?", new String[]{trxNo});
+    }
+
+    public int getPickActiveSeconds(String trxNo)
+    {
+        try (Cursor cursor = db.rawQuery("SELECT ACTIVE_SECONDS FROM PICK_DOC WHERE TRX_NO=?",
+                                         new String[]{trxNo}))
+        {
+            if (cursor.moveToNext())
+            {
+                return cursor.getInt(0);
+            }
+        }
+
+        return 0;
     }
 
     private void createPickTrxTable(SQLiteDatabase db)
@@ -451,32 +478,32 @@ public class DBHelper extends SQLiteOpenHelper
         StringBuilder sb = new StringBuilder();
 
         db.execSQL(sb.append("CREATE TABLE ")
-                .append(PICK_TRX).append("(")
-                .append(TRX_ID).append(" INTEGER,")
-                .append(TRX_NO).append(" TEXT,")
-                .append(TRX_DATE).append(" TEXT,")
-                .append(PICK_STATUS).append(" TEXT,")
-                .append(INV_CODE).append(" TEXT,")
-                .append(INV_NAME).append(" TEXT,")
-                .append(BRAND_CODE).append(" TEXT,")
-                .append(BP_NAME).append(" TEXT,")
-                .append(SBE_NAME).append(" TEXT,")
-                .append(WHS_CODE).append(" TEXT,")
-                .append(UOM).append(" TEXT,")
-                .append(UOM_FACTOR).append(" REAL,")
-                .append(QTY).append(" REAL,")
-                .append(PICKED_QTY).append(" REAL,")
-                .append(PICK_AREA).append(" TEXT,")
-                .append(PICK_GROUP).append(" TEXT,")
-                .append(PICK_USER).append(" TEXT,")
-                .append(APPROVE_USER).append(" TEXT,")
-                .append(BARCODE).append(" TEXT,")
-                .append(PREV_TRX_NO).append(" TEXT,")
-                .append(NOTES).append(" TEXT,")
-                .append(PRIORITY).append(" INTEGER,")
-                .append(STATUS).append(" INTEGER")
-                .append(")")
-                .toString());
+                     .append(PICK_TRX).append("(")
+                     .append(TRX_ID).append(" INTEGER,")
+                     .append(TRX_NO).append(" TEXT,")
+                     .append(TRX_DATE).append(" TEXT,")
+                     .append(PICK_STATUS).append(" TEXT,")
+                     .append(INV_CODE).append(" TEXT,")
+                     .append(INV_NAME).append(" TEXT,")
+                     .append(BRAND_CODE).append(" TEXT,")
+                     .append(BP_NAME).append(" TEXT,")
+                     .append(SBE_NAME).append(" TEXT,")
+                     .append(WHS_CODE).append(" TEXT,")
+                     .append(UOM).append(" TEXT,")
+                     .append(UOM_FACTOR).append(" REAL,")
+                     .append(QTY).append(" REAL,")
+                     .append(PICKED_QTY).append(" REAL,")
+                     .append(PICK_AREA).append(" TEXT,")
+                     .append(PICK_GROUP).append(" TEXT,")
+                     .append(PICK_USER).append(" TEXT,")
+                     .append(APPROVE_USER).append(" TEXT,")
+                     .append(BARCODE).append(" TEXT,")
+                     .append(PREV_TRX_NO).append(" TEXT,")
+                     .append(NOTES).append(" TEXT,")
+                     .append(PRIORITY).append(" INTEGER,")
+                     .append(STATUS).append(" INTEGER")
+                     .append(")")
+                     .toString());
     }
 
     public void addPickTrx(Trx trx)
@@ -637,7 +664,7 @@ public class DBHelper extends SQLiteOpenHelper
 
     public void updatePickTrxStatus(String trxNo, int status)
     {
-        ContentValues values=new ContentValues();
+        ContentValues values = new ContentValues();
         values.put(STATUS, status);
         db.update(PICK_TRX, values, TRX_NO + "=?", new String[]{trxNo});
     }
@@ -654,7 +681,7 @@ public class DBHelper extends SQLiteOpenHelper
     {
         String sql = "SELECT DISTINCT TRX_NO FROM PICK_TRX WHERE STATUS=0 AND PICK_USER=?";
 
-        List<String> result=new ArrayList<>();
+        List<String> result = new ArrayList<>();
         Cursor cursor = db.rawQuery(sql, new String[]{userId});
 
         while (cursor.moveToNext())
@@ -682,27 +709,28 @@ public class DBHelper extends SQLiteOpenHelper
         {
 
             db.execSQL(sb.append("CREATE TABLE ")
-                    .append(PACK_DOC).append("(")
-                    .append(TRX_NO).append(" TEXT,")
-                    .append(TRX_DATE).append(" TEXT,")
-                    .append(ITEM_COUNT).append(" INTEGER,")
-                    .append(PICKED_ITEM_COUNT).append(" INTEGER,")
-                    .append(PICK_GROUP).append(" TEXT,")
-                    .append(PICK_AREA).append(" TEXT,")
-                    .append(DOC_DESC).append(" TEXT,")
-                    .append(WHS_CODE).append(" TEXT,")
-                    .append(PICK_USER).append(" TEXT,")
-                    .append(PICK_STATUS).append(" TEXT,")
-                    .append(REC_STATUS).append(" INTEGER,")
-                    .append(PREV_TRX_NO).append(" TEXT,")
-                    .append(BP_CODE).append(" TEXT,")
-                    .append(BP_NAME).append(" TEXT,")
-                    .append(SBE_CODE).append(" TEXT,")
-                    .append(SBE_NAME).append(" TEXT,")
-                    .append(APPROVE_USER).append(" TEXT,")
-                    .append(NOTES).append(" TEXT")
-                    .append(")")
-                    .toString());
+                         .append(PACK_DOC).append("(")
+                         .append(TRX_NO).append(" TEXT,")
+                         .append(TRX_DATE).append(" TEXT,")
+                         .append(ITEM_COUNT).append(" INTEGER,")
+                         .append(PICKED_ITEM_COUNT).append(" INTEGER,")
+                         .append(PICK_GROUP).append(" TEXT,")
+                         .append(PICK_AREA).append(" TEXT,")
+                         .append(DOC_DESC).append(" TEXT,")
+                         .append(WHS_CODE).append(" TEXT,")
+                         .append(PICK_USER).append(" TEXT,")
+                         .append(PICK_STATUS).append(" TEXT,")
+                         .append(REC_STATUS).append(" INTEGER,")
+                         .append(PREV_TRX_NO).append(" TEXT,")
+                         .append(BP_CODE).append(" TEXT,")
+                         .append(BP_NAME).append(" TEXT,")
+                         .append(SBE_CODE).append(" TEXT,")
+                         .append(SBE_NAME).append(" TEXT,")
+                         .append(APPROVE_USER).append(" TEXT,")
+                         .append(NOTES).append(" TEXT,")
+                         .append(ACTIVE_SECONDS).append(" INTEGER")
+                         .append(")")
+                         .toString());
         }
         catch (Exception e)
         {
@@ -715,24 +743,25 @@ public class DBHelper extends SQLiteOpenHelper
         List<Doc> docList = new ArrayList<>();
 
         String query = "SELECT PD.TRX_NO," +
-                "PD.TRX_DATE," +
-                "PT_ITEM.ITEM_COUNT," +
-                "PT_PICKED_ITEM.ITEM_COUNT," +
-                "PD.DOC_DESC," +
-                "PD.PREV_TRX_NO," +
-                "PD.BP_CODE," +
-                "PD.BP_NAME," +
-                "PD.SBE_CODE," +
-                "PD.SBE_NAME," +
-                "PD.APPROVE_USER," +
-                "PD.NOTES," +
-                "PD.WHS_CODE" +
-                " FROM PACK_DOC PD " +
-                "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
-                "FROM PACK_TRX GROUP BY TRX_NO) PT_ITEM ON PD.TRX_NO=PT_ITEM.TRX_NO " +
-                "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
-                "FROM PACK_TRX WHERE PICKED_QTY>0 GROUP BY TRX_NO) PT_PICKED_ITEM " +
-                "ON PD.TRX_NO=PT_PICKED_ITEM.TRX_NO WHERE PD.APPROVE_USER=? ORDER BY PD.PREV_TRX_NO";
+                       "PD.TRX_DATE," +
+                       "PT_ITEM.ITEM_COUNT," +
+                       "PT_PICKED_ITEM.ITEM_COUNT," +
+                       "PD.DOC_DESC," +
+                       "PD.PREV_TRX_NO," +
+                       "PD.BP_CODE," +
+                       "PD.BP_NAME," +
+                       "PD.SBE_CODE," +
+                       "PD.SBE_NAME," +
+                       "PD.APPROVE_USER," +
+                       "PD.NOTES," +
+                       "PD.WHS_CODE," +
+                       "PD.ACTIVE_SECONDS" +
+                       " FROM PACK_DOC PD " +
+                       "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
+                       "FROM PACK_TRX GROUP BY TRX_NO) PT_ITEM ON PD.TRX_NO=PT_ITEM.TRX_NO " +
+                       "LEFT JOIN (SELECT TRX_NO, COUNT(DISTINCT TRX_ID) ITEM_COUNT " +
+                       "FROM PACK_TRX WHERE PICKED_QTY>0 GROUP BY TRX_NO) PT_PICKED_ITEM " +
+                       "ON PD.TRX_NO=PT_PICKED_ITEM.TRX_NO WHERE PD.APPROVE_USER=? ORDER BY PD.PREV_TRX_NO";
 
         try
         {
@@ -753,6 +782,7 @@ public class DBHelper extends SQLiteOpenHelper
                 doc.setApproveUser(cursor.getString(10));
                 doc.setNotes(cursor.getString(11));
                 doc.setWhsCode(cursor.getString(12));
+                doc.setActiveSeconds(cursor.getInt(13));
 
                 docList.add(doc);
             }
@@ -787,10 +817,32 @@ public class DBHelper extends SQLiteOpenHelper
         values.put(SBE_NAME, doc.getSbeName());
         values.put(APPROVE_USER, doc.getApproveUser());
         values.put(NOTES, doc.getNotes());
+        values.put(ACTIVE_SECONDS, 0);
 
         db.delete(PACK_DOC, TRX_NO + "=?", new String[]{doc.getTrxNo()});
 
         db.insert(PACK_DOC, null, values);
+    }
+
+    public void updatePackActiveSeconds(String trxNo, int seconds)
+    {
+        ContentValues values = new ContentValues();
+        values.put(ACTIVE_SECONDS, seconds);
+        db.update(PACK_DOC, values, TRX_NO + "=?", new String[]{trxNo});
+    }
+
+    public int getPackActiveSeconds(String trxNo)
+    {
+        try (Cursor cursor = db.rawQuery("SELECT ACTIVE_SECONDS FROM PACK_DOC WHERE TRX_NO=?",
+                                         new String[]{trxNo}))
+        {
+            if (cursor.moveToNext())
+            {
+                return cursor.getInt(0);
+            }
+        }
+
+        return 0;
     }
 
     private void createPackTrxTable(SQLiteDatabase db)
@@ -799,33 +851,33 @@ public class DBHelper extends SQLiteOpenHelper
         StringBuilder sb = new StringBuilder();
 
         db.execSQL(sb.append("CREATE TABLE ")
-                .append(PACK_TRX).append("(")
-                .append(TRX_ID).append(" INTEGER,")
-                .append(TRX_NO).append(" TEXT,")
-                .append(TRX_DATE).append(" TEXT,")
-                .append(PICK_STATUS).append(" TEXT,")
-                .append(INV_CODE).append(" TEXT,")
-                .append(INV_NAME).append(" TEXT,")
-                .append(BRAND_CODE).append(" TEXT,")
-                .append(BP_NAME).append(" TEXT,")
-                .append(SBE_NAME).append(" TEXT,")
-                .append(WHS_CODE).append(" TEXT,")
-                .append(UOM).append(" TEXT,")
-                .append(UOM_FACTOR).append(" REAL,")
-                .append(QTY).append(" REAL,")
-                .append(PICKED_QTY).append(" REAL,")
-                .append(PACKED_QTY).append(" REAL,")
-                .append(PICK_AREA).append(" TEXT,")
-                .append(PICK_GROUP).append(" TEXT,")
-                .append(PICK_USER).append(" TEXT,")
-                .append(APPROVE_USER).append(" TEXT,")
-                .append(BARCODE).append(" TEXT,")
-                .append(PREV_TRX_NO).append(" TEXT,")
-                .append(NOTES).append(" TEXT,")
-                .append(PRIORITY).append(" INTEGER,")
-                .append(STATUS).append(" INTEGER")
-                .append(")")
-                .toString());
+                     .append(PACK_TRX).append("(")
+                     .append(TRX_ID).append(" INTEGER,")
+                     .append(TRX_NO).append(" TEXT,")
+                     .append(TRX_DATE).append(" TEXT,")
+                     .append(PICK_STATUS).append(" TEXT,")
+                     .append(INV_CODE).append(" TEXT,")
+                     .append(INV_NAME).append(" TEXT,")
+                     .append(BRAND_CODE).append(" TEXT,")
+                     .append(BP_NAME).append(" TEXT,")
+                     .append(SBE_NAME).append(" TEXT,")
+                     .append(WHS_CODE).append(" TEXT,")
+                     .append(UOM).append(" TEXT,")
+                     .append(UOM_FACTOR).append(" REAL,")
+                     .append(QTY).append(" REAL,")
+                     .append(PICKED_QTY).append(" REAL,")
+                     .append(PACKED_QTY).append(" REAL,")
+                     .append(PICK_AREA).append(" TEXT,")
+                     .append(PICK_GROUP).append(" TEXT,")
+                     .append(PICK_USER).append(" TEXT,")
+                     .append(APPROVE_USER).append(" TEXT,")
+                     .append(BARCODE).append(" TEXT,")
+                     .append(PREV_TRX_NO).append(" TEXT,")
+                     .append(NOTES).append(" TEXT,")
+                     .append(PRIORITY).append(" INTEGER,")
+                     .append(STATUS).append(" INTEGER")
+                     .append(")")
+                     .toString());
     }
 
     public void addPackTrx(Trx trx)
@@ -990,7 +1042,7 @@ public class DBHelper extends SQLiteOpenHelper
 
     public void updatePackTrxStatus(String trxNo, int status)
     {
-        ContentValues values=new ContentValues();
+        ContentValues values = new ContentValues();
         values.put(STATUS, status);
         db.update(PACK_TRX, values, TRX_NO + "=?", new String[]{trxNo});
     }
@@ -1007,7 +1059,7 @@ public class DBHelper extends SQLiteOpenHelper
     {
         String sql = "SELECT DISTINCT TRX_NO FROM PACK_TRX WHERE STATUS=0 AND APPROVE_USER=?";
 
-        List<String> result=new ArrayList<>();
+        List<String> result = new ArrayList<>();
         Cursor cursor = db.rawQuery(sql, new String[]{userId});
 
         while (cursor.moveToNext())
@@ -1032,15 +1084,16 @@ public class DBHelper extends SQLiteOpenHelper
         StringBuilder sb = new StringBuilder();
 
         db.execSQL(sb.append("CREATE TABLE ")
-                .append(SHIP_TRX).append("(")
-                .append(REGION_CODE).append(" TEXT,")
-                .append(DRIVER_CODE).append(" TEXT,")
-                .append(SRC_TRX_NO).append(" TEXT,")
-                .append(VEHICLE_CODE).append(" TEXT,")
-                .append(USER_ID).append(" TEXT,")
-                .append(TAXED_FLAG).append(" TEXT")
-                .append(")")
-                .toString());
+                     .append(SHIP_TRX).append("(")
+                     .append(REGION_CODE).append(" TEXT,")
+                     .append(DRIVER_CODE).append(" TEXT,")
+                     .append(DRIVER_NAME).append(" TEXT,")
+                     .append(SRC_TRX_NO).append(" TEXT,")
+                     .append(VEHICLE_CODE).append(" TEXT,")
+                     .append(USER_ID).append(" TEXT,")
+                     .append(TAXED_FLAG).append(" TEXT")
+                     .append(")")
+                     .toString());
     }
 
     public void addShipTrx(ShipTrx shipTrx)
@@ -1049,6 +1102,7 @@ public class DBHelper extends SQLiteOpenHelper
 
         values.put(REGION_CODE, shipTrx.getRegionCode());
         values.put(DRIVER_CODE, shipTrx.getDriverCode());
+        values.put(DRIVER_NAME, shipTrx.getDriverName());
         values.put(SRC_TRX_NO, shipTrx.getSrcTrxNo());
         values.put(VEHICLE_CODE, shipTrx.getVehicleCode());
         values.put(USER_ID, shipTrx.getUserId());
@@ -1062,17 +1116,24 @@ public class DBHelper extends SQLiteOpenHelper
         List<ShipDoc> shipDocList = new ArrayList<>();
         ShipDoc doc;
 
-        Cursor cursor = db.rawQuery("SELECT REGION_CODE, DRIVER_CODE, VEHICLE_CODE, USER_ID, COUNT(*)" +
-                        " FROM SHIP_TRX WHERE USER_ID=? GROUP BY REGION_CODE, DRIVER_CODE, VEHICLE_CODE, USER_ID",
-                new String[]{userId});
+        Cursor cursor = db.rawQuery("SELECT REGION_CODE, " +
+                                    "DRIVER_CODE, " +
+                                    "DRIVER_NAME," +
+                                    "VEHICLE_CODE," +
+                                    "USER_ID," +
+                                    "COUNT(*) " +
+                                    "FROM SHIP_TRX WHERE USER_ID=? " +
+                                    "GROUP BY REGION_CODE, DRIVER_CODE, DRIVER_NAME, VEHICLE_CODE, USER_ID",
+                                    new String[]{userId});
         while (cursor.moveToNext())
         {
             doc = new ShipDoc();
             doc.setRegionCode(cursor.getString(0));
             doc.setDriverCode(cursor.getString(1));
-            doc.setVehicleCode(cursor.getString(2));
-            doc.setUserId(cursor.getString(3));
-            doc.setCount(cursor.getInt(4));
+            doc.setDriverName(cursor.getString(2));
+            doc.setVehicleCode(cursor.getString(3));
+            doc.setUserId(cursor.getString(4));
+            doc.setCount(cursor.getInt(5));
             shipDocList.add(doc);
         }
         cursor.close();
@@ -1085,16 +1146,18 @@ public class DBHelper extends SQLiteOpenHelper
         List<ShipTrx> shipTrxList = new ArrayList<>();
         ShipTrx trx;
 
-        Cursor cursor = db.rawQuery("SELECT * FROM SHIP_TRX WHERE DRIVER_CODE=?", new String[]{driver});
+        Cursor cursor = db.rawQuery("SELECT * FROM SHIP_TRX WHERE DRIVER_CODE=?",
+                                    new String[]{driver});
         while (cursor.moveToNext())
         {
             trx = new ShipTrx();
             trx.setRegionCode(cursor.getString(0));
             trx.setDriverCode(cursor.getString(1));
-            trx.setSrcTrxNo(cursor.getString(2));
-            trx.setVehicleCode(cursor.getString(3));
-            trx.setUserId(cursor.getString(4));
-            trx.setTaxed(cursor.getInt(5) == 1);
+            trx.setDriverName(cursor.getString(2));
+            trx.setSrcTrxNo(cursor.getString(3));
+            trx.setVehicleCode(cursor.getString(4));
+            trx.setUserId(cursor.getString(5));
+            trx.setTaxed(cursor.getInt(6) == 1);
             shipTrxList.add(trx);
         }
 
@@ -1116,9 +1179,12 @@ public class DBHelper extends SQLiteOpenHelper
     public boolean isShipped(String trxNo)
     {
         boolean shipped = false;
-        Cursor cursor = db.rawQuery("SELECT * FROM SHIP_TRX WHERE SRC_TRX_NO=?", new String[]{trxNo});
+        Cursor cursor = db.rawQuery("SELECT * FROM SHIP_TRX WHERE SRC_TRX_NO=?",
+                                    new String[]{trxNo});
         if (cursor.moveToFirst())
+        {
             shipped = true;
+        }
         cursor.close();
         return shipped;
     }
@@ -1127,12 +1193,14 @@ public class DBHelper extends SQLiteOpenHelper
     {
         StringBuilder barcodeList = new StringBuilder();
         Cursor cursor = db.query(tableName,
-                new String[]{BARCODE},
-                INV_CODE + "=?",
-                new String[]{invCode},
-                BARCODE, null, null, null);
+                                 new String[]{BARCODE},
+                                 INV_CODE + "=?",
+                                 new String[]{invCode},
+                                 BARCODE, null, null, null);
         while (cursor.moveToNext())
+        {
             barcodeList.append("\n").append(cursor.getString(0));
+        }
         cursor.close();
         return barcodeList.toString();
     }
@@ -1210,7 +1278,8 @@ public class DBHelper extends SQLiteOpenHelper
     private void createApproveDocTable(SQLiteDatabase db)
     {
         db.execSQL("DROP TABLE IF EXISTS " + APPROVE_DOC);
-        db.execSQL("CREATE TABLE APPROVE_DOC (TRX_NO TEXT PRIMARY KEY, TRX_DATE TEXT, TRX_TYPE_ID INTEGER," +
+        db.execSQL(
+                "CREATE TABLE APPROVE_DOC (TRX_NO TEXT PRIMARY KEY, TRX_DATE TEXT, TRX_TYPE_ID INTEGER," +
                 " AMOUNT REAL, TRG_WHS_CODE TEXT, TRG_WHS_NAME TEXT, SRC_WHS_CODE TEXT, SRC_WHS_NAME TEXT, BP_CODE TEXT, BP_NAME," +
                 " SBE_CODE TEXT, SBE_NAME TEXT, NOTES TEXT)");
     }
@@ -1336,7 +1405,8 @@ public class DBHelper extends SQLiteOpenHelper
     private void createApproveTrxTable(SQLiteDatabase db)
     {
         db.execSQL("DROP TABLE IF EXISTS " + APPROVE_TRX);
-        db.execSQL("CREATE TABLE APPROVE_TRX (TRX_ID INTEGER PRIMARY KEY, TRX_NO TEXT, INV_CODE TEXT," +
+        db.execSQL(
+                "CREATE TABLE APPROVE_TRX (TRX_ID INTEGER PRIMARY KEY, TRX_NO TEXT, INV_CODE TEXT," +
                 " INV_NAME TEXT, BRAND_CODE TEXT, QTY REAL, PRICE REAL, AMOUNT REAL," +
                 " DISCOUNT_RATIO REAL, DISCOUNT REAL, PREV_TRX_NO TEXT, PREV_TRX_ID INTEGER," +
                 " BARCODE TEXT, NOTES TEXT)");
@@ -1426,9 +1496,13 @@ public class DBHelper extends SQLiteOpenHelper
         while (cursor.moveToNext())
         {
             if (n != cursor.getInt(0))
+            {
                 break;
+            }
             else
+            {
                 n++;
+            }
         }
         cursor.close();
         return n;
@@ -1438,15 +1512,15 @@ public class DBHelper extends SQLiteOpenHelper
     {
         db.execSQL("DROP TABLE IF EXISTS " + INTERNAL_USE_DOC);
         db.execSQL("CREATE TABLE INTERNAL_USE_DOC (" +
-                "TRX_NO TEXT PRIMARY KEY, " +
-                "TRX_DATE TEXT, " +
-                "TRX_TYPE_ID INTEGER," +
-                "AMOUNT REAL, " +
-                "WHS_CODE TEXT, " +
-                "WHS_NAME TEXT, " +
-                "EXP_CENTER_CODE TEXT, " +
-                "EXP_CENTER_NAME TEXT, " +
-                "NOTES TEXT)");
+                   "TRX_NO TEXT PRIMARY KEY, " +
+                   "TRX_DATE TEXT, " +
+                   "TRX_TYPE_ID INTEGER," +
+                   "AMOUNT REAL, " +
+                   "WHS_CODE TEXT, " +
+                   "WHS_NAME TEXT, " +
+                   "EXP_CENTER_CODE TEXT, " +
+                   "EXP_CENTER_NAME TEXT, " +
+                   "NOTES TEXT)");
     }
 
     public void addInternalUseDoc(Doc doc)
@@ -1515,16 +1589,16 @@ public class DBHelper extends SQLiteOpenHelper
     {
         db.execSQL("DROP TABLE IF EXISTS " + INTERNAL_USE_TRX);
         db.execSQL("CREATE TABLE INTERNAL_USE_TRX (" +
-                "TRX_ID INTEGER PRIMARY KEY, " +
-                "TRX_NO TEXT, " +
-                "INV_CODE TEXT," +
-                "INV_NAME TEXT, " +
-                "BRAND_CODE TEXT, " +
-                "QTY REAL, " +
-                "PRICE REAL, " +
-                "AMOUNT REAL," +
-                "BARCODE TEXT, " +
-                "NOTES TEXT)");
+                   "TRX_ID INTEGER PRIMARY KEY, " +
+                   "TRX_NO TEXT, " +
+                   "INV_CODE TEXT," +
+                   "INV_NAME TEXT, " +
+                   "BRAND_CODE TEXT, " +
+                   "QTY REAL, " +
+                   "PRICE REAL, " +
+                   "AMOUNT REAL," +
+                   "BARCODE TEXT, " +
+                   "NOTES TEXT)");
     }
 
     public void addInternalUseTrx(Trx trx)
@@ -1603,9 +1677,13 @@ public class DBHelper extends SQLiteOpenHelper
         while (cursor.moveToNext())
         {
             if (n != cursor.getInt(0))
+            {
                 break;
+            }
             else
+            {
                 n++;
+            }
         }
         cursor.close();
         return n;

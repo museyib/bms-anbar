@@ -4,6 +4,7 @@ public class ShipDoc
 {
     private String regionCode;
     private String driverCode;
+    private String driverName;
     private String vehicleCode;
     private String userId;
     private int count;
@@ -26,6 +27,16 @@ public class ShipDoc
     public void setDriverCode(String driverCode)
     {
         this.driverCode = driverCode;
+    }
+
+    public String getDriverName()
+    {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName)
+    {
+        this.driverName = driverName;
     }
 
     public String getVehicleCode()

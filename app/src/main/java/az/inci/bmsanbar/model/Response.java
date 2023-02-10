@@ -1,22 +1,27 @@
 package az.inci.bmsanbar.model;
 
-public class Response {
+public class Response
+{
     private int status;
     private String message;
 
-    public int getStatus() {
+    public int getStatus()
+    {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(int status)
+    {
         this.status = status;
     }
 
-    public String getMessage() {
+    public String getMessage()
+    {
         return message;
     }
 
-    public void setMessage(String message) {
+    public void setMessage(String message)
+    {
         this.message = message;
     }
 }
