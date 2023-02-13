@@ -236,11 +236,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
             scanDriverCode.setVisibility(View.GONE);
             loadData();
         }
-        else
-        {
-            showMessageDialog(getString(R.string.info), getString(R.string.doc_status_incorrect),
-                              android.R.drawable.ic_dialog_info);
-        }
     }
 
     private void changeDocStatus()
