@@ -195,8 +195,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }
         invCode = invInfo.getInvCode();
         invName = invInfo.getInvName();
-        String info =
-                "Mal kodu: " + invCode + "\n" + "Mal adı: " + invName + "\n" + invInfo.getInfo();
+        String info = "Mal kodu: " + invCode + "\nMal adı: " + invName
+                      + "\nAnbar qalığı: " + invInfo.getWhsQty() + "\n" + invInfo.getInfo();
         defaultUomCode = invInfo.getDefaultUomCode();
         info = info.replaceAll("; ", "\n");
         info = info.replaceAll("\\\\n", "\n");

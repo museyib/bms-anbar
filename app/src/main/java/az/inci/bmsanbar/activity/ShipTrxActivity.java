@@ -216,6 +216,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
     {
         if (driverCode.startsWith("PER"))
         {
+            this.driverCode = driverCode;
             showProgressDialog(true);
             new Thread(() -> {
                 String url = url("personnel", "get-name");
