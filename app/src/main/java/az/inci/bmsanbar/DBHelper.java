@@ -434,21 +434,30 @@ public class DBHelper extends SQLiteOpenHelper
 
     public void addPickDoc(Doc doc)
     {
-        ContentValues values = new ContentValues();
-        values.put(TRX_NO, doc.getTrxNo());
-        values.put(TRX_DATE, doc.getTrxDate());
-        values.put(ITEM_COUNT, doc.getItemCount());
-        values.put(PICK_GROUP, doc.getPickGroup());
-        values.put(PICK_AREA, doc.getPickArea());
-        values.put(DOC_DESC, doc.getDescription());
-        values.put(WHS_CODE, doc.getWhsCode());
-        values.put(REC_STATUS, doc.getRecStatus());
-        values.put(PICK_USER, doc.getPickUser());
-        values.put(PICK_STATUS, doc.getPickStatus());
-        values.put(PREV_TRX_NO, doc.getPrevTrxNo());
-        values.put(ACTIVE_SECONDS, 0);
 
-        db.insert(PICK_DOC, null, values);
+        String sql = "SELECT * FROM PICK_DOC WHERE TRX_NO=?";
+
+        Cursor cursor = db.rawQuery(sql, new String[]{doc.getTrxNo()});
+        if (cursor.getCount() == 0)
+        {
+            ContentValues values = new ContentValues();
+            values.put(TRX_NO, doc.getTrxNo());
+            values.put(TRX_DATE, doc.getTrxDate());
+            values.put(ITEM_COUNT, doc.getItemCount());
+            values.put(PICK_GROUP, doc.getPickGroup());
+            values.put(PICK_AREA, doc.getPickArea());
+            values.put(DOC_DESC, doc.getDescription());
+            values.put(WHS_CODE, doc.getWhsCode());
+            values.put(REC_STATUS, doc.getRecStatus());
+            values.put(PICK_USER, doc.getPickUser());
+            values.put(PICK_STATUS, doc.getPickStatus());
+            values.put(PREV_TRX_NO, doc.getPrevTrxNo());
+            values.put(ACTIVE_SECONDS, 0);
+
+            db.insert(PICK_DOC, null, values);
+        }
+
+        cursor.close();
     }
 
     public void updatePickActiveSeconds(String trxNo, int seconds)

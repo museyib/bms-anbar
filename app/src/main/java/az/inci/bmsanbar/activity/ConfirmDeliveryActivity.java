@@ -110,15 +110,9 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         this.barcode = barcode;
 
         if (docCreated)
-        {
             getShipDetails(barcode);
-        }
         else
-        {
             setDriverCode(barcode);
-
-            docCreated = true;
-        }
     }
 
     @Override
@@ -160,6 +154,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                         if (!perName.isEmpty())
                         {
                             this.driverCode = driverCode;
+                            docCreated = true;
                             driverCodeEditText.setText(driverCode);
                             ((TextView) findViewById(R.id.driver_name)).setText(perName);
                             playSound(SOUND_SUCCESS);
