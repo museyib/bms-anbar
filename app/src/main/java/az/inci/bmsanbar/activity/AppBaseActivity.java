@@ -228,8 +228,8 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
         if (method.equals("POST"))
         {
-            requestBody = RequestBody.create(new Gson().toJson(requestBodyData),
-                                             MediaType.get("application/json;charset=UTF-8"));
+            requestBody = RequestBody.create(MediaType.get("application/json;charset=UTF-8"),
+                                             new Gson().toJson(requestBodyData));
         }
         Request request = new Request.Builder().method(method, requestBody).url(url).build();
 

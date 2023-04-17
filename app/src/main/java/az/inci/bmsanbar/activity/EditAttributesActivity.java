@@ -52,11 +52,15 @@ public class EditAttributesActivity extends AppBaseActivity
 
     public void loadData()
     {
-        attributeList = getAttributeList();
-        if (attributeList != null)
-        {
-            runOnUiThread(this::updatePage);
-        }
+        showProgressDialog(true);
+        new Thread(() ->
+                   {
+                       attributeList = getAttributeList();
+                       if (attributeList != null)
+                       {
+                           runOnUiThread(this::updatePage);
+                       }
+                   }).start();
     }
 
     public void updatePage()
