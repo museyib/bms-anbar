@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -53,35 +54,26 @@ public class EditAttributesActivity extends AppBaseActivity
     public void loadData()
     {
         showProgressDialog(true);
-        new Thread(() ->
-                   {
-                       attributeList = getAttributeList();
-                       if (attributeList != null)
-                       {
-                           runOnUiThread(this::updatePage);
-                       }
-                   }).start();
+        new Thread(() -> {
+            attributeList = getAttributeList();
+            if (attributeList != null) runOnUiThread(this::updatePage);
+        }).start();
     }
 
     public void updatePage()
     {
         if (attributeList.size() > 0)
-        {
-            findViewById(R.id.save).setOnClickListener(v -> updateAttributes());
-        }
+        {findViewById(R.id.save).setOnClickListener(v -> updateAttributes());}
         AttributeAdapter adapter = new AttributeAdapter(this, attributeList);
         attributeListView.setAdapter(adapter);
-        attributeListView.setOnItemClickListener((parent, view, position, id) ->
-                                                 {
-                                                     View dialog = LayoutInflater.from(this)
-                                                                                 .inflate(
-                                                                                         R.layout.edit_attribute_dialog,
-                                                                                         parent,
-                                                                                         false);
-                                                     InvAttribute attribute = attributeList.get(
-                                                             position);
-                                                     showEditAttributeDialog(attribute, dialog);
-                                                 });
+
+        AdapterView.OnItemClickListener itemClickListener = (parent, view, position, id) -> {
+            View dialog = LayoutInflater.from(EditAttributesActivity.this)
+                                        .inflate(R.layout.edit_attribute_dialog, parent, false);
+            InvAttribute attribute = attributeList.get(position);
+            EditAttributesActivity.this.showEditAttributeDialog(attribute, dialog);
+        };
+        attributeListView.setOnItemClickListener(itemClickListener);
     }
 
     private void showEditAttributeDialog(InvAttribute attribute, View dialog)
@@ -90,15 +82,12 @@ public class EditAttributesActivity extends AppBaseActivity
         EditText valueEdit = dialog.findViewById(R.id.attribute_value);
         nameText.setText(attribute.getAttributeName());
         valueEdit.setText(attribute.getAttributeValue());
-        AlertDialog alertDialog = new AlertDialog.Builder(this)
-                .setView(dialog)
-                .setPositiveButton("OK", (dialog1, which) ->
-                {
-                    attribute.setAttributeValue(valueEdit.getText().toString());
-                    updatePage();
-                })
-                .create();
-        alertDialog.show();
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setView(dialog).setPositiveButton("OK", (dialog1, which) -> {
+            attribute.setAttributeValue(valueEdit.getText().toString());
+            updatePage();
+        }).create();
+        dialogBuilder.show();
     }
 
     private List<InvAttribute> getAttributeList()
@@ -115,13 +104,9 @@ public class EditAttributesActivity extends AppBaseActivity
     {
         showProgressDialog(true);
         String url = url("inv", "update-attributes");
-        executeUpdate(url, attributeList, message ->
-        {
+        executeUpdate(url, attributeList, message -> {
             finish();
-            showMessageDialog(
-                    message.getTitle(),
-                    message.getBody(),
-                    message.getIconId());
+            showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
         });
     }
 
@@ -157,10 +142,9 @@ public class EditAttributesActivity extends AppBaseActivity
             if (attribute.getAttributeType().equals("BIT"))
             {
                 holder.valueCheck.setChecked(attribute.getAttributeValue().equals("1"));
-                holder.valueCheck.setOnCheckedChangeListener((buttonView, isChecked) ->
-                                                                     attribute.setAttributeValue(
-                                                                             String.valueOf(
-                                                                                     isChecked ? 1 : 0)));
+                holder.valueCheck.setOnCheckedChangeListener(
+                        (buttonView, isChecked) -> attribute.setAttributeValue(
+                                String.valueOf(isChecked ? 1 : 0)));
                 holder.valueCheck.setVisibility(View.VISIBLE);
                 holder.valueEdit.setVisibility(View.GONE);
             }
@@ -171,17 +155,12 @@ public class EditAttributesActivity extends AppBaseActivity
                 holder.valueCheck.setVisibility(View.GONE);
             }
 
-            if (((EditAttributesActivity) context).config().getUser().isLocation() &&
-                (attribute.getAttributeId().equals("AT010")
-                 || attribute.getAttributeId().equals("AT011"))
-                || !((EditAttributesActivity) context).config().getUser().isLocation())
-            {
-                convertView.setVisibility(View.VISIBLE);
-            }
-            else
-            {
-                convertView.setVisibility(View.GONE);
-            }
+            if (((EditAttributesActivity) context).config().getUser().isLocationFlag() &&
+                (attribute.getAttributeId().equals("AT010") ||
+                 attribute.getAttributeId().equals("AT011")) ||
+                !((EditAttributesActivity) context).config().getUser().isLocationFlag())
+            {convertView.setVisibility(View.VISIBLE);}
+            else {convertView.setVisibility(View.GONE);}
 
             return convertView;
         }

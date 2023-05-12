@@ -4,30 +4,13 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import lombok.Data;
+
+@Data
 public class ExpCenter
 {
     private String expCenterCode;
     private String expCenterName;
-
-    public String getExpCenterCode()
-    {
-        return expCenterCode;
-    }
-
-    public void setExpCenterCode(String expCenterCode)
-    {
-        this.expCenterCode = expCenterCode;
-    }
-
-    public String getExpCenterName()
-    {
-        return expCenterName;
-    }
-
-    public void setExpCenterName(String expCenterName)
-    {
-        this.expCenterName = expCenterName;
-    }
 
     @Override
     public boolean equals(Object o)

@@ -4,40 +4,13 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import lombok.Data;
+
+@Data
 public class Whs
 {
     private String whsCode;
     private String whsName;
-
-    public Whs()
-    {
-
-    }
-
-    public Whs(String whsCode)
-    {
-        this.whsCode = whsCode;
-    }
-
-    public String getWhsCode()
-    {
-        return whsCode;
-    }
-
-    public void setWhsCode(String whsCode)
-    {
-        this.whsCode = whsCode;
-    }
-
-    public String getWhsName()
-    {
-        return whsName;
-    }
-
-    public void setWhsName(String whsName)
-    {
-        this.whsName = whsName;
-    }
 
     @Override
     @NonNull

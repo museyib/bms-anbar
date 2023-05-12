@@ -89,29 +89,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/vehicle"
             app:srcCompat="@android:drawable/ic_menu_upload"
-            tools:ignore="ImageContrastCheck" />
-
-    <ListView
-            android:id="@+id/ship_trx_list_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="180dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/send" />
-
-    <include
-            layout="@layout/footer_layout"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/doc_list" />
+            tools:ignore="ImageContrastCheck"
+            app:layout_constraintBottom_toTopOf="@+id/ship_trx_list_view" />
 
     <CheckBox
             android:id="@+id/check_mode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/check_mode"
-            app:layout_constraintBottom_toTopOf="@+id/ship_trx_list_view"
             app:layout_constraintStart_toEndOf="@+id/send"
             app:layout_constraintTop_toBottomOf="@+id/vehicle"
             tools:ignore="TouchTargetSizeCheck" />
@@ -122,8 +107,22 @@
             android:layout_height="wrap_content"
             android:text="@string/to_central_whs"
             app:layout_constraintBottom_toTopOf="@+id/ship_trx_list_view"
-            app:layout_constraintStart_toEndOf="@+id/check_mode"
-            app:layout_constraintTop_toBottomOf="@+id/vehicle"
-            android:layout_marginStart="5dp"
+            app:layout_constraintStart_toEndOf="@+id/send"
+            app:layout_constraintTop_toBottomOf="@+id/check_mode"
             tools:ignore="TouchTargetSizeCheck" />
+
+    <ListView
+            android:id="@+id/ship_trx_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="180dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/to_central_check" />
+
+    <include
+            layout="@layout/footer_layout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/doc_list" />
 </androidx.constraintlayout.widget.ConstraintLayout>

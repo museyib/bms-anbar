@@ -1,5 +1,7 @@
 package az.inci.bmsanbar.activity;
 
+import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
+
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -51,7 +53,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         send = findViewById(R.id.send);
         cancel = findViewById(R.id.cancel_button);
 
-        if (config().isCameraScanning())
+        if (cameraScanning)
         {
             scanDriverCode.setVisibility(View.VISIBLE);
             scanNewDoc.setVisibility(View.VISIBLE);
@@ -61,25 +63,19 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
 
         send.setOnClickListener(v -> {
             if (docList.size() > 0)
-            {
                 changeDocStatus();
-            }
         });
 
         docListView.setOnItemLongClickListener((parent, view, position, id) -> {
-            AlertDialog dialog = new AlertDialog.Builder(this).setMessage(R.string.want_to_delete)
-                                                              .setPositiveButton(R.string.delete,
-                                                                                 (dialogInterface, i) -> {
-                                                                                     String trxNo = (String) parent.getItemAtPosition(
-                                                                                             position);
-                                                                                     docList.remove(
-                                                                                             trxNo);
-                                                                                     loadData();
-                                                                                 })
-                                                              .setNegativeButton(R.string.cancel,
-                                                                                 null)
-                                                              .create();
-            dialog.show();
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setMessage(R.string.want_to_delete)
+                         .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
+                             String trxNo = (String) parent.getItemAtPosition(position);
+                             docList.remove(trxNo);
+                             loadData();
+                         })
+                         .setNegativeButton(R.string.cancel, null);
+            dialogBuilder.show();
             return true;
         });
 
@@ -109,10 +105,8 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
     {
         this.barcode = barcode;
 
-        if (docCreated)
-            getShipDetails(barcode);
-        else
-            setDriverCode(barcode);
+        if (docCreated) getShipDetails(barcode);
+        else setDriverCode(barcode);
     }
 
     @Override
@@ -123,7 +117,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         barcode = data.getStringExtra("barcode");
 
         if (resultCode == 1 && barcode != null)
-        {
             switch (requestCode)
             {
                 case SCAN_DRIVER_CODE:
@@ -133,7 +126,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                     getShipDetails(barcode);
                     break;
             }
-        }
     }
 
     public void setDriverCode(String driverCode)
@@ -149,7 +141,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                 Log.e("URL", url);
                 String perName = getSimpleObject(url, "GET", null, String.class);
                 if (perName != null)
-                {
                     runOnUiThread(() -> {
                         if (!perName.isEmpty())
                         {
@@ -167,7 +158,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                             playSound(SOUND_FAIL);
                         }
                     });
-                }
             }).start();
         }
         else
@@ -186,8 +176,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
 
     private void getShipDetails(String trxNo)
     {
-        if (docList.contains(trxNo))
-            return;
+        if (docList.contains(trxNo)) return;
 
         showProgressDialog(true);
         new Thread(() -> {
@@ -215,16 +204,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                 playSound(SOUND_FAIL);
                 return;
             }
-
-//            String status = docInfo.getShipStatus();
-//
-//            if (status.equals("AC"))
-//            {
-//                showMessageDialog(getString(R.string.info),
-//                        "DİQQƏT!!! Bu sənəd qapıdan çıxışa vurulmayıb!",
-//                        android.R.drawable.ic_dialog_info);
-//                playSound(SOUND_FAIL);
-//            }
 
             playSound(SOUND_SUCCESS);
             docList.add(trxNo);
@@ -254,9 +233,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                     showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
 
                     if (message.getStatusCode() == 0)
-                    {
                         clearFields();
-                    }
                 }
             });
         }).start();

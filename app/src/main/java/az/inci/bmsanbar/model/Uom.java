@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import lombok.Data;
+
+@Data
 public class Uom
 {
     private String uomCode;
@@ -12,26 +15,6 @@ public class Uom
     public Uom(String uomCode)
     {
         this.uomCode = uomCode;
-    }
-
-    public String getUomCode()
-    {
-        return uomCode;
-    }
-
-    public void setUomCode(String uomCode)
-    {
-        this.uomCode = uomCode;
-    }
-
-    public String getUomName()
-    {
-        return uomName;
-    }
-
-    public void setUomName(String uomName)
-    {
-        this.uomName = uomName;
     }
 
     @NonNull

@@ -1,5 +1,8 @@
 package az.inci.bmsanbar.model.v2;
 
+import lombok.Data;
+
+@Data
 public class InvInfo
 {
     private String invCode;
@@ -7,29 +10,4 @@ public class InvInfo
     private String defaultUomCode;
     private double whsQty;
     private String info;
-
-    public String getInvCode()
-    {
-        return invCode;
-    }
-
-    public String getInvName()
-    {
-        return invName;
-    }
-
-    public String getDefaultUomCode()
-    {
-        return defaultUomCode;
-    }
-
-    public double getWhsQty()
-    {
-        return whsQty;
-    }
-
-    public String getInfo()
-    {
-        return info;
-    }
 }

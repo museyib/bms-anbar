@@ -1,5 +1,19 @@
 package az.inci.bmsanbar.activity;
 
+import static android.R.drawable.ic_dialog_alert;
+import static android.R.drawable.ic_dialog_info;
+import static az.inci.bmsanbar.AppConfig.APPROVE_MODE;
+import static az.inci.bmsanbar.AppConfig.CONFIRM_DELIVERY_MODE;
+import static az.inci.bmsanbar.AppConfig.INV_ATTRIBUTE_MODE;
+import static az.inci.bmsanbar.AppConfig.PACK_MODE;
+import static az.inci.bmsanbar.AppConfig.PICK_MODE;
+import static az.inci.bmsanbar.AppConfig.PRODUCT_APPROVE_MODE;
+import static az.inci.bmsanbar.AppConfig.SHIP_MODE;
+import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
+import static az.inci.bmsanbar.GlobalParameters.connectionTimeout;
+import static az.inci.bmsanbar.GlobalParameters.imageUrl;
+import static az.inci.bmsanbar.GlobalParameters.serviceUrl;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -28,7 +42,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import az.inci.bmsanbar.AppConfig;
 import az.inci.bmsanbar.BuildConfig;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.User;
@@ -38,10 +51,6 @@ public class MainActivity extends AppBaseActivity
 {
     String id;
     String password;
-    String serverUrl;
-    String imageUrl;
-    boolean cameraScanning;
-    int connectionTimeout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -49,40 +58,24 @@ public class MainActivity extends AppBaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         enableStorageAccess();
-        loadConfig();
 
-        String[] lastLogin = dbHelper.getLastLogin();
-        id = lastLogin[0];
-        password = lastLogin[1];
+        id = preferences.getString("last_login_id", "");
+        password = preferences.getString("last_login_password", "");
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        loadConfig();
     }
 
     private void loadConfig()
     {
-        serverUrl = dbHelper.getParameter("serverUrl");
-        if (serverUrl.isEmpty())
-        {
-            serverUrl = config().getServerUrl();
-        }
-        config().setServerUrl(serverUrl);
-
-        imageUrl = dbHelper.getParameter("imageUrl");
-        if (imageUrl.isEmpty())
-        {
-            imageUrl = config().getImageUrl();
-        }
-        config().setImageUrl(imageUrl);
-
-        connectionTimeout = dbHelper.getParameter("connectionTimeout")
-                                    .isEmpty() ? 0 : Integer.parseInt(
-                dbHelper.getParameter("connectionTimeout"));
-        if (connectionTimeout == 0)
-        {
-            connectionTimeout = config().getConnectionTimeout();
-        }
-        config().setConnectionTimeout(connectionTimeout);
-
-        cameraScanning = Boolean.parseBoolean(dbHelper.getParameter("cameraScanning"));
-        config().setCameraScanning(cameraScanning);
+        serviceUrl = preferences.getString("service_url", "http://185.129.0.46:8022");
+        imageUrl = preferences.getString("image_url", "http://185.129.0.46:8025");
+        connectionTimeout = Integer.parseInt(preferences.getString("connection_timeout", "5"));
+        cameraScanning = preferences.getBoolean("camera_scanning", false);
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -97,21 +90,19 @@ public class MainActivity extends AppBaseActivity
 
         MenuItem itemUpdate = menu.findItem(R.id.update);
         itemUpdate.setOnMenuItemClickListener(item1 -> {
-            AlertDialog dialog = new AlertDialog.Builder(this).setTitle(
-                                                                      "Proqram versiyasını yenilə")
-                                                              .setMessage(
-                                                                      "Dəyişiklikdən asılı olaraq məlumatlar silinə bilər. Yeniləmək istəyirsinizmi?")
-                                                              .setNegativeButton("Bəli",
-                                                                                 (dialogInterface, i) -> checkForNewVersion())
-                                                              .setPositiveButton("Xeyr", null)
-                                                              .create();
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setTitle("Proqram versiyasını yenilə")
+                         .setMessage("Yeniləmək istəyirsinizmi?")
+                         .setNegativeButton("Bəli", (dialogInterface, i) -> checkForNewVersion())
+                         .setPositiveButton("Xeyr", null);
+            AlertDialog dialog = dialogBuilder.create();
 
             dialog.show();
             return true;
         });
         MenuItem itemInfo = menu.findItem(R.id.inv_attributes);
         itemInfo.setOnMenuItemClickListener(item1 -> {
-            showLoginDialog(AppConfig.INV_ATTRIBUTE_MODE);
+            showLoginDialog(INV_ATTRIBUTE_MODE);
             return true;
         });
         return true;
@@ -129,32 +120,32 @@ public class MainActivity extends AppBaseActivity
 
     public void openPickingDocs(View view)
     {
-        showLoginDialog(AppConfig.PICK_MODE);
+        showLoginDialog(PICK_MODE);
     }
 
     public void openPackingDocs(View view)
     {
-        showLoginDialog(AppConfig.PACK_MODE);
+        showLoginDialog(PACK_MODE);
     }
 
     public void openShippingDocs(View view)
     {
-        showLoginDialog(AppConfig.SHIP_MODE);
+        showLoginDialog(SHIP_MODE);
     }
 
     public void openInvApproving(View view)
     {
-        showLoginDialog(AppConfig.APPROVE_MODE);
+        showLoginDialog(APPROVE_MODE);
     }
 
     public void openProductApproving(View view)
     {
-        showLoginDialog(AppConfig.PRODUCT_APPROVE_MODE);
+        showLoginDialog(PRODUCT_APPROVE_MODE);
     }
 
     public void openConfirmDelivery(View view)
     {
-        showLoginDialog(AppConfig.CONFIRM_DELIVERY_MODE);
+        showLoginDialog(CONFIRM_DELIVERY_MODE);
     }
 
     private void showLoginDialog(int mode)
@@ -175,51 +166,35 @@ public class MainActivity extends AppBaseActivity
         idEdit.selectAll();
         passwordEdit.setText(password);
 
-        AlertDialog loginDialog = new AlertDialog.Builder(this).setTitle(R.string.enter)
-                                                               .setView(view)
-                                                               .setPositiveButton(R.string.enter,
-                                                                                  (dialog, which) -> {
-                                                                                      id = idEdit.getText()
-                                                                                                 .toString()
-                                                                                                 .toUpperCase();
-                                                                                      password = passwordEdit.getText()
-                                                                                                             .toString();
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
 
-                                                                                      if (id.isEmpty() ||
-                                                                                          password.isEmpty())
-                                                                                      {
-                                                                                          showToastMessage(
-                                                                                                  getString(
-                                                                                                          R.string.username_or_password_not_entered));
-                                                                                          showLoginDialog(
-                                                                                                  mode);
-                                                                                          playSound(
-                                                                                                  SOUND_FAIL);
-                                                                                      }
-                                                                                      else
-                                                                                      {
-                                                                                          User user = dbHelper.getUser(
-                                                                                                  id);
-                                                                                          if (user ==
-                                                                                              null ||
-                                                                                              loginViaServer.get())
-                                                                                          {
-                                                                                              loginViaServer();
-                                                                                          }
-                                                                                          else
-                                                                                          {
-                                                                                              loadUserInfo(
-                                                                                                      user,
-                                                                                                      false);
-                                                                                              attemptLogin(
-                                                                                                      user);
-                                                                                          }
+        dialogBuilder.setTitle(R.string.enter)
+                     .setView(view)
+                     .setPositiveButton(R.string.enter, (dialog, which) -> {
+                         id = idEdit.getText().toString().toUpperCase();
+                         password = passwordEdit.getText().toString();
 
-                                                                                          dialog.dismiss();
-                                                                                      }
-                                                                                  })
-                                                               .create();
+                         if (id.isEmpty() || password.isEmpty())
+                         {
+                             showToastMessage(getString(R.string.username_or_password_not_entered));
+                             showLoginDialog(mode);
+                             playSound(SOUND_FAIL);
+                         }
+                         else
+                         {
+                             User user = dbHelper.getUser(id);
+                             if (user == null || loginViaServer.get()) {loginViaServer();}
+                             else
+                             {
+                                 loadUserInfo(user, false);
+                                 attemptLogin(user);
+                             }
 
+                             dialog.dismiss();
+                         }
+                     });
+
+        AlertDialog loginDialog = dialogBuilder.create();
         Objects.requireNonNull(loginDialog.getWindow())
                .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         loginDialog.show();
@@ -228,79 +203,78 @@ public class MainActivity extends AppBaseActivity
     private void attemptLogin(User user)
     {
         if (!user.getPassword().equals(password))
-        {
-            loginViaServer();
-        }
+        {loginViaServer();}
         else
         {
-            dbHelper.updateLastLogin(id, password);
+            preferences.edit().putString("last_login_id", id).apply();
+            preferences.edit().putString("last_login_password", password).apply();
             Class<?> aClass;
             switch (mode)
             {
-                case AppConfig.PICK_MODE:
-                    if (!user.isPick())
+                case PICK_MODE:
+                    if (!user.isPickFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
-                                          android.R.drawable.ic_dialog_alert);
+                                          ic_dialog_alert);
                         playSound(SOUND_FAIL);
                         return;
                     }
                     aClass = PickDocActivity.class;
                     break;
-                case AppConfig.PACK_MODE:
-                    if (!user.isPack())
+                case PACK_MODE:
+                    if (!user.isPackFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
-                                          android.R.drawable.ic_dialog_alert);
+                                          ic_dialog_alert);
                         playSound(SOUND_FAIL);
                         return;
                     }
                     aClass = PackDocActivity.class;
                     break;
-                case AppConfig.SHIP_MODE:
-                    if (!user.isLoading())
+                case SHIP_MODE:
+                    if (!user.isLoadingFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
-                                          android.R.drawable.ic_dialog_alert);
+                                          ic_dialog_alert);
                         playSound(SOUND_FAIL);
                         return;
                     }
                     aClass = ShipDocActivity.class;
                     break;
-                case AppConfig.APPROVE_MODE:
-                    if (!user.isApprove())
+                case APPROVE_MODE:
+                    if (!user.isApproveFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
-                                          android.R.drawable.ic_dialog_alert);
+                                          ic_dialog_alert);
                         playSound(SOUND_FAIL);
                         return;
                     }
                     aClass = InternalUseDocActivity.class;
                     break;
-                case AppConfig.PRODUCT_APPROVE_MODE:
-                    if (!(user.isApprove() || user.isApprovePrd()))
+                case PRODUCT_APPROVE_MODE:
+                    if (!(user.isApproveFlag() || user.isApprovePrdFlag()))
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
-                                          android.R.drawable.ic_dialog_alert);
+                                          ic_dialog_alert);
                         playSound(SOUND_FAIL);
                         return;
                     }
                     aClass = ProductApproveDocActivity.class;
                     break;
-                case AppConfig.INV_ATTRIBUTE_MODE:
+                case INV_ATTRIBUTE_MODE:
                     aClass = InventoryInfoActivity.class;
                     break;
-                case AppConfig.CONFIRM_DELIVERY_MODE:
-                    if (!user.isLoading())
+                case CONFIRM_DELIVERY_MODE:
+                    if (!user.isLoadingFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
-                                          android.R.drawable.ic_dialog_alert);
+                                          ic_dialog_alert);
                         playSound(SOUND_FAIL);
                         return;
                     }
@@ -376,7 +350,7 @@ public class MainActivity extends AppBaseActivity
                     {
                         showMessageDialog(getString(R.string.info),
                                           getString(R.string.error_occurred),
-                                          android.R.drawable.ic_dialog_info);
+                                          ic_dialog_info);
                         return;
                     }
                 }
@@ -405,13 +379,13 @@ public class MainActivity extends AppBaseActivity
             catch (PackageManager.NameNotFoundException e)
             {
                 showMessageDialog(getString(R.string.error), e.getMessage(),
-                                  android.R.drawable.ic_dialog_alert);
+                                  ic_dialog_alert);
             }
 
             if (info == null)
             {
                 showMessageDialog(getString(R.string.error), new String(bytes),
-                                  android.R.drawable.ic_dialog_alert);
+                                  ic_dialog_alert);
                 return;
             }
 
@@ -439,13 +413,13 @@ public class MainActivity extends AppBaseActivity
             else
             {
                 showMessageDialog(getString(R.string.info), getString(R.string.no_new_version),
-                                  android.R.drawable.ic_dialog_info);
+                                  ic_dialog_info);
             }
         }
         else
         {
             showMessageDialog(getString(R.string.info), getString(R.string.no_new_version),
-                              android.R.drawable.ic_dialog_info);
+                              ic_dialog_info);
         }
     }
 }

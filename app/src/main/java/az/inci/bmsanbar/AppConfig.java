@@ -16,10 +16,6 @@ public class AppConfig
     static final String DB_NAME = "BMS_ANBAR";
     static final int DB_VERSION = 15;
     private User user;
-    private String serverUrl = "http://185.129.0.46:8022";
-    private String imageUrl = "http://185.129.0.46:8025";
-    private int connectionTimeout = 5;
-    private boolean cameraScanning = false;
 
     public User getUser()
     {
@@ -29,45 +25,5 @@ public class AppConfig
     public void setUser(User user)
     {
         this.user = user;
-    }
-
-    public String getServerUrl()
-    {
-        return serverUrl;
-    }
-
-    public void setServerUrl(String serverUrl)
-    {
-        this.serverUrl = serverUrl;
-    }
-
-    public int getConnectionTimeout()
-    {
-        return connectionTimeout;
-    }
-
-    public void setConnectionTimeout(int connectionTimeout)
-    {
-        this.connectionTimeout = connectionTimeout;
-    }
-
-    public String getImageUrl()
-    {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl)
-    {
-        this.imageUrl = imageUrl;
-    }
-
-    public boolean isCameraScanning()
-    {
-        return cameraScanning;
-    }
-
-    public void setCameraScanning(boolean cameraScanning)
-    {
-        this.cameraScanning = cameraScanning;
     }
 }

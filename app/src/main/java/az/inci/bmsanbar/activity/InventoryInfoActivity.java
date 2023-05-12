@@ -1,5 +1,7 @@
 package az.inci.bmsanbar.activity;
 
+import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
+
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -56,14 +58,13 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         editBarcodes = findViewById(R.id.edit_barcodes);
         viewImage = findViewById(R.id.photo);
 
-        if (config().isCameraScanning())
+        if (cameraScanning)
         {
             findViewById(R.id.camera_scanner).setVisibility(View.VISIBLE);
         }
 
-        searchField.setAdapter(
-                ArrayAdapter.createFromResource(this, R.array.search_field_list,
-                                                R.layout.spinner_item));
+        searchField.setAdapter(ArrayAdapter.createFromResource(this, R.array.search_field_list,
+                                                               R.layout.spinner_item));
 
         searchBtn.setOnClickListener(v -> searchKeyword());
         cameraBtn.setOnClickListener(v -> scanWithCamera());
@@ -125,15 +126,15 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     {
         if (list.size() == 0)
         {
-            showMessageDialog(getString(R.string.info),
-                              getString(R.string.good_not_found),
+            showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
                               android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
 
-        View view = LayoutInflater.from(this).inflate(R.layout.result_list_dialog,
-                                                      findViewById(android.R.id.content), false);
+        View view = LayoutInflater.from(this)
+                                  .inflate(R.layout.result_list_dialog,
+                                           findViewById(android.R.id.content), false);
 
         ListView listView = view.findViewById(R.id.result_list);
         ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, list);
@@ -155,22 +156,18 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             }
         });
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Axtarışın nəticəsi")
-                .setView(view)
-                .create();
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog dialog = dialogBuilder.setTitle("Axtarışın nəticəsi").setView(view).create();
         dialog.show();
 
-        listView.setOnItemClickListener((adapterView, view1, i, l) ->
-                                        {
-                                            Inventory inventory = (Inventory) adapterView.getItemAtPosition(
-                                                    i);
-                                            invCode = inventory.getInvCode();
-                                            defaultUomCode = inventory.getDefaultUomCode();
-                                            getDataByInvCode(invCode);
+        listView.setOnItemClickListener((adapterView, view1, i, l) -> {
+            Inventory inventory = (Inventory) adapterView.getItemAtPosition(i);
+            invCode = inventory.getInvCode();
+            defaultUomCode = inventory.getDefaultUomCode();
+            getDataByInvCode(invCode);
 
-                                            dialog.dismiss();
-                                        });
+            dialog.dismiss();
+        });
     }
 
     private void getInfo(String url)
@@ -178,8 +175,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         InvInfo invInfo = getSimpleObject(url, "GET", null, InvInfo.class);
         if (invInfo != null)
         {
-            runOnUiThread(() ->
-                                  printInfo(invInfo));
+            runOnUiThread(() -> printInfo(invInfo));
         }
     }
 
@@ -187,16 +183,15 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     {
         if (invInfo.getInvCode() == null)
         {
-            showMessageDialog(getString(R.string.error),
-                              getString(R.string.good_not_found),
+            showMessageDialog(getString(R.string.error), getString(R.string.good_not_found),
                               android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
         invCode = invInfo.getInvCode();
         invName = invInfo.getInvName();
-        String info = "Mal kodu: " + invCode + "\nMal adı: " + invName
-                      + "\nAnbar qalığı: " + invInfo.getWhsQty() + "\n" + invInfo.getInfo();
+        String info = "Mal kodu: " + invCode + "\nMal adı: " + invName + "\nAnbar qalığı: " +
+                      invInfo.getWhsQty() + "\n" + invInfo.getInfo();
         defaultUomCode = invInfo.getDefaultUomCode();
         info = info.replaceAll("; ", "\n");
         info = info.replaceAll("\\\\n", "\n");
@@ -212,7 +207,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     public void editAttributes()
     {
-        if (!config().getUser().isAttribute())
+        if (!config().getUser().isAttributeFlag())
         {
             showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                               android.R.drawable.ic_dialog_alert);
@@ -232,51 +227,46 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     private void getDataByInvCode(String invCode)
     {
         showProgressDialog(true);
-        new Thread(() ->
-                   {
-                       String url = url("inv", "info-by-inv-code");
-                       Map<String, String> parameters = new HashMap<>();
-                       parameters.put("inv-code", invCode);
-                       parameters.put("user-id", config().getUser().getId());
-                       url = addRequestParameters(url, parameters);
-                       getInfo(url);
-                   }).start();
+        new Thread(() -> {
+            String url = url("inv", "info-by-inv-code");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("inv-code", invCode);
+            parameters.put("user-id", config().getUser().getId());
+            url = addRequestParameters(url, parameters);
+            getInfo(url);
+        }).start();
     }
 
     private void getDataByBarcode(String barcode)
     {
         showProgressDialog(true);
-        new Thread(() ->
-                   {
-                       String url = url("inv", "info-by-barcode");
-                       Map<String, String> parameters = new HashMap<>();
-                       parameters.put("barcode", barcode);
-                       parameters.put("user-id", config().getUser().getId());
-                       url = addRequestParameters(url, parameters);
-                       getInfo(url);
-                   }).start();
+        new Thread(() -> {
+            String url = url("inv", "info-by-barcode");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("barcode", barcode);
+            parameters.put("user-id", config().getUser().getId());
+            url = addRequestParameters(url, parameters);
+            getInfo(url);
+        }).start();
     }
 
     private void searchForKeyword(String keyword)
     {
         showProgressDialog(true);
-        new Thread(() ->
-                   {
-                       String url = url("inv", "search");
-                       Map<String, String> parameters = new HashMap<>();
-                       parameters.put("keyword", keyword);
-                       parameters.put("in", (String) searchField.getSelectedItem());
-                       url = addRequestParameters(url, parameters);
-                       List<Inventory> inventoryList = getListData(url, "GET", null,
-                                                                   Inventory[].class);
-                       runOnUiThread(() ->
-                                     {
-                                         if (inventoryList != null)
-                                         {
-                                             showResultListDialog(inventoryList);
-                                         }
-                                     });
-                   }).start();
+        new Thread(() -> {
+            String url = url("inv", "search");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("keyword", keyword);
+            parameters.put("in", (String) searchField.getSelectedItem());
+            url = addRequestParameters(url, parameters);
+            List<Inventory> inventoryList = getListData(url, "GET", null, Inventory[].class);
+            runOnUiThread(() -> {
+                if (inventoryList != null)
+                {
+                    showResultListDialog(inventoryList);
+                }
+            });
+        }).start();
     }
 
     @Override

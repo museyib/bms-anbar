@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import lombok.Data;
+
+@Data
 public class Inventory
 {
     private String invCode;
@@ -27,71 +30,11 @@ public class Inventory
         return inventory;
     }
 
-    public String getInvCode()
-    {
-        return invCode;
-    }
-
-    public void setInvCode(String invCode)
-    {
-        this.invCode = invCode;
-    }
-
-    public String getInvName()
-    {
-        return invName;
-    }
-
-    public void setInvName(String invName)
-    {
-        this.invName = invName;
-    }
-
-    public String getInvBrand()
-    {
-        return invBrand;
-    }
-
-    public void setInvBrand(String invBrand)
-    {
-        this.invBrand = invBrand;
-    }
-
-    public double getPrice()
-    {
-        return price;
-    }
-
-    public void setPrice(double price)
-    {
-        this.price = price;
-    }
-
     @Override
     @NonNull
     public String toString()
     {
         return invCode + " | " + invName + " | " + invBrand;
-    }
-
-    public String getBarcode()
-    {
-        return barcode;
-    }
-
-    public void setBarcode(String barcode)
-    {
-        this.barcode = barcode;
-    }
-
-    public String getInternalCount()
-    {
-        return internalCount;
-    }
-
-    public void setInternalCount(String internalCount)
-    {
-        this.internalCount = internalCount;
     }
 
     @Override
@@ -108,25 +51,5 @@ public class Inventory
     public int hashCode()
     {
         return Objects.hash(invCode, barcode);
-    }
-
-    public double getWhsQty()
-    {
-        return whsQty;
-    }
-
-    public void setWhsQty(double whsQty)
-    {
-        this.whsQty = whsQty;
-    }
-
-    public String getDefaultUomCode()
-    {
-        return defaultUomCode;
-    }
-
-    public void setDefaultUomCode(String defaultUomCode)
-    {
-        this.defaultUomCode = defaultUomCode;
     }
 }

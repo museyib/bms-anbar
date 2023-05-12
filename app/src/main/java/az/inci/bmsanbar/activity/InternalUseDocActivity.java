@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -42,50 +43,41 @@ public class InternalUseDocActivity extends AppBaseActivity
         docListView = findViewById(R.id.doc_list);
         add = findViewById(R.id.add);
 
-        add.setOnClickListener(v ->
-                               {
-                                   Intent intent = new Intent(this, InternalUseTrxActivity.class);
-                                   intent.putExtra("mode", AppConfig.NEW_MODE);
-                                   startActivity(intent);
-                               });
+        add.setOnClickListener(v -> {
+            Intent intent = new Intent(this, InternalUseTrxActivity.class);
+            intent.putExtra("mode", AppConfig.NEW_MODE);
+            startActivity(intent);
+        });
 
-        docListView.setOnItemClickListener((parent, view, position, id) ->
-                                           {
-                                               Doc doc = (Doc) parent.getItemAtPosition(position);
-                                               Intent intent = new Intent(this,
-                                                                          InternalUseTrxActivity.class);
-                                               intent.putExtra("trxNo", doc.getTrxNo());
-                                               intent.putExtra("notes", doc.getNotes());
-                                               intent.putExtra("trxTypeId", doc.getTrxTypeId());
-                                               intent.putExtra("whsCode", doc.getWhsCode());
-                                               intent.putExtra("whsName", doc.getWhsName());
-                                               intent.putExtra("expCenterCode",
-                                                               doc.getExpCenterCode());
-                                               intent.putExtra("expCenterName",
-                                                               doc.getExpCenterName());
-                                               intent.putExtra("amount", doc.getAmount());
-                                               startActivity(intent);
-                                           });
+        docListView.setOnItemClickListener((parent, view, position, id) -> {
+            Doc doc = (Doc) parent.getItemAtPosition(position);
+            Intent intent = new Intent(this, InternalUseTrxActivity.class);
+            intent.putExtra("trxNo", doc.getTrxNo());
+            intent.putExtra("notes", doc.getNotes());
+            intent.putExtra("trxTypeId", doc.getTrxTypeId());
+            intent.putExtra("whsCode", doc.getWhsCode());
+            intent.putExtra("whsName", doc.getWhsName());
+            intent.putExtra("expCenterCode", doc.getExpCenterCode());
+            intent.putExtra("expCenterName", doc.getExpCenterName());
+            intent.putExtra("amount", doc.getAmount());
+            startActivity(intent);
+        });
+        AdapterView.OnItemLongClickListener itemLongClickListener = (parent, view, position, id) -> {
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
+                    InternalUseDocActivity.this);
+            dialogBuilder.setMessage("Silmək istəyirsiniz?")
+                         .setPositiveButton("Bəli", (dialog1, which) -> {
+                             Doc doc = (Doc) parent.getItemAtPosition(position);
+                             dbHelper.deleteInternalUseDoc(doc.getTrxNo());
+                             InternalUseDocActivity.this.loadData();
+                         })
+                         .setNegativeButton("Xeyr", null)
+                         .create();
+            dialogBuilder.show();
+            return true;
+        };
 
-        docListView.setOnItemLongClickListener((parent, view, position, id) ->
-                                               {
-                                                   AlertDialog dialog = new AlertDialog.Builder(
-                                                           this)
-                                                           .setMessage("Silmək istəyirsiniz?")
-                                                           .setPositiveButton("Bəli",
-                                                                              (dialog1, which) ->
-                                                                              {
-                                                                                  Doc doc = (Doc) parent.getItemAtPosition(
-                                                                                          position);
-                                                                                  dbHelper.deleteInternalUseDoc(
-                                                                                          doc.getTrxNo());
-                                                                                  loadData();
-                                                                              })
-                                                           .setNegativeButton("Xeyr", null)
-                                                           .create();
-                                                   dialog.show();
-                                                   return true;
-                                               });
+        docListView.setOnItemLongClickListener(itemLongClickListener);
 
         loadData();
 
@@ -105,12 +97,10 @@ public class InternalUseDocActivity extends AppBaseActivity
         getMenuInflater().inflate(R.menu.pick_menu, menu);
         MenuItem attributes = menu.findItem(R.id.inv_attributes);
         attributes.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        attributes.setOnMenuItemClickListener(item1 ->
-                                              {
-                                                  startActivity(new Intent(this,
-                                                                           InventoryInfoActivity.class));
-                                                  return true;
-                                              });
+        attributes.setOnMenuItemClickListener(item1 -> {
+            startActivity(new Intent(this, InventoryInfoActivity.class));
+            return true;
+        });
 
         menu.findItem(R.id.pick_report).setVisible(false);
         menu.findItem(R.id.search).setVisible(false);

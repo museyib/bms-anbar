@@ -39,41 +39,31 @@ public class ShipDocActivity extends AppBaseActivity
         add = findViewById(R.id.add);
 
         Intent intent = new Intent(this, ShipTrxActivity.class);
-        add.setOnClickListener(v ->
-                               {
-                                   intent.putExtra("mode", AppConfig.NEW_MODE);
-                                   startActivity(intent);
-                               });
+        add.setOnClickListener(v -> {
+            intent.putExtra("mode", AppConfig.NEW_MODE);
+            startActivity(intent);
+        });
 
-        docListView.setOnItemClickListener((parent, view, position, id) ->
-                                           {
-                                               ShipDoc doc = (ShipDoc) parent.getItemAtPosition(
-                                                       position);
-                                               intent.putExtra("driverCode", doc.getDriverCode());
-                                               intent.putExtra("driverName", doc.getDriverName());
-                                               intent.putExtra("vehicleCode", doc.getVehicleCode());
-                                               startActivity(intent);
-                                           });
+        docListView.setOnItemClickListener((parent, view, position, id) -> {
+            ShipDoc doc = (ShipDoc) parent.getItemAtPosition(position);
+            intent.putExtra("driverCode", doc.getDriverCode());
+            intent.putExtra("driverName", doc.getDriverName());
+            intent.putExtra("vehicleCode", doc.getVehicleCode());
+            startActivity(intent);
+        });
 
-        docListView.setOnItemLongClickListener((parent, view, position, id) ->
-                                               {
-                                                   AlertDialog dialog = new AlertDialog.Builder(
-                                                           this)
-                                                           .setMessage("Silmək istəyirsinizmi?")
-                                                           .setPositiveButton("Sil",
-                                                                              (dialogInterface, i) ->
-                                                                              {
-                                                                                  ShipDoc doc = (ShipDoc) parent.getItemAtPosition(
-                                                                                          position);
-                                                                                  dbHelper.deleteShipTrxByDriver(
-                                                                                          doc.getDriverCode());
-                                                                                  loadDocs();
-                                                                              })
-                                                           .setNegativeButton("Ləğv et", null)
-                                                           .create();
-                                                   dialog.show();
-                                                   return true;
-                                               });
+        docListView.setOnItemLongClickListener((parent, view, position, id) -> {
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setMessage("Silmək istəyirsinizmi?")
+                         .setPositiveButton("Sil", (dialogInterface, i) -> {
+                             ShipDoc doc = (ShipDoc) parent.getItemAtPosition(position);
+                             dbHelper.deleteShipTrxByDriver(doc.getDriverCode());
+                             loadDocs();
+                         })
+                         .setNegativeButton("Ləğv et", null);
+            dialogBuilder.show();
+            return true;
+        });
 
         loadDocs();
 

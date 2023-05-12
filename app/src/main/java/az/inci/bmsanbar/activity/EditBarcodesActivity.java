@@ -1,5 +1,7 @@
 package az.inci.bmsanbar.activity;
 
+import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -54,17 +56,12 @@ public class EditBarcodesActivity extends ScannerSupportActivity
 
         Button scanBtn = findViewById(R.id.scan);
 
-        if (config().isCameraScanning())
-        {
-            scanBtn.setVisibility(View.VISIBLE);
-        }
+        if (cameraScanning) scanBtn.setVisibility(View.VISIBLE);
 
-        scanBtn.setOnClickListener(v ->
-                                   {
-                                       Intent barcodeIntent = new Intent(this,
-                                                                         BarcodeScannerCamera.class);
-                                       startActivityForResult(barcodeIntent, 1);
-                                   });
+        scanBtn.setOnClickListener(v -> {
+            Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
+            startActivityForResult(barcodeIntent, 1);
+        });
         loadData();
     }
 
@@ -76,23 +73,14 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         invBarcode.setUomFactor(1);
         View dialog = LayoutInflater.from(this)
                                     .inflate(R.layout.edit_barcode_dialog,
-                                             findViewById(android.R.id.content),
-                                             false);
+                                             findViewById(android.R.id.content), false);
         for (InvBarcode existingBarcode : barcodeList)
         {
             if (existingBarcode.getBarcode().equals(barcode))
-            {
-                invBarcode = existingBarcode;
-            }
+            {invBarcode = existingBarcode;}
         }
-        if (barcodeList.contains(invBarcode))
-        {
-            showEditBarcodeDialog(invBarcode, dialog);
-        }
-        else
-        {
-            checkBarcode(barcode);
-        }
+        if (barcodeList.contains(invBarcode)) {showEditBarcodeDialog(invBarcode, dialog);}
+        else {checkBarcode(barcode);}
     }
 
     private void addNewBarcode(String barcode)
@@ -104,43 +92,32 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         invBarcode.setUom(defaultUomCode);
         View dialog = LayoutInflater.from(this)
                                     .inflate(R.layout.edit_barcode_dialog,
-                                             findViewById(android.R.id.content),
-                                             false);
+                                             findViewById(android.R.id.content), false);
         showAddBarcodeDialog(invBarcode, dialog);
     }
 
     public void loadData()
     {
         showProgressDialog(true);
-        new Thread(() ->
-                   {
-                       barcodeList = getBarcodeList();
-                       uomList = getUomList();
-                       if (barcodeList != null && uomList != null)
-                       {
-                           runOnUiThread(this::updatePage);
-                       }
-                   }).start();
+        new Thread(() -> {
+            barcodeList = getBarcodeList();
+            uomList = getUomList();
+            if (barcodeList != null && uomList != null) runOnUiThread(this::updatePage);
+        }).start();
     }
 
     public void updatePage()
     {
         if (barcodeList.size() > 0)
-        {
-            findViewById(R.id.save).setOnClickListener(v -> updateBarcodes());
-        }
+        {findViewById(R.id.save).setOnClickListener(v -> updateBarcodes());}
         BarcodeAdapter adapter = new BarcodeAdapter(this, barcodeList);
         barcodeListView.setAdapter(adapter);
-        barcodeListView.setOnItemClickListener((parent, view, position, id) ->
-                                               {
-                                                   View dialog = LayoutInflater.from(this)
-                                                                               .inflate(
-                                                                                       R.layout.edit_barcode_dialog,
-                                                                                       parent,
-                                                                                       false);
-                                                   InvBarcode barcode = barcodeList.get(position);
-                                                   showEditBarcodeDialog(barcode, dialog);
-                                               });
+        barcodeListView.setOnItemClickListener((parent, view, position, id) -> {
+            View dialog = LayoutInflater.from(this)
+                                        .inflate(R.layout.edit_barcode_dialog, parent, false);
+            InvBarcode barcode = barcodeList.get(position);
+            showEditBarcodeDialog(barcode, dialog);
+        });
     }
 
     private void showAddBarcodeDialog(InvBarcode barcode, View dialog)
@@ -159,19 +136,16 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         uomListSpinner.setAdapter(adapter);
         uomListSpinner.setSelection(uomList.indexOf(new Uom(barcode.getUom())));
 
-        AlertDialog alertDialog = new AlertDialog.Builder(this)
-                .setView(dialog)
-                .setPositiveButton("OK", (dialog1, which) ->
-                {
-                    double uomFactor = Double.parseDouble(uomFactorEdit.getText().toString());
-                    String uomCode = ((Uom) uomListSpinner.getSelectedItem()).getUomCode();
-                    barcode.setUomFactor(uomFactor);
-                    barcode.setUom(uomCode);
-                    barcodeList.add(barcode);
-                    updatePage();
-                })
-                .create();
-        alertDialog.show();
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setView(dialog).setPositiveButton("OK", (dialog1, which) -> {
+            double uomFactor = Double.parseDouble(uomFactorEdit.getText().toString());
+            String uomCode = ((Uom) uomListSpinner.getSelectedItem()).getUomCode();
+            barcode.setUomFactor(uomFactor);
+            barcode.setUom(uomCode);
+            barcodeList.add(barcode);
+            updatePage();
+        });
+        dialogBuilder.show();
     }
 
     private void showEditBarcodeDialog(InvBarcode barcode, View dialog)
@@ -189,18 +163,15 @@ public class EditBarcodesActivity extends ScannerSupportActivity
 
         EditText uomFactorEdit = dialog.findViewById(R.id.uom_factor);
         uomFactorEdit.setText(decimalFormat.format(barcode.getUomFactor()));
-        AlertDialog alertDialog = new AlertDialog.Builder(this)
-                .setView(dialog)
-                .setPositiveButton("OK", (dialog1, which) ->
-                {
-                    double uomFactor = Double.parseDouble(uomFactorEdit.getText().toString());
-                    String uomCode = ((Uom) uomListSpinner.getSelectedItem()).getUomCode();
-                    barcode.setUomFactor(uomFactor);
-                    barcode.setUom(uomCode);
-                    updatePage();
-                })
-                .create();
-        alertDialog.show();
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setView(dialog).setPositiveButton("OK", (dialog1, which) -> {
+            double uomFactor = Double.parseDouble(uomFactorEdit.getText().toString());
+            String uomCode = ((Uom) uomListSpinner.getSelectedItem()).getUomCode();
+            barcode.setUomFactor(uomFactor);
+            barcode.setUom(uomCode);
+            updatePage();
+        });
+        dialogBuilder.show();
     }
 
     private List<InvBarcode> getBarcodeList()
@@ -225,44 +196,39 @@ public class EditBarcodesActivity extends ScannerSupportActivity
     {
         showProgressDialog(true);
         String url = url("inv", "update-barcodes");
-        executeUpdate(url, barcodeList, message ->
-                showMessageDialog(
-                        message.getTitle(),
-                        message.getBody(),
-                        message.getIconId()));
+        executeUpdate(url, barcodeList,
+                      message -> showMessageDialog(message.getTitle(), message.getBody(),
+                                                   message.getIconId()));
     }
 
     private void checkBarcode(String barcode)
     {
         showProgressDialog(true);
-        new Thread(() ->
-                   {
-                       String url = url("inv", "info-by-barcode");
-                       Map<String, String> parameters = new HashMap<>();
-                       parameters.put("barcode", barcode);
-                       url = addRequestParameters(url, parameters);
-                       InvInfo invInfo = getSimpleObject(url, "GET", null, InvInfo.class);
+        new Thread(() -> {
+            String url = url("inv", "info-by-barcode");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("barcode", barcode);
+            url = addRequestParameters(url, parameters);
+            InvInfo invInfo = getSimpleObject(url, "GET", null, InvInfo.class);
 
-                       if (invInfo != null)
-                       {
-                           runOnUiThread(() ->
-                                         {
-                                             if (invInfo.getInvCode() == null)
-                                             {
-                                                 addNewBarcode(barcode);
-                                                 playSound(SOUND_SUCCESS);
-                                             }
-                                             else
-                                             {
-                                                 showMessageDialog(getString(R.string.error),
-                                                                   getString(
-                                                                           R.string.barcode_already_assigned),
-                                                                   android.R.drawable.ic_dialog_alert);
-                                                 playSound(SOUND_FAIL);
-                                             }
-                                         });
-                       }
-                   }).start();
+            if (invInfo != null)
+            {
+                runOnUiThread(() -> {
+                    if (invInfo.getInvCode() == null)
+                    {
+                        addNewBarcode(barcode);
+                        playSound(SOUND_SUCCESS);
+                    }
+                    else
+                    {
+                        showMessageDialog(getString(R.string.error),
+                                          getString(R.string.barcode_already_assigned),
+                                          android.R.drawable.ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
@@ -272,10 +238,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         if (resultCode != -1 && data != null)
         {
             String barcode = data.getStringExtra("barcode");
-            if (barcode != null)
-            {
-                onScanComplete(barcode);
-            }
+            if (barcode != null) onScanComplete(barcode);
         }
     }
 

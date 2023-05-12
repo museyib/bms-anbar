@@ -27,8 +27,6 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String PACK_DOC = "PACK_DOC";
     public static final String PACK_TRX = "PACK_TRX";
     public static final String SHIP_TRX = "SHIP_TRX";
-    public static final String LAST_LOGIN = "LAST_LOGIN";
-    public static final String CONFIG = "CONFIG";
     public static final String APPROVE_DOC = "APPROVE_DOC";
     public static final String APPROVE_TRX = "APPROVE_TRX";
     public static final String INTERNAL_USE_DOC = "INTERNAL_USE_DOC";
@@ -87,8 +85,6 @@ public class DBHelper extends SQLiteOpenHelper
     public static final String VEHICLE_CODE = "VEHICLE_CODE";
     public static final String DRIVER_CODE = "DRIVER_CODE";
     public static final String DRIVER_NAME = "DRIVER_NAME";
-    public static final String NAME = "NAME";
-    public static final String VALUE = "VALUE";
     public static final String TRX_TYPE_ID = "TRX_TYPE_ID";
     public static final String PREV_TRX_ID = "PREV_TRX_ID";
     public static final String DISCOUNT = "DISCOUNT";
@@ -122,8 +118,6 @@ public class DBHelper extends SQLiteOpenHelper
         createPackDocTable(db);
         createPackTrxTable(db);
         createShipTrxTable(db);
-        createLastLoginTable(db);
-        createConfigTable(db);
         createApproveDocTable(db);
         createApproveTrxTable(db);
         createInternalUseDocTable(db);
@@ -285,67 +279,67 @@ public class DBHelper extends SQLiteOpenHelper
         ContentValues values = new ContentValues();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, COLLECT_FLAG);
-        values.put(PERMISSION_VALUE, user.isCollect() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isCollectFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, PICK_FLAG);
-        values.put(PERMISSION_VALUE, user.isPick() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isPickFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, CHECK_FLAG);
-        values.put(PERMISSION_VALUE, user.isCheck() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isCheckFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, COUNT_FLAG);
-        values.put(PERMISSION_VALUE, user.isCount() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isCountFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, ATTRIBUTE_FLAG);
-        values.put(PERMISSION_VALUE, user.isAttribute() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isAttributeFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, LOCATION_FLAG);
-        values.put(PERMISSION_VALUE, user.isLocation() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isLocationFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, PACK_FLAG);
-        values.put(PERMISSION_VALUE, user.isPack() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isPackFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, DOC_FLAG);
-        values.put(PERMISSION_VALUE, user.isDoc() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isDocFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, LOADING_FLAG);
-        values.put(PERMISSION_VALUE, user.isLoading() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isLoadingFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, APPROVE_FLAG);
-        values.put(PERMISSION_VALUE, user.isApprove() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isApproveFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
 
         values.clear();
         values.put(USER_ID, user.getId());
         values.put(PERMISSION_NAME, APPROVE_PRD_FLAG);
-        values.put(PERMISSION_VALUE, user.isApprovePrd() ? 1 : 0);
+        values.put(PERMISSION_VALUE, user.isApprovePrdFlag() ? 1 : 0);
         db.insert(TERMINAL_PERMISSION, null, values);
     }
 
@@ -1212,76 +1206,6 @@ public class DBHelper extends SQLiteOpenHelper
         }
         cursor.close();
         return barcodeList.toString();
-    }
-
-    private void createLastLoginTable(SQLiteDatabase db)
-    {
-        db.execSQL("DROP TABLE IF EXISTS " + LAST_LOGIN);
-        db.execSQL("CREATE TABLE LAST_LOGIN (USER_ID TEXT, PASS_WORD TEXT)");
-    }
-
-    public void updateLastLogin(String userId, String password)
-    {
-        db.delete(LAST_LOGIN, USER_ID + "=?", new String[]{userId});
-
-        ContentValues values = new ContentValues();
-        values.put(USER_ID, userId);
-        values.put(PASS_WORD, password);
-
-        db.insert(LAST_LOGIN, null, values);
-    }
-
-    public String[] getLastLogin()
-    {
-        String[] result = new String[2];
-        Cursor cursor = db.rawQuery("SELECT * FROM LAST_LOGIN", null);
-
-        if (cursor.moveToLast())
-        {
-            result[0] = cursor.getString(0);
-            result[1] = cursor.getString(1);
-        }
-
-        cursor.close();
-
-        return result;
-    }
-
-    private void createConfigTable(SQLiteDatabase db)
-    {
-        db.execSQL("DROP TABLE IF EXISTS " + CONFIG);
-        db.execSQL("CREATE TABLE CONFIG (NAME TEXT, VALUE TEXT)");
-    }
-
-    public String getParameter(String name)
-    {
-        String value = "";
-
-        Cursor cursor = db.rawQuery("SELECT VALUE FROM CONFIG WHERE NAME=?", new String[]{name});
-        if (cursor.moveToFirst())
-        {
-            value = cursor.getString(0);
-        }
-
-        cursor.close();
-
-        return value;
-    }
-
-    public void updateParameter(String name, String value)
-    {
-        ContentValues values = new ContentValues();
-        values.put(NAME, name);
-        values.put(VALUE, value);
-        try
-        {
-            db.delete(CONFIG, NAME + "=?", new String[]{name});
-            db.insert(CONFIG, null, values);
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
     }
 
     private void createApproveDocTable(SQLiteDatabase db)

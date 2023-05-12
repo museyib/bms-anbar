@@ -1,6 +1,13 @@
 package az.inci.bmsanbar.activity;
 
+import static android.R.drawable.ic_dialog_alert;
+import static android.R.drawable.ic_dialog_info;
+import static az.inci.bmsanbar.GlobalParameters.connectionTimeout;
+import static az.inci.bmsanbar.GlobalParameters.jwt;
+import static az.inci.bmsanbar.GlobalParameters.serviceUrl;
+
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
@@ -12,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -26,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import az.inci.bmsanbar.App;
@@ -36,17 +45,18 @@ import az.inci.bmsanbar.OnInvBarcodeFetched;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.User;
-import az.inci.bmsanbar.model.v2.Response;
+import az.inci.bmsanbar.model.v2.CustomResponse;
 import az.inci.bmsanbar.model.v2.ResponseMessage;
+import az.inci.bmsanbar.security.JwtResolver;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public abstract class AppBaseActivity extends AppCompatActivity
 {
-
     protected static int SOUND_SUCCESS = R.raw.barcodebeep;
     protected static int SOUND_FAIL = R.raw.serror3;
 
@@ -54,20 +64,22 @@ public abstract class AppBaseActivity extends AppCompatActivity
     protected AudioManager audioManager;
     protected int sound;
     protected DecimalFormat decimalFormat;
-
+    protected SharedPreferences preferences;
+    protected JwtResolver jwtResolver;
     AlertDialog progressDialog;
     AlertDialog.Builder dialogBuilder;
     int mode;
     DBHelper dbHelper;
-
     Gson gson = new Gson();
-    Type responseType = new TypeToken<Response>()
+    Type responseType = new TypeToken<CustomResponse>()
     {}.getType();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        jwtResolver = new JwtResolver(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         decimalFormat = new DecimalFormat();
         decimalFormat.setGroupingUsed(false);
@@ -77,6 +89,8 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
         soundPool = new SoundPool(10, 3, 5);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        jwt = preferences.getString("jwt", "");
     }
 
     @Override
@@ -100,28 +114,20 @@ public abstract class AppBaseActivity extends AppCompatActivity
         View view = getLayoutInflater().inflate(R.layout.progress_dialog_layout,
                                                 findViewById(android.R.id.content), false);
         if (progressDialog == null)
-        {
-            progressDialog = new AlertDialog.Builder(this).setView(view).setCancelable(false)
+            progressDialog = new AlertDialog.Builder(this).setView(view)
+                                                          .setCancelable(false)
                                                           .create();
-        }
-        if (b)
-        {
-            progressDialog.show();
-        }
-        else
-        {
-            progressDialog.dismiss();
-        }
+
+        if (b) progressDialog.show();
+        else progressDialog.dismiss();
     }
 
     public String url(String... value)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(config().getServerUrl()).append("/v2");
+        sb.append(serviceUrl).append("/v3");
         for (String s : value)
-        {
-            sb.append("/").append(s);
-        }
+        {sb.append("/").append(s);}
         return sb.toString();
     }
 
@@ -131,9 +137,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
         builder.append("?");
 
         for (Map.Entry<String, String> entry : requestParameters.entrySet())
-        {
-            builder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
-        }
+        {builder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");}
 
         builder.delete(builder.length() - 1, builder.length());
         return builder.toString();
@@ -161,10 +165,8 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
     protected void showMessageDialog(String title, String message, int icon)
     {
-        if (dialogBuilder == null)
-        {
-            dialogBuilder = new AlertDialog.Builder(this);
-        }
+        if (dialogBuilder == null) dialogBuilder = new AlertDialog.Builder(this);
+
         dialogBuilder.setIcon(icon).setTitle(title).setMessage(message).show();
     }
 
@@ -179,35 +181,21 @@ public abstract class AppBaseActivity extends AppCompatActivity
         fromText.setText(new Date(System.currentTimeMillis()).toString());
         toText.setText(new Date(System.currentTimeMillis()).toString());
 
-        AlertDialog dialog = new AlertDialog.Builder(this).setView(view).setTitle("Tarix intervalı")
-                                                          .setPositiveButton("OK",
-                                                                             (dialogInterface, i) -> {
-
-                                                                                 String startDate = fromText.getText()
-                                                                                                            .toString();
-                                                                                 String endDate = toText.getText()
-                                                                                                        .toString();
-                                                                                 String url = url(
-                                                                                         "inv",
-                                                                                         reportType);
-                                                                                 Map<String, String> parameters = new HashMap<>();
-                                                                                 parameters.put(
-                                                                                         "start-date",
-                                                                                         startDate);
-                                                                                 parameters.put(
-                                                                                         "end-date",
-                                                                                         endDate);
-                                                                                 parameters.put(
-                                                                                         "user-id",
-                                                                                         config().getUser()
-                                                                                                 .getId());
-                                                                                 url = addRequestParameters(
-                                                                                         url,
-                                                                                         parameters);
-                                                                                 showStringData(url,
-                                                                                                "ığım hesabatı");
-                                                                             }).create();
-        dialog.show();
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setView(view)
+                     .setTitle("Tarix intervalı")
+                     .setPositiveButton("OK", (dialogInterface, i) -> {
+                         String startDate = fromText.getText().toString();
+                         String endDate = toText.getText().toString();
+                         String url = url("inv", reportType);
+                         Map<String, String> parameters = new HashMap<>();
+                         parameters.put("start-date", startDate);
+                         parameters.put("end-date", endDate);
+                         parameters.put("user-id", config().getUser().getId());
+                         url = addRequestParameters(url, parameters);
+                         showStringData(url, "Yığım hesabatı");
+                     });
+        dialogBuilder.show();
     }
 
     protected void playSound(int resourceId)
@@ -218,20 +206,22 @@ public abstract class AppBaseActivity extends AppCompatActivity
                 (soundPool1, i, i1) -> soundPool.play(sound, volume, volume, 1, 0, 1));
     }
 
-    okhttp3.Response sendRequest(URL url, String method, @Nullable Object requestBodyData)
+    Response sendRequest(URL url, String method, @Nullable Object requestBodyData)
             throws IOException
     {
-        OkHttpClient httpClient = new OkHttpClient.Builder().connectTimeout(
-                config().getConnectionTimeout(), TimeUnit.SECONDS).build();
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        clientBuilder.connectTimeout(connectionTimeout, TimeUnit.SECONDS);
+        OkHttpClient httpClient = clientBuilder.build();
 
         RequestBody requestBody = null;
 
         if (method.equals("POST"))
-        {
             requestBody = RequestBody.create(MediaType.get("application/json;charset=UTF-8"),
                                              new Gson().toJson(requestBodyData));
-        }
-        Request request = new Request.Builder().method(method, requestBody).url(url).build();
+        Request request = new Request.Builder().method(method, requestBody)
+                                               .header("Authorization", "Bearer " + jwt)
+                                               .url(url)
+                                               .build();
 
         return httpClient.newCall(request).execute();
     }
@@ -240,11 +230,18 @@ public abstract class AppBaseActivity extends AppCompatActivity
                               OnExecuteComplete executeComplete)
     {
         new Thread(() -> {
-            try (okhttp3.Response httpResponse = sendRequest(new URL(urlString), "POST",
-                                                             requestData))
+            try
             {
+                Response httpResponse = sendRequest(new URL(urlString), "POST", requestData);
+                if (httpResponse.code() == 403)
+                {
+                    jwt = jwtResolver.resolve();
+                    preferences.edit().putString("jwt", jwt).apply();
+                    httpResponse = sendRequest(new URL(urlString), "POST", requestData);
+                }
                 ResponseBody responseBody = httpResponse.body();
-                Response response = gson.fromJson(responseBody.string(), responseType);
+                CustomResponse response = gson.fromJson(
+                        Objects.requireNonNull(responseBody).string(), responseType);
                 String title;
                 String message;
                 int iconId;
@@ -252,19 +249,19 @@ public abstract class AppBaseActivity extends AppCompatActivity
                 {
                     title = getString(R.string.info);
                     message = response.getDeveloperMessage();
-                    iconId = android.R.drawable.ic_dialog_info;
+                    iconId = ic_dialog_info;
                 }
                 else if (response.getStatusCode() == 2)
                 {
                     title = getString(R.string.error);
                     message = response.getDeveloperMessage();
-                    iconId = android.R.drawable.ic_dialog_alert;
+                    iconId = ic_dialog_alert;
                 }
                 else
                 {
                     title = getString(R.string.error);
                     message = response.getDeveloperMessage() + ": " + response.getSystemMessage();
-                    iconId = android.R.drawable.ic_dialog_alert;
+                    iconId = ic_dialog_alert;
                 }
 
                 ResponseMessage responseMessage = new ResponseMessage();
@@ -278,8 +275,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
             catch (IOException e)
             {
                 runOnUiThread(() -> {
-                    showMessageDialog(getString(R.string.error), e.getMessage(),
-                                      android.R.drawable.ic_dialog_alert);
+                    showMessageDialog(getString(R.string.error), e.getMessage(), ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
             }
@@ -304,28 +300,31 @@ public abstract class AppBaseActivity extends AppCompatActivity
         new Thread(() -> {
             String result = getSimpleObject(url, "GET", null, String.class);
             if (result != null)
-            {
-                runOnUiThread(
-                        () -> showMessageDialog(title, result, android.R.drawable.ic_dialog_info));
-            }
+                runOnUiThread(() -> showMessageDialog(title, result, ic_dialog_info));
         }).start();
     }
 
     protected <T> T getSimpleObject(String url, String method, Object request, Class<T> tClass)
     {
-        try (okhttp3.Response httpResponse = sendRequest(new URL(url), method, request))
+        try
         {
-            ResponseBody responseBody = httpResponse.body();
-            Response response = gson.fromJson(responseBody.string(), responseType);
-            if (response.getStatusCode() == 0)
+            Response httpResponse = sendRequest(new URL(url), method, request);
+            if (httpResponse.code() == 403)
             {
-                return gson.fromJson(gson.toJson(response.getData()), tClass);
+                jwt = jwtResolver.resolve();
+                preferences.edit().putString("jwt", jwt).apply();
+                httpResponse = sendRequest(new URL(url), method, request);
             }
+            ResponseBody responseBody = httpResponse.body();
+            CustomResponse response = gson.fromJson(Objects.requireNonNull(responseBody).string(),
+                                                    responseType);
+            if (response.getStatusCode() == 0)
+                return gson.fromJson(gson.toJson(response.getData()), tClass);
             else if (response.getStatusCode() == 2)
             {
                 runOnUiThread(() -> {
                     showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
-                                      android.R.drawable.ic_dialog_alert);
+                                      ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
                 return null;
@@ -336,7 +335,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
                     showMessageDialog(getString(R.string.error),
                                       response.getDeveloperMessage() + ": " +
                                       response.getSystemMessage(),
-                                      android.R.drawable.ic_dialog_alert);
+                                      ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
                 return null;
@@ -347,7 +346,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
             runOnUiThread(() -> {
                 showMessageDialog(getString(R.string.error),
                                   getString(R.string.internal_error) + ": " + e.getMessage(),
-                                  android.R.drawable.ic_dialog_alert);
+                                  ic_dialog_alert);
                 playSound(SOUND_FAIL);
             });
             return null;
@@ -360,20 +359,26 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
     protected <T> List<T> getListData(String url, String method, Object request, Class<T[]> tClass)
     {
-        try (okhttp3.Response httpResponse = sendRequest(new URL(url), method, request))
+        try
         {
-            ResponseBody responseBody = httpResponse.body();
-            Response response = gson.fromJson(responseBody.string(), responseType);
-            if (response.getStatusCode() == 0)
+            Response httpResponse = sendRequest(new URL(url), method, request);
+            if (httpResponse.code() == 403)
             {
+                jwt = jwtResolver.resolve();
+                preferences.edit().putString("jwt", jwt).apply();
+                httpResponse = sendRequest(new URL(url), method, request);
+            }
+            ResponseBody responseBody = httpResponse.body();
+            CustomResponse response = gson.fromJson(Objects.requireNonNull(responseBody).string(),
+                                                    responseType);
+            if (response.getStatusCode() == 0)
                 return new ArrayList<>(
                         Arrays.asList(gson.fromJson(gson.toJson(response.getData()), tClass)));
-            }
             else if (response.getStatusCode() == 2)
             {
                 runOnUiThread(() -> {
                     showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
-                                      android.R.drawable.ic_dialog_alert);
+                                      ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
                 return null;
@@ -384,7 +389,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
                     showMessageDialog(getString(R.string.error),
                                       response.getDeveloperMessage() + ": " +
                                       response.getSystemMessage(),
-                                      android.R.drawable.ic_dialog_alert);
+                                      ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
                 return null;
@@ -395,7 +400,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
             runOnUiThread(() -> {
                 showMessageDialog(getString(R.string.error),
                                   getString(R.string.internal_error) + ": " + e.getMessage(),
-                                  android.R.drawable.ic_dialog_alert);
+                                  ic_dialog_alert);
                 playSound(SOUND_FAIL);
             });
             return null;
@@ -418,21 +423,17 @@ public abstract class AppBaseActivity extends AppCompatActivity
             InvBarcode invBarcode = getSimpleObject(url, "GET", null, InvBarcode.class);
 
             if (invBarcode != null)
-            {
                 runOnUiThread(() -> {
                     if (invBarcode.getBarcode() == null)
                     {
                         showMessageDialog(getString(R.string.info),
                                           getString(R.string.good_not_found),
-                                          android.R.drawable.ic_dialog_info);
+                                          ic_dialog_info);
                         playSound(SOUND_FAIL);
                     }
                     else
-                    {
                         onInvBarcodeFetched.invBarcodeFetched(invBarcode);
-                    }
                 });
-            }
         }).start();
     }
 }

@@ -1,5 +1,8 @@
 package az.inci.bmsanbar.activity;
 
+import static android.R.drawable.ic_dialog_alert;
+import static android.R.drawable.ic_dialog_info;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -65,16 +68,12 @@ public class PickDocActivity extends AppBaseActivity
             if (list.size() == 0)
             {
                 showMessageDialog(getString(R.string.info), getString(R.string.no_incomplete_doc),
-                                  android.R.drawable.ic_dialog_alert);
+                                  ic_dialog_alert);
                 playSound(SOUND_FAIL);
             }
             else
-            {
                 for (String trxNo : list)
-                {
-                    loadDocFromServer(trxNo);
-                }
-            }
+                {loadDocFromServer(trxNo);}
         });
     }
 
@@ -98,13 +97,9 @@ public class PickDocActivity extends AppBaseActivity
         DocAdapter docAdapter = new DocAdapter(this, docList);
         docListView.setAdapter(docAdapter);
         if (docList.size() == 0)
-        {
             findViewById(R.id.header).setVisibility(View.GONE);
-        }
         else
-        {
             findViewById(R.id.header).setVisibility(View.VISIBLE);
-        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -144,13 +139,11 @@ public class PickDocActivity extends AppBaseActivity
             Doc doc = getSimpleObject(url, "GET", null, Doc.class);
 
             if (doc != null)
-            {
                 runOnUiThread(() -> {
                     dbHelper.addPickDoc(doc);
                     dbHelper.updatePickTrxStatus(doc.getTrxNo(), 1);
                     loadData();
                 });
-            }
         }).start();
     }
 
@@ -171,14 +164,12 @@ public class PickDocActivity extends AppBaseActivity
                 {
                     dbHelper.addPickDoc(doc);
                     for (Trx trx : doc.getTrxList())
-                    {
-                        dbHelper.addPickTrx(trx);
-                    }
+                    {dbHelper.addPickTrx(trx);}
                 }
                 else
                 {
                     showMessageDialog(getString(R.string.info), getString(R.string.no_data),
-                                      android.R.drawable.ic_dialog_info);
+                                      ic_dialog_info);
                     playSound(SOUND_FAIL);
                 }
                 loadData();
@@ -201,10 +192,8 @@ public class PickDocActivity extends AppBaseActivity
             Doc doc = getItem(position);
 
             if (convertView == null)
-            {
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.pick_doc_item_layout, parent, false);
-            }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);
             TextView itemCount = convertView.findViewById(R.id.item_count);

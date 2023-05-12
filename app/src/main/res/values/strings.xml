@@ -58,7 +58,7 @@
     <string name="info">Info</string>
     <string name="no_data">Yeni sənəd yoxdur</string>
     <string name="parameters">Parametrlər</string>
-    <string name="server_url">Server URL</string>
+    <string name="service_url">Servis linki</string>
     <string name="connection_timeout">Qoşulma vaxtı limiti (saniyə)</string>
     <string name="not_valid_doc_for_shipping">Yükləmə üçün keçərli sənəd deyil.</string>
     <string name="driver_or_vehicle_not_defined">Sürücü və ya nəqliyyat vasitəsi seçilməyib</string>
@@ -85,7 +85,7 @@
     <string name="update">Versiyanı yenilə</string>
     <string name="no_new_version">Yeni versiya yoxdur!</string>
     <string name="camera_scanner">Kamera skaner</string>
-    <string name="image_url">Image URL</string>
+    <string name="image_url">Şəkil linki</string>
     <string name="waiting_docs">Gözləyən sənədlər</string>
     <string name="status">Status</string>
     <string name="edit_attributes">Attributlara düzəliş</string>

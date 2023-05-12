@@ -26,7 +26,6 @@ import az.inci.bmsanbar.model.Doc;
 
 public class ApproveDocActivity extends AppBaseActivity
 {
-
     ListView docListView;
     ImageButton add;
     List<Doc> docList;
@@ -65,18 +64,16 @@ public class ApproveDocActivity extends AppBaseActivity
         });
 
         docListView.setOnItemLongClickListener((parent, view, position, id) -> {
-            AlertDialog dialog = new AlertDialog.Builder(this).setMessage("Silmək istəyirsiniz?")
-                                                              .setPositiveButton("Bəli",
-                                                                                 (dialog1, which) -> {
-                                                                                     Doc doc = (Doc) parent.getItemAtPosition(
-                                                                                             position);
-                                                                                     dbHelper.deleteApproveDoc(
-                                                                                             doc.getTrxNo());
-                                                                                     loadData();
-                                                                                 })
-                                                              .setNegativeButton("Xeyr", null)
-                                                              .create();
-            dialog.show();
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setMessage("Silmək istəyirsiniz?")
+                         .setPositiveButton("Bəli", (dialog1, which) -> {
+                             Doc doc = (Doc) parent.getItemAtPosition(position);
+                             dbHelper.deleteApproveDoc(doc.getTrxNo());
+                             loadData();
+                         })
+                         .setNegativeButton("Xeyr", null);
+
+            dialogBuilder.create().show();
             return true;
         });
 

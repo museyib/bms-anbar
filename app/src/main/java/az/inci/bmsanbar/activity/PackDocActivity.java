@@ -1,5 +1,8 @@
 package az.inci.bmsanbar.activity;
 
+import static android.R.drawable.ic_dialog_alert;
+import static android.R.drawable.ic_dialog_info;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -44,48 +47,40 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         setContentView(R.layout.pack_dock_layout);
 
         docListView = findViewById(R.id.doc_list);
-        docListView.setOnItemClickListener((parent, view, position, id1) ->
-                                           {
-                                               Intent intent = new Intent(this,
-                                                                          PackTrxActivity.class);
-                                               Doc doc = (Doc) view.getTag();
-                                               intent.putExtra("trxNo", doc.getTrxNo());
-                                               intent.putExtra("orderTrxNo", doc.getPrevTrxNo());
-                                               intent.putExtra("bpName", doc.getBpName());
-                                               intent.putExtra("notes", doc.getNotes());
-                                               intent.putExtra("activeSeconds",
-                                                               doc.getActiveSeconds());
-                                               startActivity(intent);
-                                           });
+        docListView.setOnItemClickListener((parent, view, position, id1) -> {
+            Intent intent = new Intent(this, PackTrxActivity.class);
+            Doc doc = (Doc) view.getTag();
+            intent.putExtra("trxNo", doc.getTrxNo());
+            intent.putExtra("orderTrxNo", doc.getPrevTrxNo());
+            intent.putExtra("bpName", doc.getBpName());
+            intent.putExtra("notes", doc.getNotes());
+            intent.putExtra("activeSeconds", doc.getActiveSeconds());
+            startActivity(intent);
+        });
 
         loadFooter();
         loadData();
 
         newDocs = findViewById(R.id.newDocs);
-        newDocs.setOnClickListener(v ->
-                                           loadTrxFromServer(1));
+        newDocs.setOnClickListener(v -> loadTrxFromServer(1));
 
         newDocsIncomplete = findViewById(R.id.newDocsIncomplete);
-        newDocsIncomplete.setOnClickListener(v ->
-                                             {
-                                                 List<String> list = dbHelper.getIncompletePackDocList(
-                                                         config().getUser().getId());
-                                                 if (list.size() == 0)
-                                                 {
-                                                     showMessageDialog(getString(R.string.info),
-                                                                       getString(
-                                                                               R.string.no_incomplete_doc),
-                                                                       android.R.drawable.ic_dialog_alert);
-                                                     playSound(SOUND_FAIL);
-                                                 }
-                                                 else
-                                                 {
-                                                     for (String trxNo : list)
-                                                     {
-                                                         loadDocFromServer(trxNo);
-                                                     }
-                                                 }
-                                             });
+        View.OnClickListener clickListener = v -> {
+            List<String> list = dbHelper.getIncompletePackDocList(
+                    PackDocActivity.this.config().getUser().getId());
+            if (list.size() == 0)
+            {
+                PackDocActivity.this.showMessageDialog(
+                        PackDocActivity.this.getString(R.string.info),
+                        PackDocActivity.this.getString(R.string.no_incomplete_doc),
+                        ic_dialog_alert);
+                PackDocActivity.this.playSound(SOUND_FAIL);
+            }
+            else
+                for (String trxNo : list)
+                {PackDocActivity.this.loadDocFromServer(trxNo);}
+        };
+        newDocsIncomplete.setOnClickListener(clickListener);
     }
 
     @Override
@@ -108,13 +103,9 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
         if (docList.size() == 0)
-        {
             findViewById(R.id.header).setVisibility(View.GONE);
-        }
         else
-        {
             findViewById(R.id.header).setVisibility(View.VISIBLE);
-        }
     }
 
     @Override
@@ -128,9 +119,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     {
         DocAdapter adapter = (DocAdapter) docListView.getAdapter();
         if (adapter != null)
-        {
             adapter.getFilter().filter(s);
-        }
         return true;
     }
 
@@ -138,13 +127,9 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     public void onBackPressed()
     {
         if (!searchView.isIconified())
-        {
             searchView.setIconified(true);
-        }
         else
-        {
             super.onBackPressed();
-        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -153,27 +138,22 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         getMenuInflater().inflate(R.menu.pick_menu, menu);
 
         MenuItem item = menu.findItem(R.id.inv_attributes);
-        item.setOnMenuItemClickListener(item1 ->
-                                        {
-                                            startActivity(
-                                                    new Intent(this, InventoryInfoActivity.class));
-                                            return true;
-                                        });
+        item.setOnMenuItemClickListener(item1 -> {
+            startActivity(new Intent(this, InventoryInfoActivity.class));
+            return true;
+        });
 
         MenuItem report = menu.findItem(R.id.pick_report);
-        report.setOnMenuItemClickListener(item1 ->
-                                          {
-                                              showPickDateDialog("pack-report");
-                                              return true;
-                                          });
+        report.setOnMenuItemClickListener(item1 -> {
+            showPickDateDialog("pack-report");
+            return true;
+        });
 
         MenuItem docList = menu.findItem(R.id.doc_list);
-        docList.setOnMenuItemClickListener(item1 ->
-                                           {
-                                               startActivity(new Intent(this,
-                                                                        WaitingPackDocActivity.class));
-                                               return true;
-                                           });
+        docList.setOnMenuItemClickListener(item1 -> {
+            startActivity(new Intent(this, WaitingPackDocActivity.class));
+            return true;
+        });
 
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
@@ -185,58 +165,49 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     private void loadDocFromServer(String trxNo)
     {
         showProgressDialog(true);
-        new Thread(() ->
-                   {
-                       String url = url("doc", "pack");
-                       Map<String, String> parameters = new HashMap<>();
-                       parameters.put("trx-no", trxNo);
-                       url = addRequestParameters(url, parameters);
-                       Doc doc = getSimpleObject(url, "GET", null, Doc.class);
+        new Thread(() -> {
+            String url = url("doc", "pack");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("trx-no", trxNo);
+            url = addRequestParameters(url, parameters);
+            Doc doc = getSimpleObject(url, "GET", null, Doc.class);
 
-                       if (doc != null)
-                       {
-                           runOnUiThread(() ->
-                                         {
-                                             dbHelper.addPackDoc(doc);
-                                             dbHelper.updatePackTrxStatus(doc.getTrxNo(), 1);
-                                             loadData();
-                                         });
-                       }
-                   }).start();
+            if (doc != null)
+                runOnUiThread(() -> {
+                    dbHelper.addPackDoc(doc);
+                    dbHelper.updatePackTrxStatus(doc.getTrxNo(), 1);
+                    loadData();
+                });
+        }).start();
     }
 
     private void loadTrxFromServer(int mode)
     {
         showProgressDialog(true);
-        new Thread(() ->
-                   {
-                       String url = url("pack", "get-doc");
-                       Map<String, String> parameters = new HashMap<>();
-                       parameters.put("approve-user", config().getUser().getId());
-                       parameters.put("mode", String.valueOf(mode));
-                       url = addRequestParameters(url, parameters);
-                       Doc doc = getSimpleObject(url, "GET", null, Doc.class);
+        new Thread(() -> {
+            String url = url("pack", "get-doc");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("approve-user", config().getUser().getId());
+            parameters.put("mode", String.valueOf(mode));
+            url = addRequestParameters(url, parameters);
+            Doc doc = getSimpleObject(url, "GET", null, Doc.class);
 
-                       runOnUiThread(() ->
-                                     {
-                                         if (doc != null)
-                                         {
-                                             dbHelper.addPackDoc(doc);
-                                             for (Trx trx : doc.getTrxList())
-                                             {
-                                                 dbHelper.addPackTrx(trx);
-                                             }
-                                         }
-                                         else
-                                         {
-                                             showMessageDialog(getString(R.string.info),
-                                                               getString(R.string.no_data),
-                                                               android.R.drawable.ic_dialog_info);
-                                             playSound(SOUND_FAIL);
-                                         }
-                                         loadData();
-                                     });
-                   }).start();
+            runOnUiThread(() -> {
+                if (doc != null)
+                {
+                    dbHelper.addPackDoc(doc);
+                    for (Trx trx : doc.getTrxList())
+                    {dbHelper.addPackTrx(trx);}
+                }
+                else
+                {
+                    showMessageDialog(getString(R.string.info), getString(R.string.no_data),
+                                      ic_dialog_info);
+                    playSound(SOUND_FAIL);
+                }
+                loadData();
+            });
+        }).start();
     }
 
     static class DocAdapter extends ArrayAdapter<Doc> implements Filterable
@@ -264,10 +235,8 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             Doc doc = list.get(position);
 
             if (convertView == null)
-            {
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.pack_doc_item_layout, parent, false);
-            }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);
             TextView itemCount = convertView.findViewById(R.id.item_count);
@@ -310,10 +279,9 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
                                .concat(doc.getBpName())
                                .concat(doc.getSbeName())
                                .concat(doc.getDescription())
-                               .toLowerCase().contains(constraint))
-                        {
+                               .toLowerCase()
+                               .contains(constraint))
                             filteredArrayData.add(doc);
-                        }
                     }
 
                     results.count = filteredArrayData.size();
