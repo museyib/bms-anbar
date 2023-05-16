@@ -378,7 +378,7 @@ public class MainActivity extends AppBaseActivity
             }
             catch (PackageManager.NameNotFoundException e)
             {
-                showMessageDialog(getString(R.string.error), e.getMessage(),
+                showMessageDialog(getString(R.string.error),e.toString(),
                                   ic_dialog_alert);
             }
 

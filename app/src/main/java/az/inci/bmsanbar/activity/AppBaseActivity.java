@@ -232,6 +232,11 @@ public abstract class AppBaseActivity extends AppCompatActivity
         new Thread(() -> {
             try
             {
+                int statusCode;
+                String title;
+                String message;
+                int iconId;
+
                 Response httpResponse = sendRequest(new URL(urlString), "POST", requestData);
                 if (httpResponse.code() == 403)
                 {
@@ -239,33 +244,43 @@ public abstract class AppBaseActivity extends AppCompatActivity
                     preferences.edit().putString("jwt", jwt).apply();
                     httpResponse = sendRequest(new URL(urlString), "POST", requestData);
                 }
-                ResponseBody responseBody = httpResponse.body();
-                CustomResponse response = gson.fromJson(
-                        Objects.requireNonNull(responseBody).string(), responseType);
-                String title;
-                String message;
-                int iconId;
-                if (response.getStatusCode() == 0)
+
+                if (httpResponse.code() == 200)
                 {
-                    title = getString(R.string.info);
-                    message = response.getDeveloperMessage();
-                    iconId = ic_dialog_info;
-                }
-                else if (response.getStatusCode() == 2)
-                {
-                    title = getString(R.string.error);
-                    message = response.getDeveloperMessage();
-                    iconId = ic_dialog_alert;
+                    ResponseBody responseBody = httpResponse.body();
+                    CustomResponse response = gson.fromJson(
+                            Objects.requireNonNull(responseBody).string(), responseType);
+                    statusCode = response.getStatusCode();
+
+                    if (statusCode == 0)
+                    {
+                        title = getString(R.string.info);
+                        message = response.getDeveloperMessage();
+                        iconId = ic_dialog_info;
+                    }
+                    else if (statusCode == 2)
+                    {
+                        title = getString(R.string.error);
+                        message = response.getDeveloperMessage();
+                        iconId = ic_dialog_alert;
+                    }
+                    else
+                    {
+                        title = getString(R.string.error);
+                        message = response.getDeveloperMessage() + ": " + response.getSystemMessage();
+                        iconId = ic_dialog_alert;
+                    }
                 }
                 else
                 {
+                    statusCode = httpResponse.code();
                     title = getString(R.string.error);
-                    message = response.getDeveloperMessage() + ": " + response.getSystemMessage();
+                    message = httpResponse.toString();
                     iconId = ic_dialog_alert;
                 }
 
                 ResponseMessage responseMessage = new ResponseMessage();
-                responseMessage.setStatusCode(response.getStatusCode());
+                responseMessage.setStatusCode(statusCode);
                 responseMessage.setTitle(title);
                 responseMessage.setBody(message);
                 responseMessage.setIconId(iconId);
@@ -275,7 +290,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
             catch (IOException e)
             {
                 runOnUiThread(() -> {
-                    showMessageDialog(getString(R.string.error), e.getMessage(), ic_dialog_alert);
+                    showMessageDialog(getString(R.string.error),e.toString(), ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
             }
@@ -315,27 +330,40 @@ public abstract class AppBaseActivity extends AppCompatActivity
                 preferences.edit().putString("jwt", jwt).apply();
                 httpResponse = sendRequest(new URL(url), method, request);
             }
-            ResponseBody responseBody = httpResponse.body();
-            CustomResponse response = gson.fromJson(Objects.requireNonNull(responseBody).string(),
-                                                    responseType);
-            if (response.getStatusCode() == 0)
-                return gson.fromJson(gson.toJson(response.getData()), tClass);
-            else if (response.getStatusCode() == 2)
+            if (httpResponse.code() == 200)
             {
-                runOnUiThread(() -> {
-                    showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
-                                      ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                });
-                return null;
+                ResponseBody responseBody = httpResponse.body();
+                CustomResponse response = gson.fromJson(
+                        Objects.requireNonNull(responseBody).string(),
+                        responseType);
+                if (response.getStatusCode() == 0)
+                    return gson.fromJson(gson.toJson(response.getData()), tClass);
+                else if (response.getStatusCode() == 2)
+                {
+                    runOnUiThread(() -> {
+                        showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
+                                          ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                    });
+                    return null;
+                }
+                else
+                {
+                    runOnUiThread(() -> {
+                        showMessageDialog(getString(R.string.error),
+                                          response.getDeveloperMessage() + ": " +
+                                          response.getSystemMessage(),
+                                          ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                    });
+                    return null;
+                }
             }
             else
             {
+                String message = httpResponse.toString();
                 runOnUiThread(() -> {
-                    showMessageDialog(getString(R.string.error),
-                                      response.getDeveloperMessage() + ": " +
-                                      response.getSystemMessage(),
-                                      ic_dialog_alert);
+                    showMessageDialog(getString(R.string.error), message, ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
                 return null;
@@ -345,7 +373,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
         {
             runOnUiThread(() -> {
                 showMessageDialog(getString(R.string.error),
-                                  getString(R.string.internal_error) + ": " + e.getMessage(),
+                                  getString(R.string.internal_error) + ": "+ e,
                                   ic_dialog_alert);
                 playSound(SOUND_FAIL);
             });
@@ -368,28 +396,41 @@ public abstract class AppBaseActivity extends AppCompatActivity
                 preferences.edit().putString("jwt", jwt).apply();
                 httpResponse = sendRequest(new URL(url), method, request);
             }
-            ResponseBody responseBody = httpResponse.body();
-            CustomResponse response = gson.fromJson(Objects.requireNonNull(responseBody).string(),
-                                                    responseType);
-            if (response.getStatusCode() == 0)
-                return new ArrayList<>(
-                        Arrays.asList(gson.fromJson(gson.toJson(response.getData()), tClass)));
-            else if (response.getStatusCode() == 2)
+            if (httpResponse.code() == 200)
             {
-                runOnUiThread(() -> {
-                    showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
-                                      ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                });
-                return null;
+                ResponseBody responseBody = httpResponse.body();
+                CustomResponse response = gson.fromJson(
+                        Objects.requireNonNull(responseBody).string(),
+                        responseType);
+                if (response.getStatusCode() == 0)
+                    return new ArrayList<>(
+                            Arrays.asList(gson.fromJson(gson.toJson(response.getData()), tClass)));
+                else if (response.getStatusCode() == 2)
+                {
+                    runOnUiThread(() -> {
+                        showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
+                                          ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                    });
+                    return null;
+                }
+                else
+                {
+                    runOnUiThread(() -> {
+                        showMessageDialog(getString(R.string.error),
+                                          response.getDeveloperMessage() + ": " +
+                                          response.getSystemMessage(),
+                                          ic_dialog_alert);
+                        playSound(SOUND_FAIL);
+                    });
+                    return null;
+                }
             }
             else
             {
+                String message = httpResponse.toString();
                 runOnUiThread(() -> {
-                    showMessageDialog(getString(R.string.error),
-                                      response.getDeveloperMessage() + ": " +
-                                      response.getSystemMessage(),
-                                      ic_dialog_alert);
+                    showMessageDialog(getString(R.string.error), message, ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
                 return null;
@@ -399,7 +440,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
         {
             runOnUiThread(() -> {
                 showMessageDialog(getString(R.string.error),
-                                  getString(R.string.internal_error) + ": " + e.getMessage(),
+                                  getString(R.string.internal_error) + ": "+ e,
                                   ic_dialog_alert);
                 playSound(SOUND_FAIL);
             });

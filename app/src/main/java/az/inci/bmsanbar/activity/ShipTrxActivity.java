@@ -34,6 +34,7 @@ import az.inci.bmsanbar.model.v2.CustomResponse;
 import az.inci.bmsanbar.model.v2.ShipDocInfo;
 import az.inci.bmsanbar.model.v3.ShipmentRequest;
 import az.inci.bmsanbar.model.v3.ShipmentRequestItem;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class ShipTrxActivity extends ScannerSupportActivity
@@ -315,7 +316,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             try
             {
-                okhttp3.Response httpResponse = sendRequest(new URL(url), "GET", null);
+                Response httpResponse = sendRequest(new URL(url), "GET", null);
                 if (httpResponse.code() == 403)
                 {
                     jwt = jwtResolver.resolve();
@@ -324,8 +325,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
                 }
                 ResponseBody responseBody = httpResponse.body();
                 CustomResponse response = new Gson().fromJson(responseBody.string(),
-                                                              new TypeToken<CustomResponse>()
-                                                              {}.getType());
+                                                              responseType);
                 if (response.getStatusCode() == 0)
                 {
                     ShipDocInfo docInfo = gson.fromJson(gson.toJson(response.getData()),
@@ -370,7 +370,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
             {
                 runOnUiThread(() -> {
                     showMessageDialog(getString(R.string.error),
-                                      getString(R.string.internal_error) + ": " + e.getMessage(),
+                                      getString(R.string.internal_error) + ": "+ e,
                                       ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
@@ -399,16 +399,13 @@ public class ShipTrxActivity extends ScannerSupportActivity
     public void createShipment()
     {
         showProgressDialog(true);
-        List<ShipmentRequest> requestList = new ArrayList<>();
         String shipStatus = toCentral ? "MG" : "AC";
         String url = url("shipment", "create-shipment");
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("user-id", config().getUser().getId());
-        url = addRequestParameters(url, parameters);
         ShipmentRequest request = ShipmentRequest.builder()
                                                  .regionCode(trxList.get(0).getRegionCode())
                                                  .driverCode(trxList.get(0).getDriverCode())
                                                  .vehicleCode(trxList.get(0).getVehicleCode())
+                                                 .userId(config().getUser().getId())
                                                  .build();
         List<ShipmentRequestItem> requestItems = new ArrayList<>();
         for (ShipTrx trx : trxList)
@@ -421,7 +418,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
         }
         request.setRequestItems(requestItems);
 
-        executeUpdate(url, requestList, message -> {
+        executeUpdate(url, request, message -> {
             showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
 
             if (message.getStatusCode() == 0)
@@ -429,6 +426,8 @@ public class ShipTrxActivity extends ScannerSupportActivity
                 dbHelper.deleteShipTrxByDriver(driverCode);
                 clearFields();
             }
+            else
+                playSound(SOUND_FAIL);
         });
     }
 
