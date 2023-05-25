@@ -1,7 +1,14 @@
 package az.inci.bmsanbar.activity;
 
+import static android.Manifest.permission.READ_MEDIA_AUDIO;
+import static android.Manifest.permission.READ_MEDIA_IMAGES;
+import static android.Manifest.permission.READ_MEDIA_VIDEO;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.R.drawable.ic_dialog_alert;
 import static android.R.drawable.ic_dialog_info;
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.os.Build.VERSION.SDK_INT;
+import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
 import static az.inci.bmsanbar.AppConfig.APPROVE_MODE;
 import static az.inci.bmsanbar.AppConfig.CONFIRM_DELIVERY_MODE;
 import static az.inci.bmsanbar.AppConfig.INV_ATTRIBUTE_MODE;
@@ -14,7 +21,6 @@ import static az.inci.bmsanbar.GlobalParameters.connectionTimeout;
 import static az.inci.bmsanbar.GlobalParameters.imageUrl;
 import static az.inci.bmsanbar.GlobalParameters.serviceUrl;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -91,10 +97,10 @@ public class MainActivity extends AppBaseActivity
         MenuItem itemUpdate = menu.findItem(R.id.update);
         itemUpdate.setOnMenuItemClickListener(item1 -> {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-            dialogBuilder.setTitle("Proqram versiyasını yenilə")
-                         .setMessage("Yeniləmək istəyirsinizmi?")
-                         .setNegativeButton("Bəli", (dialogInterface, i) -> checkForNewVersion())
-                         .setPositiveButton("Xeyr", null);
+            dialogBuilder.setTitle(R.string.update_version)
+                         .setMessage(R.string.want_to_update)
+                         .setNegativeButton(R.string.yes, (dialogInterface, i) -> checkForNewVersion())
+                         .setPositiveButton(R.string.no, null);
             AlertDialog dialog = dialogBuilder.create();
 
             dialog.show();
@@ -110,12 +116,39 @@ public class MainActivity extends AppBaseActivity
 
     protected void enableStorageAccess()
     {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-            PackageManager.PERMISSION_DENIED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        String[] permissions;
+        if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions = new String[]{
+                    READ_MEDIA_AUDIO,
+                    READ_MEDIA_IMAGES,
+                    READ_MEDIA_VIDEO
+            };
         }
+        else
+            permissions = new String[]{WRITE_EXTERNAL_STORAGE};
+        if (!permissionsGranted(permissions))
+        {
+            ActivityCompat.requestPermissions(this, permissions, 1);
+            Intent intent;
+            if (SDK_INT >= Build.VERSION_CODES.R)
+            {
+                intent = new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
+        }
+    }
+
+    private boolean permissionsGranted(String[] permissions)
+    {
+        for (String permission : permissions)
+        {
+            if (ActivityCompat.checkSelfPermission(this, permission) == PERMISSION_DENIED)
+                return false;
+        }
+
+        return true;
     }
 
     public void openPickingDocs(View view)
@@ -328,9 +361,10 @@ public class MainActivity extends AppBaseActivity
                     });
                 }
             }
-            catch (RuntimeException ex)
+            catch (RuntimeException e)
             {
-                ex.printStackTrace();
+                runOnUiThread(() -> showMessageDialog(getString(R.string.error), e.toString(),
+                                                      ic_dialog_alert));
             }
         }).start();
     }
@@ -356,7 +390,8 @@ public class MainActivity extends AppBaseActivity
                 }
                 catch (IOException e)
                 {
-                    e.printStackTrace();
+                    showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
+                    return;
                 }
             }
 
@@ -366,20 +401,21 @@ public class MainActivity extends AppBaseActivity
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
+                return;
             }
 
             PackageManager pm = getPackageManager();
             PackageInfo info = pm.getPackageArchiveInfo(file.getAbsolutePath(), 0);
-            int version = 0;
+            int version;
             try
             {
                 version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
             }
             catch (PackageManager.NameNotFoundException e)
             {
-                showMessageDialog(getString(R.string.error),e.toString(),
-                                  ic_dialog_alert);
+                showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
+                return;
             }
 
             if (info == null)

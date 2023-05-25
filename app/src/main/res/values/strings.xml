@@ -125,4 +125,8 @@
     <string name="confirm_delivery">Çatdırılmanın təsdiqi</string>
     <string name="to_central_whs">Mərkəzə</string>
     <string name="internal_error">Daxili xəta</string>
+    <string name="update_version">Proqram versiyasını yenilə</string>
+    <string name="want_to_update">Yeniləmək istəyirsinizmi?</string>
+    <string name="yes">Bəli</string>
+    <string name="no">Xeyr</string>
 </resources>
