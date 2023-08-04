@@ -39,7 +39,7 @@ public class JwtResolver
         {
             properties.load(context.getAssets().open("app.properties"));
         }
-        catch (IOException e)
+        catch(IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -80,13 +80,17 @@ public class JwtResolver
 
             Gson gson = new Gson();
             CustomResponse response = gson.fromJson(responseBody.string(),
-                                                    new TypeToken<CustomResponse>() {}.getType());
+                                                    new TypeToken<CustomResponse>()
+                                                    {
+                                                    }.getType());
             AuthenticationResponse authenticationResponse = gson.fromJson(
                     gson.toJson(response.getData()),
-                    new TypeToken<AuthenticationResponse>() {}.getType());
+                    new TypeToken<AuthenticationResponse>()
+                    {
+                    }.getType());
             jwt = authenticationResponse.getToken();
         }
-        catch (IOException e)
+        catch(IOException e)
         {
             e.printStackTrace();
         }

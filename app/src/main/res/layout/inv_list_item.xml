@@ -16,7 +16,7 @@
             android:textSize="18sp" />
 
     <TextView
-            android:id="@+id/barcode"
+            android:id="@+id/scan_cam"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:textSize="18sp" />

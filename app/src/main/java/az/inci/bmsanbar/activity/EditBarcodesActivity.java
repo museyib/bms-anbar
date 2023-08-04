@@ -1,10 +1,11 @@
 package az.inci.bmsanbar.activity;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +32,6 @@ import az.inci.bmsanbar.model.v2.InvInfo;
 
 public class EditBarcodesActivity extends ScannerSupportActivity
 {
-
     public static DecimalFormat decimalFormat = new DecimalFormat();
     ListView barcodeListView;
     String invCode;
@@ -45,8 +45,6 @@ public class EditBarcodesActivity extends ScannerSupportActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_barcodes);
-        decimalFormat.setGroupingUsed(false);
-
         barcodeListView = findViewById(R.id.barcode_list);
 
         invCode = getIntent().getStringExtra("invCode");
@@ -54,14 +52,11 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         defaultUomCode = getIntent().getStringExtra("defaultUomCode");
         setTitle(invName);
 
-        Button scanBtn = findViewById(R.id.scan);
+        decimalFormat.setGroupingUsed(false);
 
-        if (cameraScanning) scanBtn.setVisibility(View.VISIBLE);
-
-        scanBtn.setOnClickListener(v -> {
-            Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
-            startActivityForResult(barcodeIntent, 1);
-        });
+        Button scanCam = findViewById(R.id.scan);
+        scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
+        scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(1));
         loadData();
     }
 
@@ -74,13 +69,21 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         View dialog = LayoutInflater.from(this)
                                     .inflate(R.layout.edit_barcode_dialog,
                                              findViewById(android.R.id.content), false);
-        for (InvBarcode existingBarcode : barcodeList)
+        for(InvBarcode existingBarcode : barcodeList)
         {
-            if (existingBarcode.getBarcode().equals(barcode))
-            {invBarcode = existingBarcode;}
+            if(existingBarcode.getBarcode().equals(barcode))
+            {
+                invBarcode = existingBarcode;
+            }
         }
-        if (barcodeList.contains(invBarcode)) {showEditBarcodeDialog(invBarcode, dialog);}
-        else {checkBarcode(barcode);}
+        if(barcodeList.contains(invBarcode))
+        {
+            showEditBarcodeDialog(invBarcode, dialog);
+        }
+        else
+        {
+            checkBarcode(barcode);
+        }
     }
 
     private void addNewBarcode(String barcode)
@@ -102,14 +105,16 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         new Thread(() -> {
             barcodeList = getBarcodeList();
             uomList = getUomList();
-            if (barcodeList != null && uomList != null) runOnUiThread(this::updatePage);
+            if(barcodeList != null && uomList != null) runOnUiThread(this::updatePage);
         }).start();
     }
 
     public void updatePage()
     {
-        if (barcodeList.size() > 0)
-        {findViewById(R.id.save).setOnClickListener(v -> updateBarcodes());}
+        if(barcodeList.size() > 0)
+        {
+            findViewById(R.id.save).setOnClickListener(v -> updateBarcodes());
+        }
         BarcodeAdapter adapter = new BarcodeAdapter(this, barcodeList);
         barcodeListView.setAdapter(adapter);
         barcodeListView.setOnItemClickListener((parent, view, position, id) -> {
@@ -211,10 +216,10 @@ public class EditBarcodesActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             InvInfo invInfo = getSimpleObject(url, "GET", null, InvInfo.class);
 
-            if (invInfo != null)
+            if(invInfo != null)
             {
                 runOnUiThread(() -> {
-                    if (invInfo.getInvCode() == null)
+                    if(invInfo.getInvCode() == null)
                     {
                         addNewBarcode(barcode);
                         playSound(SOUND_SUCCESS);
@@ -229,17 +234,6 @@ public class EditBarcodesActivity extends ScannerSupportActivity
                 });
             }
         }).start();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != -1 && data != null)
-        {
-            String barcode = data.getStringExtra("barcode");
-            if (barcode != null) onScanComplete(barcode);
-        }
     }
 
     private static class BarcodeAdapter extends ArrayAdapter<InvBarcode>
@@ -259,7 +253,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
         {
             InvBarcode barcode = barcodeList.get(position);
-            if (convertView == null)
+            if(convertView == null)
             {
                 convertView = LayoutInflater.from(context)
                                             .inflate(R.layout.barcode_item, parent, false);

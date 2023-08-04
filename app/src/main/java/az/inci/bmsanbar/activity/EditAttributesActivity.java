@@ -56,14 +56,16 @@ public class EditAttributesActivity extends AppBaseActivity
         showProgressDialog(true);
         new Thread(() -> {
             attributeList = getAttributeList();
-            if (attributeList != null) runOnUiThread(this::updatePage);
+            if(attributeList != null) runOnUiThread(this::updatePage);
         }).start();
     }
 
     public void updatePage()
     {
-        if (attributeList.size() > 0)
-        {findViewById(R.id.save).setOnClickListener(v -> updateAttributes());}
+        if(attributeList.size() > 0)
+        {
+            findViewById(R.id.save).setOnClickListener(v -> updateAttributes());
+        }
         AttributeAdapter adapter = new AttributeAdapter(this, attributeList);
         attributeListView.setAdapter(adapter);
 
@@ -127,7 +129,7 @@ public class EditAttributesActivity extends AppBaseActivity
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
         {
             InvAttribute attribute = attributeList.get(position);
-            if (convertView == null)
+            if(convertView == null)
             {
                 convertView = LayoutInflater.from(context)
                                             .inflate(R.layout.attribute_item, parent, false);
@@ -139,7 +141,7 @@ public class EditAttributesActivity extends AppBaseActivity
             holder.valueEdit = convertView.findViewById(R.id.attribute_value);
             holder.nameEdit.setText(attribute.getAttributeName());
 
-            if (attribute.getAttributeType().equals("BIT"))
+            if(attribute.getAttributeType().equals("BIT"))
             {
                 holder.valueCheck.setChecked(attribute.getAttributeValue().equals("1"));
                 holder.valueCheck.setOnCheckedChangeListener(
@@ -155,12 +157,17 @@ public class EditAttributesActivity extends AppBaseActivity
                 holder.valueCheck.setVisibility(View.GONE);
             }
 
-            if (((EditAttributesActivity) context).config().getUser().isLocationFlag() &&
-                (attribute.getAttributeId().equals("AT010") ||
-                 attribute.getAttributeId().equals("AT011")) ||
-                !((EditAttributesActivity) context).config().getUser().isLocationFlag())
-            {convertView.setVisibility(View.VISIBLE);}
-            else {convertView.setVisibility(View.GONE);}
+            if(((EditAttributesActivity) context).config().getUser().isLocationFlag() &&
+               (attribute.getAttributeId().equals("AT010") ||
+                attribute.getAttributeId().equals("AT011")) ||
+               !((EditAttributesActivity) context).config().getUser().isLocationFlag())
+            {
+                convertView.setVisibility(View.VISIBLE);
+            }
+            else
+            {
+                convertView.setVisibility(View.GONE);
+            }
 
             return convertView;
         }

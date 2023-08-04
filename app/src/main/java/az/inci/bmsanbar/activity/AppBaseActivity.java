@@ -72,7 +72,8 @@ public abstract class AppBaseActivity extends AppCompatActivity
     DBHelper dbHelper;
     Gson gson = new Gson();
     Type responseType = new TypeToken<CustomResponse>()
-    {}.getType();
+    {
+    }.getType();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
@@ -113,12 +114,12 @@ public abstract class AppBaseActivity extends AppCompatActivity
     {
         View view = getLayoutInflater().inflate(R.layout.progress_dialog_layout,
                                                 findViewById(android.R.id.content), false);
-        if (progressDialog == null)
+        if(progressDialog == null)
             progressDialog = new AlertDialog.Builder(this).setView(view)
                                                           .setCancelable(false)
                                                           .create();
 
-        if (b) progressDialog.show();
+        if(b) progressDialog.show();
         else progressDialog.dismiss();
     }
 
@@ -126,8 +127,10 @@ public abstract class AppBaseActivity extends AppCompatActivity
     {
         StringBuilder sb = new StringBuilder();
         sb.append(serviceUrl).append("/v3");
-        for (String s : value)
-        {sb.append("/").append(s);}
+        for(String s : value)
+        {
+            sb.append("/").append(s);
+        }
         return sb.toString();
     }
 
@@ -136,8 +139,10 @@ public abstract class AppBaseActivity extends AppCompatActivity
         StringBuilder builder = new StringBuilder(url);
         builder.append("?");
 
-        for (Map.Entry<String, String> entry : requestParameters.entrySet())
-        {builder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");}
+        for(Map.Entry<String, String> entry : requestParameters.entrySet())
+        {
+            builder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+        }
 
         builder.delete(builder.length() - 1, builder.length());
         return builder.toString();
@@ -145,7 +150,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
     public void loadUserInfo(User user, boolean newUser)
     {
-        if (newUser)
+        if(newUser)
         {
             dbHelper.addUser(user);
             dbHelper.addUserPermission(user);
@@ -165,7 +170,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
     protected void showMessageDialog(String title, String message, int icon)
     {
-        if (dialogBuilder == null) dialogBuilder = new AlertDialog.Builder(this);
+        if(dialogBuilder == null) dialogBuilder = new AlertDialog.Builder(this);
 
         dialogBuilder.setIcon(icon).setTitle(title).setMessage(message).show();
     }
@@ -215,7 +220,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
         RequestBody requestBody = null;
 
-        if (method.equals("POST"))
+        if(method.equals("POST"))
             requestBody = RequestBody.create(MediaType.get("application/json;charset=UTF-8"),
                                              new Gson().toJson(requestBodyData));
         Request request = new Request.Builder().method(method, requestBody)
@@ -238,38 +243,39 @@ public abstract class AppBaseActivity extends AppCompatActivity
                 int iconId;
 
                 Response httpResponse = sendRequest(new URL(urlString), "POST", requestData);
-                if (httpResponse.code() == 403)
+                if(httpResponse.code() == 403)
                 {
                     jwt = jwtResolver.resolve();
                     preferences.edit().putString("jwt", jwt).apply();
                     httpResponse = sendRequest(new URL(urlString), "POST", requestData);
                 }
 
-                if (httpResponse.code() == 200)
+                if(httpResponse.code() == 200)
                 {
                     ResponseBody responseBody = httpResponse.body();
                     CustomResponse response = gson.fromJson(
                             Objects.requireNonNull(responseBody).string(), responseType);
                     statusCode = response.getStatusCode();
 
-                    if (statusCode == 0)
+                    if(statusCode == 0)
                     {
                         title = getString(R.string.info);
                         message = response.getDeveloperMessage();
                         iconId = ic_dialog_info;
                     }
-                    else if (statusCode == 2)
-                    {
-                        title = getString(R.string.error);
-                        message = response.getDeveloperMessage();
-                        iconId = ic_dialog_alert;
-                    }
                     else
-                    {
-                        title = getString(R.string.error);
-                        message = response.getDeveloperMessage() + ": " + response.getSystemMessage();
-                        iconId = ic_dialog_alert;
-                    }
+                        if(statusCode == 2)
+                        {
+                            title = getString(R.string.error);
+                            message = response.getDeveloperMessage();
+                            iconId = ic_dialog_alert;
+                        }
+                        else
+                        {
+                            title = getString(R.string.error);
+                            message = response.getDeveloperMessage() + ": " + response.getSystemMessage();
+                            iconId = ic_dialog_alert;
+                        }
                 }
                 else
                 {
@@ -287,10 +293,10 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
                 runOnUiThread(() -> executeComplete.executeComplete(responseMessage));
             }
-            catch (IOException e)
+            catch(IOException e)
             {
                 runOnUiThread(() -> {
-                    showMessageDialog(getString(R.string.error),e.toString(), ic_dialog_alert);
+                    showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
                     playSound(SOUND_FAIL);
                 });
             }
@@ -314,7 +320,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
         showProgressDialog(true);
         new Thread(() -> {
             String result = getSimpleObject(url, "GET", null, String.class);
-            if (result != null)
+            if(result != null)
                 runOnUiThread(() -> showMessageDialog(title, result, ic_dialog_info));
         }).start();
     }
@@ -324,40 +330,42 @@ public abstract class AppBaseActivity extends AppCompatActivity
         try
         {
             Response httpResponse = sendRequest(new URL(url), method, request);
-            if (httpResponse.code() == 403)
+            if(httpResponse.code() == 403)
             {
                 jwt = jwtResolver.resolve();
                 preferences.edit().putString("jwt", jwt).apply();
                 httpResponse = sendRequest(new URL(url), method, request);
             }
-            if (httpResponse.code() == 200)
+            if(httpResponse.code() == 200)
             {
                 ResponseBody responseBody = httpResponse.body();
                 CustomResponse response = gson.fromJson(
                         Objects.requireNonNull(responseBody).string(),
                         responseType);
-                if (response.getStatusCode() == 0)
+                if(response.getStatusCode() == 0)
                     return gson.fromJson(gson.toJson(response.getData()), tClass);
-                else if (response.getStatusCode() == 2)
-                {
-                    runOnUiThread(() -> {
-                        showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                    });
-                    return null;
-                }
                 else
-                {
-                    runOnUiThread(() -> {
-                        showMessageDialog(getString(R.string.error),
-                                          response.getDeveloperMessage() + ": " +
-                                          response.getSystemMessage(),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                    });
-                    return null;
-                }
+                    if(response.getStatusCode() == 2)
+                    {
+                        runOnUiThread(() -> {
+                            showMessageDialog(getString(R.string.error),
+                                              response.getDeveloperMessage(),
+                                              ic_dialog_alert);
+                            playSound(SOUND_FAIL);
+                        });
+                        return null;
+                    }
+                    else
+                    {
+                        runOnUiThread(() -> {
+                            showMessageDialog(getString(R.string.error),
+                                              response.getDeveloperMessage() + ": " +
+                                              response.getSystemMessage(),
+                                              ic_dialog_alert);
+                            playSound(SOUND_FAIL);
+                        });
+                        return null;
+                    }
             }
             else
             {
@@ -369,11 +377,11 @@ public abstract class AppBaseActivity extends AppCompatActivity
                 return null;
             }
         }
-        catch (IOException e)
+        catch(IOException e)
         {
             runOnUiThread(() -> {
                 showMessageDialog(getString(R.string.error),
-                                  getString(R.string.internal_error) + ": "+ e,
+                                  getString(R.string.internal_error) + ": " + e,
                                   ic_dialog_alert);
                 playSound(SOUND_FAIL);
             });
@@ -390,41 +398,43 @@ public abstract class AppBaseActivity extends AppCompatActivity
         try
         {
             Response httpResponse = sendRequest(new URL(url), method, request);
-            if (httpResponse.code() == 403)
+            if(httpResponse.code() == 403)
             {
                 jwt = jwtResolver.resolve();
                 preferences.edit().putString("jwt", jwt).apply();
                 httpResponse = sendRequest(new URL(url), method, request);
             }
-            if (httpResponse.code() == 200)
+            if(httpResponse.code() == 200)
             {
                 ResponseBody responseBody = httpResponse.body();
                 CustomResponse response = gson.fromJson(
                         Objects.requireNonNull(responseBody).string(),
                         responseType);
-                if (response.getStatusCode() == 0)
+                if(response.getStatusCode() == 0)
                     return new ArrayList<>(
                             Arrays.asList(gson.fromJson(gson.toJson(response.getData()), tClass)));
-                else if (response.getStatusCode() == 2)
-                {
-                    runOnUiThread(() -> {
-                        showMessageDialog(getString(R.string.error), response.getDeveloperMessage(),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                    });
-                    return null;
-                }
                 else
-                {
-                    runOnUiThread(() -> {
-                        showMessageDialog(getString(R.string.error),
-                                          response.getDeveloperMessage() + ": " +
-                                          response.getSystemMessage(),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                    });
-                    return null;
-                }
+                    if(response.getStatusCode() == 2)
+                    {
+                        runOnUiThread(() -> {
+                            showMessageDialog(getString(R.string.error),
+                                              response.getDeveloperMessage(),
+                                              ic_dialog_alert);
+                            playSound(SOUND_FAIL);
+                        });
+                        return null;
+                    }
+                    else
+                    {
+                        runOnUiThread(() -> {
+                            showMessageDialog(getString(R.string.error),
+                                              response.getDeveloperMessage() + ": " +
+                                              response.getSystemMessage(),
+                                              ic_dialog_alert);
+                            playSound(SOUND_FAIL);
+                        });
+                        return null;
+                    }
             }
             else
             {
@@ -436,11 +446,11 @@ public abstract class AppBaseActivity extends AppCompatActivity
                 return null;
             }
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             runOnUiThread(() -> {
                 showMessageDialog(getString(R.string.error),
-                                  getString(R.string.internal_error) + ": "+ e,
+                                  getString(R.string.internal_error) + ": " + e,
                                   ic_dialog_alert);
                 playSound(SOUND_FAIL);
             });
@@ -463,9 +473,9 @@ public abstract class AppBaseActivity extends AppCompatActivity
 
             InvBarcode invBarcode = getSimpleObject(url, "GET", null, InvBarcode.class);
 
-            if (invBarcode != null)
+            if(invBarcode != null)
                 runOnUiThread(() -> {
-                    if (invBarcode.getBarcode() == null)
+                    if(invBarcode.getBarcode() == null)
                     {
                         showMessageDialog(getString(R.string.info),
                                           getString(R.string.good_not_found),

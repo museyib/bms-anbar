@@ -110,7 +110,7 @@ public class ApproveDocActivity extends AppBaseActivity
     public void loadData()
     {
         docList = dbHelper.getApproveDocList();
-        if (docList.size() == 0)
+        if(docList.size() == 0)
         {
             findViewById(R.id.doc_list_scroll).setVisibility(View.INVISIBLE);
         }
@@ -142,7 +142,7 @@ public class ApproveDocActivity extends AppBaseActivity
         {
             Doc doc = list.get(position);
 
-            if (convertView == null)
+            if(convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.approve_doc_item_layout, parent,

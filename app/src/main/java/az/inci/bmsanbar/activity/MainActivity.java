@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import az.inci.bmsanbar.BuildConfig;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.User;
 import az.inci.bmsanbar.model.v2.LoginRequest;
@@ -99,7 +98,8 @@ public class MainActivity extends AppBaseActivity
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setTitle(R.string.update_version)
                          .setMessage(R.string.want_to_update)
-                         .setNegativeButton(R.string.yes, (dialogInterface, i) -> checkForNewVersion())
+                         .setNegativeButton(R.string.yes,
+                                            (dialogInterface, i) -> checkForNewVersion())
                          .setPositiveButton(R.string.no, null);
             AlertDialog dialog = dialogBuilder.create();
 
@@ -117,7 +117,8 @@ public class MainActivity extends AppBaseActivity
     protected void enableStorageAccess()
     {
         String[] permissions;
-        if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if(SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        {
             permissions = new String[]{
                     READ_MEDIA_AUDIO,
                     READ_MEDIA_IMAGES,
@@ -126,11 +127,11 @@ public class MainActivity extends AppBaseActivity
         }
         else
             permissions = new String[]{WRITE_EXTERNAL_STORAGE};
-        if (!permissionsGranted(permissions))
+        if(!permissionsGranted(permissions))
         {
             ActivityCompat.requestPermissions(this, permissions, 1);
             Intent intent;
-            if (SDK_INT >= Build.VERSION_CODES.R)
+            if(SDK_INT >= Build.VERSION_CODES.R)
             {
                 intent = new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 Uri uri = Uri.fromParts("package", getPackageName(), null);
@@ -142,9 +143,9 @@ public class MainActivity extends AppBaseActivity
 
     private boolean permissionsGranted(String[] permissions)
     {
-        for (String permission : permissions)
+        for(String permission : permissions)
         {
-            if (ActivityCompat.checkSelfPermission(this, permission) == PERMISSION_DENIED)
+            if(ActivityCompat.checkSelfPermission(this, permission) == PERMISSION_DENIED)
                 return false;
         }
 
@@ -207,7 +208,7 @@ public class MainActivity extends AppBaseActivity
                          id = idEdit.getText().toString().toUpperCase();
                          password = passwordEdit.getText().toString();
 
-                         if (id.isEmpty() || password.isEmpty())
+                         if(id.isEmpty() || password.isEmpty())
                          {
                              showToastMessage(getString(R.string.username_or_password_not_entered));
                              showLoginDialog(mode);
@@ -216,7 +217,10 @@ public class MainActivity extends AppBaseActivity
                          else
                          {
                              User user = dbHelper.getUser(id);
-                             if (user == null || loginViaServer.get()) {loginViaServer();}
+                             if(user == null || loginViaServer.get())
+                             {
+                                 loginViaServer();
+                             }
                              else
                              {
                                  loadUserInfo(user, false);
@@ -235,17 +239,19 @@ public class MainActivity extends AppBaseActivity
 
     private void attemptLogin(User user)
     {
-        if (!user.getPassword().equals(password))
-        {loginViaServer();}
+        if(!user.getPassword().equals(password))
+        {
+            loginViaServer();
+        }
         else
         {
             preferences.edit().putString("last_login_id", id).apply();
             preferences.edit().putString("last_login_password", password).apply();
             Class<?> aClass;
-            switch (mode)
+            switch(mode)
             {
                 case PICK_MODE:
-                    if (!user.isPickFlag())
+                    if(!user.isPickFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
@@ -256,7 +262,7 @@ public class MainActivity extends AppBaseActivity
                     aClass = PickDocActivity.class;
                     break;
                 case PACK_MODE:
-                    if (!user.isPackFlag())
+                    if(!user.isPackFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
@@ -267,7 +273,7 @@ public class MainActivity extends AppBaseActivity
                     aClass = PackDocActivity.class;
                     break;
                 case SHIP_MODE:
-                    if (!user.isLoadingFlag())
+                    if(!user.isLoadingFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
@@ -278,7 +284,7 @@ public class MainActivity extends AppBaseActivity
                     aClass = ShipDocActivity.class;
                     break;
                 case APPROVE_MODE:
-                    if (!user.isApproveFlag())
+                    if(!user.isApproveFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
@@ -289,7 +295,7 @@ public class MainActivity extends AppBaseActivity
                     aClass = InternalUseDocActivity.class;
                     break;
                 case PRODUCT_APPROVE_MODE:
-                    if (!(user.isApproveFlag() || user.isApprovePrdFlag()))
+                    if(!(user.isApproveFlag() || user.isApprovePrdFlag()))
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
@@ -303,7 +309,7 @@ public class MainActivity extends AppBaseActivity
                     aClass = InventoryInfoActivity.class;
                     break;
                 case CONFIRM_DELIVERY_MODE:
-                    if (!user.isLoadingFlag())
+                    if(!user.isLoadingFlag())
                     {
                         showMessageDialog(getString(R.string.warning),
                                           getString(R.string.not_allowed),
@@ -330,7 +336,7 @@ public class MainActivity extends AppBaseActivity
             request.setUserId(id);
             request.setPassword(password);
             User user = getSimpleObject(url, "POST", request, User.class);
-            if (user != null)
+            if(user != null)
             {
                 runOnUiThread(() -> {
                     user.setId(user.getId().toUpperCase());
@@ -352,7 +358,7 @@ public class MainActivity extends AppBaseActivity
             try
             {
                 String bytes = getSimpleObject(url, "GET", null, String.class);
-                if (bytes != null)
+                if(bytes != null)
                 {
                     byte[] fileBytes = android.util.Base64.decode(bytes, Base64.DEFAULT);
                     runOnUiThread(() -> {
@@ -361,7 +367,7 @@ public class MainActivity extends AppBaseActivity
                     });
                 }
             }
-            catch (RuntimeException e)
+            catch(RuntimeException e)
             {
                 runOnUiThread(() -> showMessageDialog(getString(R.string.error), e.toString(),
                                                       ic_dialog_alert));
@@ -371,16 +377,16 @@ public class MainActivity extends AppBaseActivity
 
     private void updateVersion(byte[] bytes)
     {
-        if (bytes != null)
+        if(bytes != null)
         {
             File file = new File(
                     Environment.getExternalStorageDirectory().getPath() + "/BMSAnbar.apk");
-            if (!file.exists())
+            if(!file.exists())
             {
                 try
                 {
                     boolean newFile = file.createNewFile();
-                    if (!newFile)
+                    if(!newFile)
                     {
                         showMessageDialog(getString(R.string.info),
                                           getString(R.string.error_occurred),
@@ -388,18 +394,18 @@ public class MainActivity extends AppBaseActivity
                         return;
                     }
                 }
-                catch (IOException e)
+                catch(IOException e)
                 {
                     showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
                     return;
                 }
             }
 
-            try (FileOutputStream stream = new FileOutputStream(file))
+            try(FileOutputStream stream = new FileOutputStream(file))
             {
                 stream.write(bytes);
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
                 return;
@@ -412,24 +418,24 @@ public class MainActivity extends AppBaseActivity
             {
                 version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
             }
-            catch (PackageManager.NameNotFoundException e)
+            catch(PackageManager.NameNotFoundException e)
             {
                 showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
                 return;
             }
 
-            if (info == null)
+            if(info == null)
             {
                 showMessageDialog(getString(R.string.error), new String(bytes),
                                   ic_dialog_alert);
                 return;
             }
 
-            if (file.length() > 0 && info.versionCode > version)
+            if(file.length() > 0 && info.versionCode > version)
             {
                 Intent installIntent;
                 Uri uri;
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+                if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
                 {
                     installIntent = new Intent(Intent.ACTION_VIEW);
                     uri = Uri.fromFile(file);
@@ -439,7 +445,7 @@ public class MainActivity extends AppBaseActivity
                 else
                 {
                     installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-                    uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider",
+                    uri = FileProvider.getUriForFile(this, "az.inci.bmsanbar.provider",
                                                      file);
                     installIntent.setData(uri);
                     installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

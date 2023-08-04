@@ -1,23 +1,17 @@
 package az.inci.bmsanbar.activity;
 
 import static android.R.drawable.ic_dialog_alert;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,56 +23,28 @@ import az.inci.bmsanbar.model.Inventory;
 
 public class EditShelfActivity extends ScannerSupportActivity
 {
-
-    EditText shelfBarcodeEdit;
-    Button scanBtn;
-    ImageButton sendBtn;
-    ImageButton clearBtn;
-    ListView invListView;
-
-    String shelfBarcode = "";
-    Inventory result;
-    List<Inventory> inventoryList = new ArrayList<>();
+    private final List<Inventory> inventoryList = new ArrayList<>();
+    private EditText shelfBarcodeEdit;
+    private ListView invListView;
+    private String shelfBarcode = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_shelf);
-        loadFooter();
-
         shelfBarcodeEdit = findViewById(R.id.shelf_barcode);
-        scanBtn = findViewById(R.id.scan_shelf_barcode);
-        sendBtn = findViewById(R.id.send);
-        clearBtn = findViewById(R.id.clear);
         invListView = findViewById(R.id.inv_list_view);
 
-        if (cameraScanning) scanBtn.setVisibility(View.VISIBLE);
+        Button scanCam = findViewById(R.id.scan_cam);
+        ImageButton sendBtn = findViewById(R.id.send);
+        ImageButton clearBtn = findViewById(R.id.clear);
 
-        ActivityResultLauncher<String> barcode = registerForActivityResult(
-                new ActivityResultContract<String, String>()
-                {
-                    @NonNull
-                    @Override
-                    public Intent createIntent(@NonNull Context context, String input)
-                    {
-                        return new Intent(EditShelfActivity.this, BarcodeScannerCamera.class);
-                    }
-
-                    @Override
-                    public String parseResult(int resultCode, @Nullable Intent intent)
-                    {
-                        String scanResult = "";
-                        if (intent != null) scanResult = intent.getStringExtra("barcode");
-
-                        return scanResult;
-                    }
-                }, this::onScanComplete);
-
-        scanBtn.setOnClickListener(v -> barcode.launch(""));
+        scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
+        scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(0));
 
         sendBtn.setOnClickListener(v -> {
-            if (inventoryList.size() > 0) uploadData();
+            if(inventoryList.size() > 0) uploadData();
         });
 
         clearBtn.setOnClickListener(v -> clearAndRefreshList());
@@ -100,16 +66,18 @@ public class EditShelfActivity extends ScannerSupportActivity
 
             alertDialog.show();
         });
+
+        loadFooter();
     }
 
     @Override
     public void onScanComplete(String barcode)
     {
-        if (barcode != null)
+        if(barcode != null)
         {
-            if (shelfBarcode.isEmpty())
+            if(shelfBarcode.isEmpty())
             {
-                if (!barcode.startsWith("#"))
+                if(!barcode.startsWith("#"))
                 {
                     showMessageDialog(getString(R.string.info), "Vitrin barkodu daxil etməlisiniz!",
                                       ic_dialog_alert);
@@ -120,7 +88,7 @@ public class EditShelfActivity extends ScannerSupportActivity
             }
             else
             {
-                if (barcode.startsWith("#"))
+                if(barcode.startsWith("#"))
                 {
                     showMessageDialog(getString(R.string.info), "Mal barkodu daxil etməlisiniz!",
                                       ic_dialog_alert);
@@ -133,7 +101,7 @@ public class EditShelfActivity extends ScannerSupportActivity
 
     private void addAndRefreshList(Inventory inventory)
     {
-        if (!inventoryList.contains(inventory)) inventoryList.add(inventory);
+        if(!inventoryList.contains(inventory)) inventoryList.add(inventory);
         ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout,
                                                              inventoryList);
         invListView.setAdapter(adapter);
@@ -166,10 +134,10 @@ public class EditShelfActivity extends ScannerSupportActivity
             parameters.put("barcode", barcode);
             url = addRequestParameters(url, parameters);
             Inventory inventory = getSimpleObject(url, "GET", null, Inventory.class);
-            if (inventory != null)
+            if(inventory != null)
             {
                 runOnUiThread(() -> {
-                    if (inventory.getInvCode() == null)
+                    if(inventory.getInvCode() == null)
                     {
                         showMessageDialog(getString(R.string.error),
                                           getString(R.string.good_not_found),
@@ -178,7 +146,6 @@ public class EditShelfActivity extends ScannerSupportActivity
                     }
                     else
                     {
-                        result.setBarcode(barcode);
                         addAndRefreshList(inventory);
                         playSound(SOUND_SUCCESS);
                     }
@@ -198,8 +165,10 @@ public class EditShelfActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
 
             List<String> barcodeList = new ArrayList<>();
-            for (Inventory inventory : inventoryList)
-            {barcodeList.add(inventory.getBarcode());}
+            for(Inventory inventory : inventoryList)
+            {
+                barcodeList.add(inventory.getBarcode());
+            }
             executeUpdate(url, barcodeList,
                           message -> showMessageDialog(message.getTitle(), message.getBody(),
                                                        message.getIconId()));

@@ -20,7 +20,7 @@ public class ScanTask extends AsyncTask<String, Integer, Boolean>
     public Boolean doInBackground(String... strArr)
     {
         ScannerSupportActivity activity = reference.get();
-        if (activity.barcode2DWithSoft != null)
+        if(activity.barcode2DWithSoft != null)
         {
             return activity.barcode2DWithSoft.open(activity);
         }
@@ -30,7 +30,7 @@ public class ScanTask extends AsyncTask<String, Integer, Boolean>
     public void onPostExecute(Boolean bool)
     {
         super.onPostExecute(bool);
-        if (!bool)
+        if(!bool)
         {
             Log.e("SCAN_TASK", "Device not found!");
         }

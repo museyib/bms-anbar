@@ -46,37 +46,15 @@
             android:importantForAutofill="no" />
 
     <Button
-            android:id="@+id/scan_driver_code"
+            android:id="@+id/scan_cam"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:layout_margin="5dp"
-            android:contentDescription="@string/driver"
+            android:contentDescription="@string/scan"
             android:text="@string/scan"
             android:visibility="gone"
-            app:layout_constraintStart_toEndOf="@id/driver"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-            android:id="@+id/scan_vehicle_code"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_margin="5dp"
-            android:contentDescription="@string/vehicle"
-            android:text="@string/scan"
-            android:visibility="gone"
-            app:layout_constraintStart_toEndOf="@id/vehicle"
-            app:layout_constraintTop_toBottomOf="@id/scan_driver_code" />
-
-    <Button
-            android:id="@+id/scan_new_doc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/add_new_doc"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="@id/ship_trx_list_view"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/vehicle" />
+            app:layout_constraintTop_toTopOf="@+id/check_mode"
+            app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
             android:id="@+id/send"

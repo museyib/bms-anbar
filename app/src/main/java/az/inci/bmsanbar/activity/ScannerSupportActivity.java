@@ -1,12 +1,20 @@
 package az.inci.bmsanbar.activity;
 
+import static android.text.TextUtils.isEmpty;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.device.ScanManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.view.KeyEvent;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.rscja.deviceapi.DeviceConfiguration;
 import com.zebra.adc.decoder.Barcode2DWithSoft;
@@ -15,7 +23,6 @@ import az.inci.bmsanbar.ScanTask;
 
 public abstract class ScannerSupportActivity extends AppBaseActivity
 {
-
     public Barcode2DWithSoft barcode2DWithSoft;
     protected String model;
     protected boolean isContinuous = true;
@@ -35,6 +42,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
     };
     protected boolean isUrovoOpen = false;
     protected Barcode2DWithSoft.ScanCallback s98ScanCallback;
+    ActivityResultLauncher<Integer> barcodeResultLauncher = barcodeResultLauncher();
 
     @Override
     protected void onResume()
@@ -55,7 +63,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
             filter.addAction(ScanManager.ACTION_DECODE);
             registerReceiver(urovoScanReceiver, filter);
         }
-        catch (RuntimeException e)
+        catch(RuntimeException e)
         {
             e.printStackTrace();
         }
@@ -63,12 +71,12 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
 
     private void toggleUrovoScanner()
     {
-        if (!isUrovoOpen)
+        if(!isUrovoOpen)
         {
             initUrovoScanner();
         }
 
-        if (!busy)
+        if(!busy)
         {
             scanManager.startDecode();
             busy = true;
@@ -86,7 +94,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
         {
             barcode2DWithSoft = Barcode2DWithSoft.getInstance();
         }
-        catch (Throwable e)
+        catch(Throwable e)
         {
             e.printStackTrace();
         }
@@ -96,11 +104,11 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
 
         s98ScanCallback = (i, i2, bArr) ->
         {
-            if (bArr != null)
+            if(bArr != null)
             {
                 String barcode = new String(bArr, 0, i2);
                 onScanComplete(barcode);
-                if (!isContinuous)
+                if(!isContinuous)
                 {
                     busy = false;
                 }
@@ -110,7 +118,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
 
     private void toggleS98Scanner()
     {
-        if (!busy)
+        if(!busy)
         {
             busy = true;
             scan();
@@ -127,26 +135,26 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
         isUrovoOpen = false;
         try
         {
-            if (scanManager != null && scanManager.getScannerState())
+            if(scanManager != null && scanManager.getScannerState())
             {
                 scanManager.closeScanner();
                 unregisterReceiver(urovoScanReceiver);
             }
         }
-        catch (RuntimeException e)
+        catch(RuntimeException e)
         {
             e.printStackTrace();
         }
 
-        if (scanTask.getStatus() == AsyncTask.Status.FINISHED && barcode2DWithSoft != null &&
-            model.equals("C4000_6582"))
+        if(scanTask.getStatus() == AsyncTask.Status.FINISHED && barcode2DWithSoft != null &&
+           model.equals("C4000_6582"))
         {
             try
             {
                 barcode2DWithSoft.close();
                 scanTask.cancel(true);
             }
-            catch (IllegalArgumentException e)
+            catch(IllegalArgumentException e)
             {
                 e.printStackTrace();
             }
@@ -158,11 +166,11 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        if (keyCode == 139)
+        if(keyCode == 139)
         {
             toggleS98Scanner();
         }
-        if (keyCode == 520 || keyCode == 521 || keyCode == 522)
+        if(keyCode == 520 || keyCode == 521 || keyCode == 522)
         {
             toggleUrovoScanner();
         }
@@ -192,7 +200,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
 
     public void setScanCallback()
     {
-        if (barcode2DWithSoft != null)
+        if(barcode2DWithSoft != null)
         {
             barcode2DWithSoft.setScanCallback(s98ScanCallback);
         }
@@ -200,14 +208,49 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
 
     protected synchronized void scan()
     {
-        synchronized (this)
+        synchronized(this)
         {
-            if (barcode2DWithSoft != null)
+            if(barcode2DWithSoft != null)
             {
                 ScanThread thread = new ScanThread();
                 thread.start();
             }
         }
+    }
+
+    ActivityResultLauncher<Integer> barcodeResultLauncher()
+    {
+        return registerForActivityResult(
+                new ActivityResultContract<Integer, String>()
+                {
+                    @NonNull
+                    @Override
+                    public Intent createIntent(@NonNull Context context, Integer input)
+                    {
+                        Class<?> cameraClass;
+
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                            cameraClass = BarcodeScannerCameraV2.class;
+                        else
+                            cameraClass = BarcodeScannerCamera.class;
+                        Intent intent = new Intent(ScannerSupportActivity.this, cameraClass);
+                        intent.putExtra("scanTarget", input);
+
+                        return intent;
+                    }
+
+                    @Override
+                    public String parseResult(int resultCode, @Nullable Intent intent)
+                    {
+                        String scanResult = "";
+                        if(intent != null) scanResult = intent.getStringExtra("barcode");
+
+                        return scanResult;
+                    }
+                }, barcode -> {
+                    if(!isEmpty(barcode))
+                        onScanComplete(barcode);
+                });
     }
 
     protected class ScanThread extends Thread

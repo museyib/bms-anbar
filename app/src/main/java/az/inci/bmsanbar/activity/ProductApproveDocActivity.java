@@ -43,7 +43,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
         add = findViewById(R.id.add);
         download = findViewById(R.id.download);
 
-        if (config().getUser().isApproveFlag()) download.setVisibility(View.VISIBLE);
+        if(config().getUser().isApproveFlag()) download.setVisibility(View.VISIBLE);
 
         add.setOnClickListener(v -> {
             Intent intent = new Intent(this, ProductApproveTrxActivity.class);
@@ -107,7 +107,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
     public void loadData()
     {
         docList = dbHelper.getProductApproveDocList();
-        if (docList.size() == 0) findViewById(R.id.doc_list_scroll).setVisibility(View.INVISIBLE);
+        if(docList.size() == 0) findViewById(R.id.doc_list_scroll).setVisibility(View.INVISIBLE);
         else
         {
             findViewById(R.id.doc_list_scroll).setVisibility(View.VISIBLE);
@@ -124,8 +124,8 @@ public class ProductApproveDocActivity extends AppBaseActivity
             String url = url("inv-move", "approve-prd", "trx-list");
             List<Trx> trxList = getListData(url, "GET", null, Trx[].class);
 
-            if (trxList != null)
-                if (trxList.size() > 0)
+            if(trxList != null)
+                if(trxList.size() > 0)
                     loadDocListFromServer(trxList);
                 else
                     runOnUiThread(() -> showMessageDialog(getString(R.string.info),
@@ -140,14 +140,16 @@ public class ProductApproveDocActivity extends AppBaseActivity
         String url = url("inv-move", "approve-prd", "doc-list");
         List<Doc> docList = getListData(url, "GET", null, Doc[].class);
         runOnUiThread(() -> {
-            for (Doc doc : docList)
+            for(Doc doc : docList)
             {
                 doc.setTrxTypeId(4);
                 dbHelper.addApproveDoc(doc);
             }
 
-            for (Trx trx : trxList)
-            {dbHelper.addApproveTrx(trx);}
+            for(Trx trx : trxList)
+            {
+                dbHelper.addApproveTrx(trx);
+            }
             loadData();
         });
     }
@@ -170,7 +172,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
         {
             Doc doc = list.get(position);
 
-            if (convertView == null)
+            if(convertView == null)
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.product_approve_doc_item_layout,
                                                      parent, false);

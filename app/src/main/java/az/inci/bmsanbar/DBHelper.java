@@ -182,7 +182,7 @@ public class DBHelper extends SQLiteOpenHelper
     {
         User user = null;
 
-        try (Cursor cursor = db.rawQuery(
+        try(Cursor cursor = db.rawQuery(
                 "SELECT USER_ID, " +
                 "USER_NAME, " +
                 "PASS_WORD, " +
@@ -191,7 +191,7 @@ public class DBHelper extends SQLiteOpenHelper
                 "FROM TERMINAL_USER WHERE USER_ID=?",
                 new String[]{id}))
         {
-            if (cursor.moveToFirst())
+            if(cursor.moveToFirst())
             {
                 user = new User();
                 user.setId(cursor.getString(0));
@@ -202,20 +202,20 @@ public class DBHelper extends SQLiteOpenHelper
             }
         }
 
-        if (user != null)
+        if(user != null)
         {
-            try (Cursor cursor = db.rawQuery(
+            try(Cursor cursor = db.rawQuery(
                     "SELECT PERMISSION_NAME, " +
                     "PERMISSION_VALUE " +
                     "FROM TERMINAL_PERMISSION WHERE USER_ID=?",
                     new String[]{id}))
             {
-                while (cursor.moveToNext())
+                while(cursor.moveToNext())
                 {
                     String paramName = cursor.getString(0);
                     int paramValue = cursor.getInt(1);
 
-                    switch (paramName)
+                    switch(paramName)
                     {
                         case COLLECT_FLAG:
                             user.setCollectFlag(paramValue == 1);
@@ -368,7 +368,7 @@ public class DBHelper extends SQLiteOpenHelper
                          .append(")")
                          .toString());
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -399,7 +399,7 @@ public class DBHelper extends SQLiteOpenHelper
         try
         {
             Cursor cursor = db.rawQuery(query, new String[]{pickUser});
-            while (cursor.moveToNext())
+            while(cursor.moveToNext())
             {
                 Doc doc = new Doc();
                 doc.setTrxNo(cursor.getString(0));
@@ -418,7 +418,7 @@ public class DBHelper extends SQLiteOpenHelper
             }
             cursor.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -432,7 +432,7 @@ public class DBHelper extends SQLiteOpenHelper
         String sql = "SELECT * FROM PICK_DOC WHERE TRX_NO=?";
 
         Cursor cursor = db.rawQuery(sql, new String[]{doc.getTrxNo()});
-        if (cursor.getCount() == 0)
+        if(cursor.getCount() == 0)
         {
             ContentValues values = new ContentValues();
             values.put(TRX_NO, doc.getTrxNo());
@@ -463,10 +463,10 @@ public class DBHelper extends SQLiteOpenHelper
 
     public int getPickActiveSeconds(String trxNo)
     {
-        try (Cursor cursor = db.rawQuery("SELECT ACTIVE_SECONDS FROM PICK_DOC WHERE TRX_NO=?",
-                                         new String[]{trxNo}))
+        try(Cursor cursor = db.rawQuery("SELECT ACTIVE_SECONDS FROM PICK_DOC WHERE TRX_NO=?",
+                                        new String[]{trxNo}))
         {
-            if (cursor.moveToNext())
+            if(cursor.moveToNext())
             {
                 return cursor.getInt(0);
             }
@@ -550,7 +550,7 @@ public class DBHelper extends SQLiteOpenHelper
 
         int position = 0;
 
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
             Trx trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
@@ -577,7 +577,7 @@ public class DBHelper extends SQLiteOpenHelper
             trx.setPriority(cursor.getInt(21));
             trx.setPosition(position);
 
-            if (!trxList.contains(trx))
+            if(!trxList.contains(trx))
             {
                 trxList.add(trx);
                 position++;
@@ -596,7 +596,7 @@ public class DBHelper extends SQLiteOpenHelper
 
         Trx trx = null;
 
-        if (cursor.moveToFirst())
+        if(cursor.moveToFirst())
         {
             trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
@@ -635,7 +635,7 @@ public class DBHelper extends SQLiteOpenHelper
 
         Trx trx = null;
 
-        if (cursor.moveToFirst())
+        if(cursor.moveToFirst())
         {
             trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
@@ -687,7 +687,7 @@ public class DBHelper extends SQLiteOpenHelper
         List<String> result = new ArrayList<>();
         Cursor cursor = db.rawQuery(sql, new String[]{userId});
 
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
             result.add(cursor.getString(0));
         }
@@ -735,7 +735,7 @@ public class DBHelper extends SQLiteOpenHelper
                          .append(")")
                          .toString());
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -769,7 +769,7 @@ public class DBHelper extends SQLiteOpenHelper
         try
         {
             Cursor cursor = db.rawQuery(query, new String[]{approveUser});
-            while (cursor.moveToNext())
+            while(cursor.moveToNext())
             {
                 Doc doc = new Doc();
                 doc.setTrxNo(cursor.getString(0));
@@ -791,7 +791,7 @@ public class DBHelper extends SQLiteOpenHelper
             }
             cursor.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -836,10 +836,10 @@ public class DBHelper extends SQLiteOpenHelper
 
     public int getPackActiveSeconds(String trxNo)
     {
-        try (Cursor cursor = db.rawQuery("SELECT ACTIVE_SECONDS FROM PACK_DOC WHERE TRX_NO=?",
-                                         new String[]{trxNo}))
+        try(Cursor cursor = db.rawQuery("SELECT ACTIVE_SECONDS FROM PACK_DOC WHERE TRX_NO=?",
+                                        new String[]{trxNo}))
         {
-            if (cursor.moveToNext())
+            if(cursor.moveToNext())
             {
                 return cursor.getInt(0);
             }
@@ -925,7 +925,7 @@ public class DBHelper extends SQLiteOpenHelper
 
         int position = 0;
 
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
             Trx trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
@@ -953,7 +953,7 @@ public class DBHelper extends SQLiteOpenHelper
             trx.setPriority(cursor.getInt(22));
             trx.setPosition(position);
 
-            if (!trxList.contains(trx))
+            if(!trxList.contains(trx))
             {
                 trxList.add(trx);
                 position++;
@@ -972,7 +972,7 @@ public class DBHelper extends SQLiteOpenHelper
 
         Trx trx = null;
 
-        if (cursor.moveToFirst())
+        if(cursor.moveToFirst())
         {
             trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
@@ -1012,7 +1012,7 @@ public class DBHelper extends SQLiteOpenHelper
 
         Trx trx = null;
 
-        if (cursor.moveToFirst())
+        if(cursor.moveToFirst())
         {
             trx = new Trx();
             trx.setTrxId(cursor.getInt(0));
@@ -1065,7 +1065,7 @@ public class DBHelper extends SQLiteOpenHelper
         List<String> result = new ArrayList<>();
         Cursor cursor = db.rawQuery(sql, new String[]{userId});
 
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
             result.add(cursor.getString(0));
         }
@@ -1128,7 +1128,7 @@ public class DBHelper extends SQLiteOpenHelper
                                     "FROM SHIP_TRX WHERE USER_ID=? " +
                                     "GROUP BY REGION_CODE, DRIVER_CODE, DRIVER_NAME, VEHICLE_CODE, USER_ID",
                                     new String[]{userId});
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
             doc = new ShipDoc();
             doc.setRegionCode(cursor.getString(0));
@@ -1151,7 +1151,7 @@ public class DBHelper extends SQLiteOpenHelper
 
         Cursor cursor = db.rawQuery("SELECT * FROM SHIP_TRX WHERE DRIVER_CODE=?",
                                     new String[]{driver});
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
             trx = new ShipTrx();
             trx.setRegionCode(cursor.getString(0));
@@ -1184,7 +1184,7 @@ public class DBHelper extends SQLiteOpenHelper
         boolean shipped = false;
         Cursor cursor = db.rawQuery("SELECT * FROM SHIP_TRX WHERE SRC_TRX_NO=?",
                                     new String[]{trxNo});
-        if (cursor.moveToFirst())
+        if(cursor.moveToFirst())
         {
             shipped = true;
         }
@@ -1200,7 +1200,7 @@ public class DBHelper extends SQLiteOpenHelper
                                  INV_CODE + "=?",
                                  new String[]{invCode},
                                  BARCODE, null, null, null);
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
             barcodeList.append("\n").append(cursor.getString(0));
         }
@@ -1262,7 +1262,7 @@ public class DBHelper extends SQLiteOpenHelper
         try
         {
             Cursor cursor = db.rawQuery(query, null);
-            while (cursor.moveToNext())
+            while(cursor.moveToNext())
             {
                 Doc doc = new Doc();
                 doc.setTrxNo(cursor.getString(0));
@@ -1283,7 +1283,7 @@ public class DBHelper extends SQLiteOpenHelper
             }
             cursor.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -1300,7 +1300,7 @@ public class DBHelper extends SQLiteOpenHelper
         try
         {
             Cursor cursor = db.rawQuery(query, null);
-            while (cursor.moveToNext())
+            while(cursor.moveToNext())
             {
                 Doc doc = new Doc();
                 doc.setTrxNo(cursor.getString(0));
@@ -1321,7 +1321,7 @@ public class DBHelper extends SQLiteOpenHelper
             }
             cursor.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -1375,7 +1375,7 @@ public class DBHelper extends SQLiteOpenHelper
         try
         {
             Cursor cursor = db.rawQuery(query, new String[]{trxNo});
-            while (cursor.moveToNext())
+            while(cursor.moveToNext())
             {
                 Trx trx = new Trx();
                 trx.setTrxId(cursor.getInt(0));
@@ -1397,7 +1397,7 @@ public class DBHelper extends SQLiteOpenHelper
             }
             cursor.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -1426,9 +1426,9 @@ public class DBHelper extends SQLiteOpenHelper
         String query = "SELECT TRX_ID FROM APPROVE_TRX";
         Cursor cursor = db.rawQuery(query, null, null);
         int n = 1;
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
-            if (n != cursor.getInt(0))
+            if(n != cursor.getInt(0))
             {
                 break;
             }
@@ -1486,7 +1486,7 @@ public class DBHelper extends SQLiteOpenHelper
         try
         {
             Cursor cursor = db.rawQuery(query, null);
-            while (cursor.moveToNext())
+            while(cursor.moveToNext())
             {
                 Doc doc = new Doc();
                 doc.setTrxNo(cursor.getString(0));
@@ -1503,7 +1503,7 @@ public class DBHelper extends SQLiteOpenHelper
             }
             cursor.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -1560,7 +1560,7 @@ public class DBHelper extends SQLiteOpenHelper
         try
         {
             Cursor cursor = db.rawQuery(query, new String[]{trxNo});
-            while (cursor.moveToNext())
+            while(cursor.moveToNext())
             {
                 Trx trx = new Trx();
                 trx.setTrxId(cursor.getInt(0));
@@ -1578,7 +1578,7 @@ public class DBHelper extends SQLiteOpenHelper
             }
             cursor.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             e.printStackTrace();
         }
@@ -1607,9 +1607,9 @@ public class DBHelper extends SQLiteOpenHelper
         String query = "SELECT TRX_ID FROM INTERNAL_USE_TRX";
         Cursor cursor = db.rawQuery(query, null, null);
         int n = 1;
-        while (cursor.moveToNext())
+        while(cursor.moveToNext())
         {
-            if (n != cursor.getInt(0))
+            if(n != cursor.getInt(0))
             {
                 break;
             }

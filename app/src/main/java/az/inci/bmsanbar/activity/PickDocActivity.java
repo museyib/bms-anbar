@@ -65,15 +65,17 @@ public class PickDocActivity extends AppBaseActivity
         newDocsIncomplete = findViewById(R.id.newDocsIncomplete);
         newDocsIncomplete.setOnClickListener(v -> {
             List<String> list = dbHelper.getIncompletePickDocList(config().getUser().getId());
-            if (list.size() == 0)
+            if(list.size() == 0)
             {
                 showMessageDialog(getString(R.string.info), getString(R.string.no_incomplete_doc),
                                   ic_dialog_alert);
                 playSound(SOUND_FAIL);
             }
             else
-                for (String trxNo : list)
-                {loadDocFromServer(trxNo);}
+                for(String trxNo : list)
+                {
+                    loadDocFromServer(trxNo);
+                }
         });
     }
 
@@ -96,7 +98,7 @@ public class PickDocActivity extends AppBaseActivity
         docList = dbHelper.getPickDocsByPickUser(config().getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, docList);
         docListView.setAdapter(docAdapter);
-        if (docList.size() == 0)
+        if(docList.size() == 0)
             findViewById(R.id.header).setVisibility(View.GONE);
         else
             findViewById(R.id.header).setVisibility(View.VISIBLE);
@@ -138,7 +140,7 @@ public class PickDocActivity extends AppBaseActivity
             url = addRequestParameters(url, parameters);
             Doc doc = getSimpleObject(url, "GET", null, Doc.class);
 
-            if (doc != null)
+            if(doc != null)
                 runOnUiThread(() -> {
                     dbHelper.addPickDoc(doc);
                     dbHelper.updatePickTrxStatus(doc.getTrxNo(), 1);
@@ -160,11 +162,13 @@ public class PickDocActivity extends AppBaseActivity
             Doc doc = getSimpleObject(url, "GET", null, Doc.class);
 
             runOnUiThread(() -> {
-                if (doc != null)
+                if(doc != null)
                 {
                     dbHelper.addPickDoc(doc);
-                    for (Trx trx : doc.getTrxList())
-                    {dbHelper.addPickTrx(trx);}
+                    for(Trx trx : doc.getTrxList())
+                    {
+                        dbHelper.addPickTrx(trx);
+                    }
                 }
                 else
                 {
@@ -191,7 +195,7 @@ public class PickDocActivity extends AppBaseActivity
         {
             Doc doc = getItem(position);
 
-            if (convertView == null)
+            if(convertView == null)
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.pick_doc_item_layout, parent, false);
 

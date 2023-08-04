@@ -41,7 +41,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="240dp"
-            app:layout_constraintBottom_toTopOf="@+id/camera_scanner"
+            app:layout_constraintBottom_toTopOf="@+id/scan_cam"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/top"
@@ -59,7 +59,7 @@
     </ScrollView>
 
     <Button
-            android:id="@+id/camera_scanner"
+            android:id="@+id/scan_cam"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/camera_scanner"

@@ -49,7 +49,7 @@ public class WaitingPackDocActivity extends AppBaseActivity
     {
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
-        if (docList.size() == 0)
+        if(docList.size() == 0)
         {
             findViewById(R.id.header).setVisibility(View.GONE);
         }
@@ -68,7 +68,7 @@ public class WaitingPackDocActivity extends AppBaseActivity
             parameters.put("user-id", config().getUser().getId());
             url = addRequestParameters(url, parameters);
             docList = getListData(url, "GET", null, Doc[].class);
-            if (docList != null)
+            if(docList != null)
             {
                 runOnUiThread(this::loadData);
             }
@@ -104,7 +104,7 @@ public class WaitingPackDocActivity extends AppBaseActivity
         {
             Doc doc = list.get(position);
 
-            if (convertView == null)
+            if(convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.pack_doc_item_layout, parent, false);

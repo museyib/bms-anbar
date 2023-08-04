@@ -27,8 +27,8 @@ public class ShipTrx
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
         ShipTrx trx = (ShipTrx) o;
         return srcTrxNo.equals(trx.srcTrxNo);
     }

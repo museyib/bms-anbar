@@ -1,5 +1,7 @@
 package az.inci.bmsanbar.activity;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 
 import android.app.AlertDialog;
@@ -61,21 +63,12 @@ import az.inci.bmsanbar.model.v2.ProductApproveRequestItem;
 
 public class ProductApproveTrxActivity extends ScannerSupportActivity
 {
-
-    ImageButton selectInvBtn;
-    ImageButton uploadBtn;
-    ImageButton printBtn;
-    ImageButton cameraScanner;
-    RecyclerView trxListView;
-    SearchView searchView;
-    EditText notesEdit;
-
-    List<Trx> trxList;
-    List<Inventory> invList;
-
-    int mode;
-    boolean docCreated;
-    String trxNo;
+    private RecyclerView trxListView;
+    private SearchView searchView;
+    private List<Trx> trxList;
+    private List<Inventory> invList;
+    private boolean docCreated;
+    private String trxNo;
     private String notes = "";
 
     @Override
@@ -83,15 +76,16 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.product_approve_trx_layout);
-        selectInvBtn = findViewById(R.id.inv_list);
-        uploadBtn = findViewById(R.id.send);
-        printBtn = findViewById(R.id.print);
-        cameraScanner = findViewById(R.id.camera_scanner);
         trxListView = findViewById(R.id.trx_list_view);
-        notesEdit = findViewById(R.id.doc_description);
 
-        mode = getIntent().getIntExtra("mode", AppConfig.VIEW_MODE);
-        if (mode == AppConfig.VIEW_MODE)
+        ImageButton selectInvBtn = findViewById(R.id.inv_list);
+        ImageButton uploadBtn = findViewById(R.id.send);
+        ImageButton printBtn = findViewById(R.id.print);
+        ImageButton scanCam = findViewById(R.id.scan_cam);
+        EditText notesEdit = findViewById(R.id.doc_description);
+
+        int mode = getIntent().getIntExtra("mode", AppConfig.VIEW_MODE);
+        if(mode == AppConfig.VIEW_MODE)
         {
             docCreated = true;
             trxNo = getIntent().getStringExtra("trxNo");
@@ -102,7 +96,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             trxNo = new SimpleDateFormat("yyyyMMddhhmmss", Locale.getDefault()).format(new Date());
 
         printBtn.setOnClickListener(v -> {
-            if (trxList.size() > 0)
+            if(trxList.size() > 0)
             {
                 String report = getPrintForm();
                 showProgressDialog(true);
@@ -111,7 +105,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         });
 
         selectInvBtn.setOnClickListener(v -> {
-            if (invList == null) getInvList();
+            if(invList == null) getInvList();
             else showInvList();
         });
 
@@ -127,12 +121,8 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             dialogBuilder.show();
         });
 
-        if (cameraScanning) cameraScanner.setVisibility(View.VISIBLE);
-
-        cameraScanner.setOnClickListener(v -> {
-            Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
-            startActivityForResult(barcodeIntent, 1);
-        });
+        scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
+        scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(1));
 
         notesEdit.addTextChangedListener(new TextWatcher()
         {
@@ -166,7 +156,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
     @Override
     public void onBackPressed()
     {
-        if (!searchView.isIconified()) searchView.setIconified(true);
+        if(!searchView.isIconified()) searchView.setIconified(true);
         else finish();
     }
 
@@ -201,17 +191,6 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         return true;
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != -1 && data != null)
-        {
-            String barcode = data.getStringExtra("barcode");
-            if (barcode != null) onScanComplete(barcode);
-        }
-    }
-
     private void createNewDoc()
     {
         Doc doc = new Doc();
@@ -230,7 +209,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         trxListView.setLayoutManager(new LinearLayoutManager(this));
         trxListView.setAdapter(adapter);
 
-        if (trxList.size() == 0) findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
+        if(trxList.size() == 0) findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
         else findViewById(R.id.trx_list_scroll).setVisibility(View.VISIBLE);
     }
 
@@ -250,7 +229,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             Inventory currentInv = getSimpleObject(url, "GET", null, Inventory.class);
 
-            if (currentInv != null) runOnUiThread(() -> showAddInvDialog(currentInv));
+            if(currentInv != null) runOnUiThread(() -> showAddInvDialog(currentInv));
         }).start();
     }
 
@@ -265,7 +244,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             invList = getListData(url, "GET", null, Inventory[].class);
 
             runOnUiThread(() -> {
-                if (invList != null) showInvList();
+                if(invList != null) showInvList();
             });
         }).start();
     }
@@ -308,7 +287,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
 
     private void showAddInvDialog(Inventory inventory)
     {
-        if (inventory.getInvCode() == null)
+        if(inventory.getInvCode() == null)
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
                               android.R.drawable.ic_dialog_info);
         else
@@ -326,7 +305,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                              {
                                  double qty = Double.parseDouble(qtyEdit.getText().toString());
                                  Trx containingTrx = containingTrx(inventory.getInvCode());
-                                 if (containingTrx.getTrxId() > 0)
+                                 if(containingTrx.getTrxId() > 0)
                                      updateApproveTrxQty(containingTrx,
                                                          qty + containingTrx.getQty());
                                  else
@@ -338,7 +317,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                                  }
                                  loadData();
                              }
-                             catch (NumberFormatException e)
+                             catch(NumberFormatException e)
                              {
                                  showAddInvDialog(inventory);
                              }
@@ -354,7 +333,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
 
     private void showEditInvDialog(Trx trx)
     {
-        if (trx == null)
+        if(trx == null)
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
                               android.R.drawable.ic_dialog_info);
         else
@@ -376,7 +355,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                                  updateApproveTrxQty(trx, qty);
                                  loadData();
                              }
-                             catch (NumberFormatException e)
+                             catch(NumberFormatException e)
                              {
                                  showEditInvDialog(trx);
                              }
@@ -393,7 +372,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
     private void addApproveTrx(Trx trx)
     {
         dbHelper.addApproveTrx(trx);
-        if (!docCreated) createNewDoc();
+        if(!docCreated) createNewDoc();
         loadData();
     }
 
@@ -406,9 +385,9 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
 
     private Trx containingTrx(String invCode)
     {
-        for (Trx trx : trxList)
+        for(Trx trx : trxList)
         {
-            if (trx.getInvCode().equals(invCode) && !trx.isReturned())
+            if(trx.getInvCode().equals(invCode) && !trx.isReturned())
                 return trx;
         }
 
@@ -427,7 +406,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             request.setNotes(notes);
             request.setUserId(config().getUser().getId());
             List<ProductApproveRequestItem> requestItems = new ArrayList<>();
-            for (Trx trx : trxList)
+            for(Trx trx : trxList)
             {
                 ProductApproveRequestItem requestItem = new ProductApproveRequestItem();
                 requestItem.setInvCode(trx.getInvCode());
@@ -440,7 +419,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             request.setRequestItems(requestItems);
 
             executeUpdate(url, request, message -> {
-                if (message.getStatusCode() == 0)
+                if(message.getStatusCode() == 0)
                 {
                     dbHelper.deleteApproveDoc(trxNo);
                     finish();
@@ -481,24 +460,24 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         PrintAttributes.Builder builder = new PrintAttributes.Builder().setMediaSize(
                 PrintAttributes.MediaSize.ISO_A4);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
             printAdapter = webView.createPrintDocumentAdapter(jobName);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 builder.setDuplexMode(PrintAttributes.DUPLEX_MODE_LONG_EDGE);
             printManager.print(jobName, printAdapter, builder.build());
         }
         else
             try
             {
-
-                Class<?> printDocumentAdapterClass = Class.forName(
+                Class<?> adapterClass = Class.forName(
                         "android.print.PrintDocumentAdapter");
                 Method createPrintDocumentAdapterMethod = webView.getClass()
                                                                  .getMethod(
                                                                          "createPrintDocumentAdapter");
-                Object printAdapterObject = createPrintDocumentAdapterMethod.invoke(webView);
+                printAdapter = (PrintDocumentAdapter) createPrintDocumentAdapterMethod.invoke(
+                        webView);
 
                 Class<?> printAttributesBuilderClass = Class.forName(
                         "android.print.PrintAttributes$Builder");
@@ -507,14 +486,17 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                 Method buildMethod = printAttributes.getClass().getMethod("build");
                 Object printAttributesBuild = buildMethod.invoke(printAttributes);
 
-                Method printMethod = printManager.getClass()
-                                                 .getMethod("print", String.class,
-                                                            printDocumentAdapterClass,
-                                                            printAttributesBuild.getClass());
-                printMethod.invoke(printManager, jobName, printAdapterObject, builder.build());
+                if(printAttributesBuild != null)
+                {
+                    Method printMethod = printManager.getClass()
+                                                     .getMethod("print", String.class,
+                                                                adapterClass,
+                                                                printAttributesBuild.getClass());
+                    printMethod.invoke(printManager, jobName, printAdapter, builder.build());
+                }
             }
-            catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
-                   IllegalAccessException | InstantiationException e)
+            catch(ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
+                  IllegalAccessException | InstantiationException e)
             {
                 e.printStackTrace();
             }
@@ -535,9 +517,9 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         html = html.concat("<th>Brend</th>");
         html = html.concat("<th>İç sayı</th>");
         html = html.concat("<th>Miqdar</th>");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             Collections.sort(trxList, Comparator.comparing(Trx::getInvCode));
-        for (Trx trx : trxList)
+        for(Trx trx : trxList)
         {
 
             html = html.concat("<tr><td>" + trx.getInvCode() + "</td>");
@@ -593,12 +575,12 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
         {
             Inventory inventory = list.get(position);
-            if (convertView == null)
+            if(convertView == null)
                 convertView = LayoutInflater.from(parent.getContext())
                                             .inflate(R.layout.inv_list_item, parent, false);
             TextView invCode = convertView.findViewById(R.id.inv_code);
             TextView invName = convertView.findViewById(R.id.inv_name);
-            TextView barcode = convertView.findViewById(R.id.barcode);
+            TextView barcode = convertView.findViewById(R.id.scan_cam);
             TextView invBrand = convertView.findViewById(R.id.inv_brand);
 
             invCode.setText(inventory.getInvCode());
@@ -623,14 +605,14 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                     List<Inventory> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for (Inventory inventory : activity.invList)
+                    for(Inventory inventory : activity.invList)
                     {
-                        if (inventory.getBarcode()
-                                     .concat(inventory.getInvCode())
-                                     .concat(inventory.getInvName())
-                                     .concat(inventory.getInvBrand())
-                                     .toLowerCase()
-                                     .contains(constraint))
+                        if(inventory.getBarcode()
+                                    .concat(inventory.getInvCode())
+                                    .concat(inventory.getInvName())
+                                    .concat(inventory.getInvBrand())
+                                    .toLowerCase()
+                                    .contains(constraint))
                             filteredArrayData.add(inventory);
                     }
 
@@ -720,13 +702,13 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                     List<Trx> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for (Trx trx : activity.trxList)
+                    for(Trx trx : activity.trxList)
                     {
-                        if (trx.getInvCode()
-                               .concat(trx.getInvName())
-                               .concat(trx.getInvBrand())
-                               .toLowerCase()
-                               .contains(constraint))
+                        if(trx.getInvCode()
+                              .concat(trx.getInvName())
+                              .concat(trx.getInvBrand())
+                              .toLowerCase()
+                              .contains(constraint))
                             filteredArrayData.add(trx);
                     }
 

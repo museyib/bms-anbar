@@ -1,6 +1,8 @@
 package az.inci.bmsanbar.activity;
 
 import static android.R.drawable.ic_dialog_info;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 
 import android.app.AlertDialog;
@@ -45,42 +47,32 @@ import az.inci.bmsanbar.model.v2.ResetPickRequest;
 public class PickTrxActivity extends ScannerSupportActivity
         implements SearchView.OnQueryTextListener
 {
-
-    List<Trx> trxList;
-    ListView trxListView;
-    ImageButton sendButton;
-    ImageButton barcodeButton;
-    ImageButton equateAll;
-    ImageButton reload;
-    ImageButton reset;
-    SearchView searchView;
-    CheckBox continuousCheck;
-    CheckBox readyCheck;
-    String trxNo;
-    String prevTrxNo;
-    String pickGroup;
-    String pickArea;
-    int focusPosition;
-    boolean onFocus;
-    boolean pickedAll;
-    int activeSeconds;
-    int currentSeconds;
-    long startTime;
+    private List<Trx> trxList;
+    private ListView trxListView;
+    private ImageButton sendButton;
+    private SearchView searchView;
+    private String trxNo;
+    private int focusPosition;
+    private boolean onFocus;
+    private boolean pickedAll;
+    private int activeSeconds;
+    private int currentSeconds;
+    private long startTime;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pick_trx_layout);
-
         sendButton = findViewById(R.id.send);
-        barcodeButton = findViewById(R.id.barcode);
         trxListView = findViewById(R.id.trx_list);
-        equateAll = findViewById(R.id.equate_all);
-        reload = findViewById(R.id.reload);
-        reset = findViewById(R.id.reset);
-        continuousCheck = findViewById(R.id.continuous_check);
-        readyCheck = findViewById(R.id.readyToSend);
+
+        ImageButton scanCam = findViewById(R.id.scan_cam);
+        ImageButton equateAll = findViewById(R.id.equate_all);
+        ImageButton reload = findViewById(R.id.reload);
+        ImageButton reset = findViewById(R.id.reset);
+        CheckBox continuousCheck = findViewById(R.id.continuous_check);
+        CheckBox readyCheck = findViewById(R.id.readyToSend);
 
         currentSeconds = 0;
 
@@ -96,15 +88,14 @@ public class PickTrxActivity extends ScannerSupportActivity
                     b ? Color.GREEN : getResources().getColor(R.color.colorZeroQty));
         });
 
-        if (cameraScanning) barcodeButton.setVisibility(View.VISIBLE);
+        if(cameraScanning) scanCam.setVisibility(View.VISIBLE);
 
         loadFooter();
 
         Intent intent = getIntent();
         trxNo = intent.getStringExtra("trxNo");
-        prevTrxNo = intent.getStringExtra("prevTrxNo");
-        pickGroup = intent.getStringExtra("pickGroup");
-        pickArea = intent.getStringExtra("pickArea");
+        String prevTrxNo = intent.getStringExtra("prevTrxNo");
+        String pickArea = intent.getStringExtra("pickArea");
         activeSeconds = dbHelper.getPickActiveSeconds(trxNo);
         setTitle(prevTrxNo + " - " + pickArea);
 
@@ -121,8 +112,8 @@ public class PickTrxActivity extends ScannerSupportActivity
         });
 
         sendButton.setOnClickListener(v -> {
-            if (trxList.size() > 0)
-                if (pickedAll) sendTrx();
+            if(trxList.size() > 0)
+                if(pickedAll) sendTrx();
                 else
                 {
                     AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
@@ -135,12 +126,14 @@ public class PickTrxActivity extends ScannerSupportActivity
                 }
         });
 
-        barcodeButton.setOnClickListener(v -> {
+
+        scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
+        scanCam.setOnClickListener(v -> {
             Intent barcodeIntent = new Intent(PickTrxActivity.this, BarcodeScannerCamera.class);
             barcodeIntent.putExtra("serialScan", isContinuous);
             barcodeIntent.putExtra("trxNo", trxNo);
             barcodeIntent.putExtra("trxType", "pick");
-            startActivityForResult(barcodeIntent, 1);
+            barcodeResultLauncher.launch(1);
         });
 
         equateAll.setOnClickListener(v -> {
@@ -148,7 +141,7 @@ public class PickTrxActivity extends ScannerSupportActivity
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setMessage("Sayları eyniləşdirmək istəyirsiniz?")
                          .setNegativeButton("Bəli", (dialogInterface, i) -> {
-                             for (Trx trx : trxList)
+                             for(Trx trx : trxList)
                              {
                                  trx.setPickedQty(trx.getQty());
                                  dbHelper.updatePickTrx(trx);
@@ -165,7 +158,7 @@ public class PickTrxActivity extends ScannerSupportActivity
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setMessage("Sayları sıfırlamaq istəyirsiniz?")
                          .setNegativeButton("Bəli", (dialogInterface, i) -> {
-                             for (Trx trx : trxList)
+                             for(Trx trx : trxList)
                              {
                                  trx.setPickedQty(0);
                                  dbHelper.updatePickTrx(trx);
@@ -183,15 +176,15 @@ public class PickTrxActivity extends ScannerSupportActivity
             dialogBuilder.setMessage("Sənədi geri göndərmək istəyirsiniz?")
                          .setNegativeButton("Bəli", (dialogInterface, i) -> {
                              boolean modified = false;
-                             for (Trx trx : trxList)
+                             for(Trx trx : trxList)
                              {
-                                 if (trx.getPickedQty() > 0)
+                                 if(trx.getPickedQty() > 0)
                                  {
                                      modified = true;
                                      break;
                                  }
                              }
-                             if (modified)
+                             if(modified)
                                  showMessageDialog(getString(R.string.info),
                                                    "Sənəddə dəyişiklik edilib, geri göndərilə bilməz!",
                                                    ic_dialog_info);
@@ -234,7 +227,7 @@ public class PickTrxActivity extends ScannerSupportActivity
     private void checkInvBarcode(InvBarcode invBarcode)
     {
         Trx trx = dbHelper.getPickTrxByInvCode(invBarcode.getInvCode(), trxNo);
-        if (trx == null)
+        if(trx == null)
         {
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
                               ic_dialog_info);
@@ -252,7 +245,7 @@ public class PickTrxActivity extends ScannerSupportActivity
 
         onFocus = true;
         focusPosition = trxList.indexOf(trx);
-        if (trx.getPickedQty() >= trx.getQty())
+        if(trx.getPickedQty() >= trx.getQty())
         {
             showMessageDialog(getString(R.string.info), getString(R.string.already_picked),
                               ic_dialog_info);
@@ -260,11 +253,11 @@ public class PickTrxActivity extends ScannerSupportActivity
         }
         else
         {
-            if (!isContinuous) showEditPickedQtyDialog(trx);
+            if(!isContinuous) showEditPickedQtyDialog(trx);
             else
             {
                 double qty = trx.getPickedQty() + trx.getUomFactor();
-                if (qty > trx.getQty()) qty = trx.getQty();
+                if(qty > trx.getQty()) qty = trx.getQty();
                 trx.setPickedQty(qty);
                 dbHelper.updatePickTrx(trx);
             }
@@ -276,7 +269,7 @@ public class PickTrxActivity extends ScannerSupportActivity
     public void onScanComplete(String barcode)
     {
         Trx trx = dbHelper.getPickTrxByBarcode(barcode, trxNo);
-        if (trx != null) goToScannedItem(trx);
+        if(trx != null) goToScannedItem(trx);
         else getInvBarcodeFromServer(barcode, this::checkInvBarcode);
 
         loadData();
@@ -319,11 +312,11 @@ public class PickTrxActivity extends ScannerSupportActivity
         dialogBuilder.setView(view)
                      .setPositiveButton(R.string.ok, (dialog1, which) -> {
                          double pickedQty;
-                         if (!pickedQtyEdit.getText().toString().isEmpty())
+                         if(!pickedQtyEdit.getText().toString().isEmpty())
                              pickedQty = Double.parseDouble(pickedQtyEdit.getText().toString());
                          else pickedQty = -1;
 
-                         if (pickedQty < 0 || pickedQty > trx.getQty())
+                         if(pickedQty < 0 || pickedQty > trx.getQty())
                          {
                              Toast.makeText(this, R.string.quantity_not_correct, Toast.LENGTH_LONG)
                                   .show();
@@ -370,26 +363,15 @@ public class PickTrxActivity extends ScannerSupportActivity
     public boolean onQueryTextChange(String newText)
     {
         TrxAdapter adapter = (TrxAdapter) trxListView.getAdapter();
-        if (adapter != null) adapter.getFilter().filter(newText);
+        if(adapter != null) adapter.getFilter().filter(newText);
         return true;
     }
 
     @Override
     public void onBackPressed()
     {
-        if (!searchView.isIconified()) searchView.setIconified(true);
+        if(!searchView.isIconified()) searchView.setIconified(true);
         else super.onBackPressed();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != -1 && data != null)
-        {
-            String barcode = data.getStringExtra("barcode");
-            if (barcode != null) onScanComplete(barcode);
-        }
     }
 
     @Override
@@ -422,7 +404,7 @@ public class PickTrxActivity extends ScannerSupportActivity
         currentSeconds += (System.currentTimeMillis() - startTime) / 1000;
         activeSeconds += currentSeconds;
         Log.e("SEC", String.valueOf(activeSeconds));
-        for (Trx trx : trxList)
+        for(Trx trx : trxList)
         {
             CollectTrxRequest request = new CollectTrxRequest();
             request.setTrxId(trx.getTrxId());
@@ -451,7 +433,7 @@ public class PickTrxActivity extends ScannerSupportActivity
         request.setTrxNo(trxNo);
         request.setUserId(config().getUser().getId());
         executeUpdate(url, request, message -> {
-            if (message.getStatusCode() == 0)
+            if(message.getStatusCode() == 0)
             {
                 dbHelper.deletePickTrx(trxNo);
                 finish();
@@ -487,19 +469,20 @@ public class PickTrxActivity extends ScannerSupportActivity
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
         {
             Trx trx = list.get(position);
-            if (convertView == null)
+            if(convertView == null)
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.pick_trx_item_layout, parent, false);
 
-            if (position == activity.focusPosition && activity.onFocus)
+            if(position == activity.focusPosition && activity.onFocus)
                 convertView.setBackgroundColor(Color.LTGRAY);
             else convertView.setBackgroundColor(Color.TRANSPARENT);
 
-            if (trx.getPickedQty() == 0)
+            if(trx.getPickedQty() == 0)
                 convertView.setBackgroundColor(
                         activity.getResources().getColor(R.color.colorZeroQty));
-            else if (trx.getPickedQty() < trx.getQty())
-                convertView.setBackgroundColor(Color.YELLOW);
+            else
+                if(trx.getPickedQty() < trx.getQty())
+                    convertView.setBackgroundColor(Color.YELLOW);
 
             TextView invCode = convertView.findViewById(R.id.inv_code);
             TextView invName = convertView.findViewById(R.id.inv_name);
@@ -514,7 +497,7 @@ public class PickTrxActivity extends ScannerSupportActivity
             pickedQty.setText(activity.decimalFormat.format(trx.getPickedQty()));
             convertView.setTag(trx);
 
-            if (trx.getPickedQty() < trx.getQty()) activity.pickedAll = false;
+            if(trx.getPickedQty() < trx.getQty()) activity.pickedAll = false;
 
             return convertView;
         }
@@ -532,13 +515,13 @@ public class PickTrxActivity extends ScannerSupportActivity
                     List<Trx> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for (Trx trx : activity.trxList)
+                    for(Trx trx : activity.trxList)
                     {
-                        if (trx.getInvCode()
-                               .concat(trx.getInvName())
-                               .concat(trx.getBarcode())
-                               .toLowerCase()
-                               .contains(constraint)) filteredArrayData.add(trx);
+                        if(trx.getInvCode()
+                              .concat(trx.getInvName())
+                              .concat(trx.getBarcode())
+                              .toLowerCase()
+                              .contains(constraint)) filteredArrayData.add(trx);
                     }
 
                     results.count = filteredArrayData.size();

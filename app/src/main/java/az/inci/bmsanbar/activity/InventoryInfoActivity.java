@@ -1,5 +1,7 @@
 package az.inci.bmsanbar.activity;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 
 import android.app.AlertDialog;
@@ -15,8 +17,6 @@ import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,21 +27,12 @@ import az.inci.bmsanbar.model.v2.InvInfo;
 
 public class InventoryInfoActivity extends ScannerSupportActivity
 {
-
-    TextView infoText;
-    EditText keywordEdit;
-    Spinner searchField;
-    Button searchBtn;
-    Button cameraBtn;
-    Button editAttributes;
-    Button editShelf;
-    Button editBarcodes;
-    Button viewImage;
-
-    String invCode;
-    String invName;
-    String defaultUomCode;
-    String keyword;
+    private TextView infoText;
+    private EditText keywordEdit;
+    private Spinner searchField;
+    private String invCode;
+    private String invName;
+    private String defaultUomCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -51,23 +42,20 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         infoText = findViewById(R.id.good_info);
         keywordEdit = findViewById(R.id.keyword_edit);
         searchField = findViewById(R.id.search_field);
-        searchBtn = findViewById(R.id.search);
-        cameraBtn = findViewById(R.id.camera_scanner);
-        editAttributes = findViewById(R.id.edit_attributes);
-        editShelf = findViewById(R.id.edit_shelf_location);
-        editBarcodes = findViewById(R.id.edit_barcodes);
-        viewImage = findViewById(R.id.photo);
 
-        if (cameraScanning)
-        {
-            findViewById(R.id.camera_scanner).setVisibility(View.VISIBLE);
-        }
+        Button searchBtn = findViewById(R.id.search);
+        Button scanCam = findViewById(R.id.scan_cam);
+        Button editAttributes = findViewById(R.id.edit_attributes);
+        Button editShelf = findViewById(R.id.edit_shelf_location);
+        Button editBarcodes = findViewById(R.id.edit_barcodes);
+        Button viewImage = findViewById(R.id.photo);
 
+        scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
         searchField.setAdapter(ArrayAdapter.createFromResource(this, R.array.search_field_list,
                                                                R.layout.spinner_item));
 
         searchBtn.setOnClickListener(v -> searchKeyword());
-        cameraBtn.setOnClickListener(v -> scanWithCamera());
+        scanCam.setOnClickListener(v -> scanWithCamera());
         editAttributes.setOnClickListener(v -> editAttributes());
         editBarcodes.setOnClickListener(v -> editBarcodes());
         viewImage.setOnClickListener(v -> viewImage());
@@ -78,7 +66,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     protected void onResume()
     {
         super.onResume();
-        if (invCode != null)
+        if(invCode != null)
         {
             getDataByInvCode(invCode);
         }
@@ -92,7 +80,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     public void viewImage()
     {
-        if (invCode != null)
+        if(invCode != null)
         {
             Intent intent = new Intent(this, PhotoActivity.class);
             intent.putExtra("invCode", invCode);
@@ -108,9 +96,9 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     public void searchKeyword()
     {
-        keyword = keywordEdit.getText().toString();
+        String keyword = keywordEdit.getText().toString();
 
-        if (keyword.isEmpty())
+        if(keyword.isEmpty())
         {
             showMessageDialog(getString(R.string.info), getString(R.string.keyword_not_entered),
                               android.R.drawable.ic_dialog_info);
@@ -124,7 +112,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     private void showResultListDialog(List<Inventory> list)
     {
-        if (list.size() == 0)
+        if(list.size() == 0)
         {
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
                               android.R.drawable.ic_dialog_alert);
@@ -173,7 +161,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     private void getInfo(String url)
     {
         InvInfo invInfo = getSimpleObject(url, "GET", null, InvInfo.class);
-        if (invInfo != null)
+        if(invInfo != null)
         {
             runOnUiThread(() -> printInfo(invInfo));
         }
@@ -181,7 +169,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     private void printInfo(InvInfo invInfo)
     {
-        if (invInfo.getInvCode() == null)
+        if(invInfo.getInvCode() == null)
         {
             showMessageDialog(getString(R.string.error), getString(R.string.good_not_found),
                               android.R.drawable.ic_dialog_alert);
@@ -201,20 +189,19 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     public void scanWithCamera()
     {
-        Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
-        startActivityForResult(barcodeIntent, 1);
+        barcodeResultLauncher.launch(1);
     }
 
     public void editAttributes()
     {
-        if (!config().getUser().isAttributeFlag())
+        if(!config().getUser().isAttributeFlag())
         {
             showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                               android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
-        if (invCode != null)
+        if(invCode != null)
         {
             Intent intent = new Intent(this, EditAttributesActivity.class);
             intent.putExtra("invCode", invCode);
@@ -261,7 +248,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             List<Inventory> inventoryList = getListData(url, "GET", null, Inventory[].class);
             runOnUiThread(() -> {
-                if (inventoryList != null)
+                if(inventoryList != null)
                 {
                     showResultListDialog(inventoryList);
                 }
@@ -269,23 +256,9 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }).start();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != -1 && data != null)
-        {
-            String barcode = data.getStringExtra("barcode");
-            if (barcode != null)
-            {
-                onScanComplete(barcode);
-            }
-        }
-    }
-
     public void editBarcodes()
     {
-        if (invCode != null)
+        if(invCode != null)
         {
             Intent intent = new Intent(this, EditBarcodesActivity.class);
             intent.putExtra("invCode", invCode);

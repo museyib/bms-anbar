@@ -27,8 +27,8 @@ public class Uom
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
         Uom uom = (Uom) o;
         return Objects.equals(uomCode, uom.uomCode);
     }

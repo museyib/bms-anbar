@@ -112,7 +112,7 @@ public class InternalUseDocActivity extends AppBaseActivity
     public void loadData()
     {
         docList = dbHelper.getInternalUseDocList();
-        if (docList.size() == 0)
+        if(docList.size() == 0)
         {
             findViewById(R.id.doc_list_scroll).setVisibility(View.INVISIBLE);
         }
@@ -145,7 +145,7 @@ public class InternalUseDocActivity extends AppBaseActivity
         {
             Doc doc = list.get(position);
 
-            if (convertView == null)
+            if(convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.internal_use_doc_item_layout, parent,

@@ -52,7 +52,7 @@
                 tools:ignore="ImageContrastCheck" />
 
         <ImageButton
-                android:id="@+id/camera_scanner"
+                android:id="@+id/scan_cam"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:contentDescription="@string/camera_scanner"

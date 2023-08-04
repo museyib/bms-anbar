@@ -115,6 +115,7 @@
         <activity android:name=".activity.InternalUseDocActivity" />
         <activity android:name=".activity.InternalUseTrxActivity" />
         <activity android:name=".activity.ConfirmDeliveryActivity" />
+        <activity android:name="az.inci.bmsanbar.activity.BarcodeScannerCameraV2" />
     </application>
 
 </manifest>

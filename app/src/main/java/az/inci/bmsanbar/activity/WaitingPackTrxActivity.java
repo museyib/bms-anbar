@@ -64,7 +64,7 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         info = info.replaceAll("\\\\n", "\n");
         info += "\n\nÖlçü vahidi: " + trx.getUom();
         info += "\n\nBrend: " + trx.getInvBrand();
-        if (!trx.getPickUser().equals("null"))
+        if(!trx.getPickUser().equals("null"))
         {
             info += "\n\nYığan: " + trx.getPickUser();
         }
@@ -97,14 +97,14 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         showProgressDialog(true);
         new Thread(() -> {
             trxList = getTrxList();
-            if (trxList != null) runOnUiThread(this::loadData);
+            if(trxList != null) runOnUiThread(this::loadData);
         }).start();
     }
 
     @Override
     protected void loadData()
     {
-        if (trxList.size() > 0)
+        if(trxList.size() > 0)
         {
             TrxAdapter trxAdapter = new TrxAdapter(this, R.layout.pack_trx_item_layout, trxList);
             trxListView.setAdapter(trxAdapter);
@@ -144,14 +144,14 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         {
             Trx trx = list.get(position);
 
-            if (convertView == null)
+            if(convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.waiting_pack_trx_item_layout, parent,
                                                      false);
             }
 
-            switch (trx.getPickStatus())
+            switch(trx.getPickStatus())
             {
                 case "P":
                     convertView.setBackgroundColor(Color.GREEN);

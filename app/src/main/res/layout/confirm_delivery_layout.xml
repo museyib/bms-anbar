@@ -33,26 +33,14 @@
             app:layout_constraintTop_toBottomOf="@id/driver" />
 
     <Button
-            android:id="@+id/scan_driver_code"
+            android:id="@+id/scan_cam"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_margin="5dp"
+            android:layout_height="wrap_content"
             android:contentDescription="@string/driver"
             android:text="@string/scan"
             android:visibility="gone"
-            app:layout_constraintStart_toEndOf="@id/driver_name"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-            android:id="@+id/scan_new_doc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/add_new_doc"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="@id/ship_trx_list_view"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/driver_name" />
+            app:layout_constraintTop_toBottomOf="@id/driver_name"
+            app:layout_constraintEnd_toStartOf="@+id/cancel_button" />
 
     <ImageButton
             android:id="@+id/send"
@@ -70,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
-            app:layout_constraintEnd_toStartOf="@+id/scan_new_doc"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/driver_name" />
 
     <ListView

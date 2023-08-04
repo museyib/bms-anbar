@@ -1,94 +1,68 @@
 package az.inci.bmsanbar.activity;
 
-import android.Manifest;
+import static android.Manifest.permission.CAMERA;
+import static android.R.drawable.ic_dialog_alert;
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.media.ToneGenerator;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
+import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
+import com.google.android.gms.vision.Detector.Detections;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
-import java.lang.reflect.Field;
+import java.io.IOException;
 
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.Trx;
 
-@SuppressWarnings("deprecation")
-public class BarcodeScannerCamera extends AppBaseActivity
-{
 
-    private static final int REQUEST_CAMERA_PERMISSION = 201;
-    Camera camera;
-    BarcodeDetector barcodeDetector;
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+public class BarcodeScannerCameraV2 extends AppBaseActivity
+{
+    private static final int CAMERA_PERMISSION = 200;
     Button add;
     TextView goodInfo;
     String trxType;
     boolean isContinuous;
-    Camera.AutoFocusCallback myAutoFocusCallback = (arg0, arg1) -> {
-
-    };
+    private CameraDevice cameraDevice;
     private SurfaceView surfaceView;
+    private Handler backgroundHandler;
+    private HandlerThread backgroundThread;
     private CameraSource cameraSource;
+    private CameraDevice.StateCallback stateCallback;
     private ToneGenerator toneGenerator;
-    private SurfaceHolder surfaceHolder;
     private String trxNo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_barcode_scanner_camera);
-        add = findViewById(R.id.increase);
-        goodInfo = findViewById(R.id.good_info);
-
-        isContinuous = getIntent().getBooleanExtra("serialScan", false);
-
-        if(isContinuous)
-        {
-            trxNo = getIntent().getStringExtra("trxNo");
-            trxType = getIntent().getStringExtra("trxType");
-            soundPool = new SoundPool(10, 3, 5);
-            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            add.setVisibility(View.VISIBLE);
-            goodInfo.setVisibility(View.VISIBLE);
-            add.setEnabled(false);
-        }
-
-        toneGenerator = new ToneGenerator(AudioManager.STREAM_MUSIC, 100);
-        surfaceView = findViewById(R.id.surface_view);
-        surfaceHolder = surfaceView.getHolder();
-
-        surfaceView.setOnClickListener(v -> {
-            if(setCamera(cameraSource))
-            {
-                camera.autoFocus(myAutoFocusCallback);
-            }
-        });
-
-        initialiseDetectorsAndSources();
-    }
-
-    @Override
-    protected void loadData()
-    {
-
     }
 
     public void onScanComplete(String barcode)
@@ -107,72 +81,124 @@ public class BarcodeScannerCamera extends AppBaseActivity
         }
     }
 
-    private boolean setCamera(CameraSource cameraSource)
+    protected void startBackgroundThread()
     {
-        Field[] declaredFields = CameraSource.class.getDeclaredFields();
-
-        for(Field field : declaredFields)
-        {
-            if(field.getType() == Camera.class)
-            {
-                field.setAccessible(true);
-
-                try
-                {
-                    camera = (Camera) field.get(cameraSource);
-                    if(camera != null)
-                    {
-                        return true;
-                    }
-                }
-                catch(IllegalAccessException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return false;
+        backgroundThread = new HandlerThread("Camera Background");
+        backgroundThread.start();
+        backgroundHandler = new Handler(backgroundThread.getLooper());
     }
 
-    private void initialiseDetectorsAndSources()
+    protected void stopBackgroundThread()
     {
+        backgroundThread.quitSafely();
+        try
+        {
+            backgroundThread.join();
+            backgroundThread = null;
+            backgroundHandler = null;
+        }
+        catch(InterruptedException e)
+        {
+            showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
+        }
+    }
 
-        barcodeDetector = new BarcodeDetector.Builder(this).setBarcodeFormats(Barcode.ALL_FORMATS)
-                                                           .build();
+    private void openCamera()
+    {
+        initObjects();
 
-        cameraSource = new CameraSource.Builder(this, barcodeDetector).setRequestedPreviewSize(1920,
-                                                                                               1080)
-                                                                      .setAutoFocusEnabled(true)
-                                                                      .build();
+        CameraManager manager = (CameraManager) getSystemService(CAMERA_SERVICE);
+        try
+        {
+            String cameraId = manager.getCameraIdList()[0];
+            if(checkCameraPermission())
+            {
+                startCameraSource();
+                manager.openCamera(cameraId, stateCallback, backgroundHandler);
+                startBackgroundThread();
+            }
+            else
+                requestCameraPermission();
+        }
+        catch(CameraAccessException e)
+        {
+            showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
+        }
+    }
 
+    private void closeCamera()
+    {
+        if(cameraDevice != null)
+        {
+            cameraDevice.close();
+            cameraDevice = null;
+            stopBackgroundThread();
+        }
+    }
 
-        surfaceHolder.addCallback(new SurfaceHolder.Callback()
+    private void initObjects()
+    {
+        setContentView(R.layout.activity_barcode_scanner_camera);
+        surfaceView = findViewById(R.id.surface_view);
+        add = findViewById(R.id.increase);
+        goodInfo = findViewById(R.id.good_info);
+
+        isContinuous = getIntent().getBooleanExtra("serialScan", false);
+
+        if(isContinuous)
+        {
+            trxNo = getIntent().getStringExtra("trxNo");
+            trxType = getIntent().getStringExtra("trxType");
+            soundPool = new SoundPool(10, 3, 5);
+            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            add.setVisibility(View.VISIBLE);
+            goodInfo.setVisibility(View.VISIBLE);
+            add.setEnabled(false);
+        }
+        toneGenerator = new ToneGenerator(AudioManager.STREAM_MUSIC, 100);
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        openCamera();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        closeCamera();
+    }
+
+    private void startCameraSource()
+    {
+        BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(this)
+                .setBarcodeFormats(Barcode.ALL_FORMATS)
+                .build();
+
+        CameraSource.Builder sourceBuilder = new CameraSource.Builder(this, barcodeDetector);
+
+        cameraSource = sourceBuilder.setRequestedPreviewSize(1920, 1080)
+                                    .setAutoFocusEnabled(true)
+                                    .build();
+        Callback surfaceCallback = new Callback()
         {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder holder)
             {
                 try
                 {
-                    if(ActivityCompat.checkSelfPermission(BarcodeScannerCamera.this,
-                                                          Manifest.permission.CAMERA) ==
-                       PackageManager.PERMISSION_GRANTED)
-                    {
+                    if(checkCameraPermission())
                         cameraSource.start(surfaceView.getHolder());
-                    }
                     else
-                    {
-                        ActivityCompat.requestPermissions(BarcodeScannerCamera.this,
-                                                          new String[]{Manifest.permission.CAMERA},
-                                                          REQUEST_CAMERA_PERMISSION);
-                    }
-
+                        requestCameraPermission();
                 }
-                catch(Exception e)
+                catch(IOException e)
                 {
-                    e.printStackTrace();
+                    showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
                 }
-
             }
 
             @Override
@@ -187,7 +213,30 @@ public class BarcodeScannerCamera extends AppBaseActivity
             {
                 cameraSource.stop();
             }
-        });
+        };
+
+        stateCallback = new CameraDevice.StateCallback()
+        {
+            @Override
+            public void onOpened(@NonNull CameraDevice camera)
+            {
+                cameraDevice = camera;
+            }
+
+            @Override
+            public void onDisconnected(@NonNull CameraDevice camera)
+            {
+                cameraDevice.close();
+            }
+
+            @Override
+            public void onError(@NonNull CameraDevice camera, int error)
+            {
+                cameraDevice.close();
+                cameraDevice = null;
+            }
+        };
+        surfaceView.getHolder().addCallback(surfaceCallback);
 
 
         barcodeDetector.setProcessor(new Detector.Processor<Barcode>()
@@ -198,7 +247,7 @@ public class BarcodeScannerCamera extends AppBaseActivity
             }
 
             @Override
-            public void receiveDetections(@NonNull Detector.Detections<Barcode> detections)
+            public void receiveDetections(@NonNull Detections<Barcode> detections)
             {
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
                 if(barcodes.size() != 0)
@@ -208,6 +257,30 @@ public class BarcodeScannerCamera extends AppBaseActivity
                 }
             }
         });
+    }
+
+    private boolean checkCameraPermission()
+    {
+        return ActivityCompat.checkSelfPermission(this, CAMERA) == PERMISSION_GRANTED;
+    }
+
+    private void requestCameraPermission()
+    {
+        ActivityCompat.requestPermissions(this, new String[]{CAMERA}, CAMERA_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == CAMERA_PERMISSION)
+        {
+            if(grantResults[0] == PERMISSION_DENIED)
+                finish();
+            else
+                openCamera();
+        }
     }
 
     private void getAndClose(String barcode)
@@ -334,12 +407,5 @@ public class BarcodeScannerCamera extends AppBaseActivity
             playSound(SOUND_SUCCESS);
         }
         goodInfo.setText(String.format("%s: %s", trx.getInvName(), trx.getPackedQty()));
-    }
-
-    @Override
-    public void onBackPressed()
-    {
-        setResult(-1, new Intent());
-        finish();
     }
 }

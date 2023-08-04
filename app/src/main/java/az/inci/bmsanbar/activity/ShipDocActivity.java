@@ -46,6 +46,7 @@ public class ShipDocActivity extends AppBaseActivity
 
         docListView.setOnItemClickListener((parent, view, position, id) -> {
             ShipDoc doc = (ShipDoc) parent.getItemAtPosition(position);
+            intent.putExtra("mode", AppConfig.VIEW_MODE);
             intent.putExtra("driverCode", doc.getDriverCode());
             intent.putExtra("driverName", doc.getDriverName());
             intent.putExtra("vehicleCode", doc.getVehicleCode());
@@ -95,7 +96,7 @@ public class ShipDocActivity extends AppBaseActivity
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
         {
-            if (convertView == null)
+            if(convertView == null)
             {
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.ship_doc_item_layout, parent, false);

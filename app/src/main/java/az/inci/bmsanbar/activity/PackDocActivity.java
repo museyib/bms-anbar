@@ -68,7 +68,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         View.OnClickListener clickListener = v -> {
             List<String> list = dbHelper.getIncompletePackDocList(
                     PackDocActivity.this.config().getUser().getId());
-            if (list.size() == 0)
+            if(list.size() == 0)
             {
                 PackDocActivity.this.showMessageDialog(
                         PackDocActivity.this.getString(R.string.info),
@@ -77,8 +77,10 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
                 PackDocActivity.this.playSound(SOUND_FAIL);
             }
             else
-                for (String trxNo : list)
-                {PackDocActivity.this.loadDocFromServer(trxNo);}
+                for(String trxNo : list)
+                {
+                    PackDocActivity.this.loadDocFromServer(trxNo);
+                }
         };
         newDocsIncomplete.setOnClickListener(clickListener);
     }
@@ -102,7 +104,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         docList = dbHelper.getPackDocsByApproveUser(config().getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
-        if (docList.size() == 0)
+        if(docList.size() == 0)
             findViewById(R.id.header).setVisibility(View.GONE);
         else
             findViewById(R.id.header).setVisibility(View.VISIBLE);
@@ -118,7 +120,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     public boolean onQueryTextChange(String s)
     {
         DocAdapter adapter = (DocAdapter) docListView.getAdapter();
-        if (adapter != null)
+        if(adapter != null)
             adapter.getFilter().filter(s);
         return true;
     }
@@ -126,7 +128,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     @Override
     public void onBackPressed()
     {
-        if (!searchView.isIconified())
+        if(!searchView.isIconified())
             searchView.setIconified(true);
         else
             super.onBackPressed();
@@ -172,7 +174,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             url = addRequestParameters(url, parameters);
             Doc doc = getSimpleObject(url, "GET", null, Doc.class);
 
-            if (doc != null)
+            if(doc != null)
                 runOnUiThread(() -> {
                     dbHelper.addPackDoc(doc);
                     dbHelper.updatePackTrxStatus(doc.getTrxNo(), 1);
@@ -193,11 +195,13 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             Doc doc = getSimpleObject(url, "GET", null, Doc.class);
 
             runOnUiThread(() -> {
-                if (doc != null)
+                if(doc != null)
                 {
                     dbHelper.addPackDoc(doc);
-                    for (Trx trx : doc.getTrxList())
-                    {dbHelper.addPackTrx(trx);}
+                    for(Trx trx : doc.getTrxList())
+                    {
+                        dbHelper.addPackTrx(trx);
+                    }
                 }
                 else
                 {
@@ -234,7 +238,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         {
             Doc doc = list.get(position);
 
-            if (convertView == null)
+            if(convertView == null)
                 convertView = LayoutInflater.from(getContext())
                                             .inflate(R.layout.pack_doc_item_layout, parent, false);
 
@@ -272,15 +276,15 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
                     List<Doc> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for (Doc doc : activity.docList)
+                    for(Doc doc : activity.docList)
                     {
-                        if (doc.getTrxNo()
-                               .concat(doc.getPrevTrxNo())
-                               .concat(doc.getBpName())
-                               .concat(doc.getSbeName())
-                               .concat(doc.getDescription())
-                               .toLowerCase()
-                               .contains(constraint))
+                        if(doc.getTrxNo()
+                              .concat(doc.getPrevTrxNo())
+                              .concat(doc.getBpName())
+                              .concat(doc.getSbeName())
+                              .concat(doc.getDescription())
+                              .toLowerCase()
+                              .contains(constraint))
                             filteredArrayData.add(doc);
                     }
 

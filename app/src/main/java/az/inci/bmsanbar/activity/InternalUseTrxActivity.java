@@ -3,6 +3,8 @@ package az.inci.bmsanbar.activity;
 import static android.R.drawable.ic_dialog_info;
 import static android.text.InputType.TYPE_CLASS_NUMBER;
 import static android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 
 import android.app.AlertDialog;
@@ -57,50 +59,43 @@ import az.inci.bmsanbar.model.v3.InternalUseRequestItem;
 
 public class InternalUseTrxActivity extends ScannerSupportActivity
 {
-    ImageButton selectInvBtn;
-    ImageButton uploadBtn;
-    ImageButton printBtn;
-    ImageButton cameraScanner;
-    RecyclerView trxListView;
-    Spinner whsListSpinner;
-    Spinner expCenterListSpinner;
-    SearchView searchView;
-    EditText notesEdit;
-
-    List<Trx> trxList;
-    List<Whs> whsList;
-    List<ExpCenter> expCenterList;
-    List<Inventory> invList;
-
-    int mode;
-    boolean docCreated;
-    int trxTypeId = 73;
-    double amount;
-    String trxNo;
-    String whsCode;
-    String whsName;
-    Whs whs;
-    String expCenterCode;
-    String expCenterName;
-    ExpCenter expCenter;
-    String notes;
+    private RecyclerView trxListView;
+    private Spinner whsListSpinner;
+    private Spinner expCenterListSpinner;
+    private SearchView searchView;
+    private EditText notesEdit;
+    private List<Trx> trxList;
+    private List<Whs> whsList;
+    private List<ExpCenter> expCenterList;
+    private List<Inventory> invList;
+    private boolean docCreated;
+    private int trxTypeId = 73;
+    private double amount;
+    private String trxNo;
+    private String whsCode;
+    private String whsName;
+    private Whs whs;
+    private String expCenterCode;
+    private String expCenterName;
+    private ExpCenter expCenter;
+    private String notes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.internal_use_trx_layout);
-        selectInvBtn = findViewById(R.id.inv_list);
-        uploadBtn = findViewById(R.id.send);
-        printBtn = findViewById(R.id.print);
-        cameraScanner = findViewById(R.id.camera_scanner);
         trxListView = findViewById(R.id.trx_list_view);
         whsListSpinner = findViewById(R.id.trg_whs_list);
         expCenterListSpinner = findViewById(R.id.exp_center_list);
         notesEdit = findViewById(R.id.notes);
 
-        mode = getIntent().getIntExtra("mode", AppConfig.VIEW_MODE);
-        if (mode == AppConfig.VIEW_MODE)
+        ImageButton selectInvBtn = findViewById(R.id.inv_list);
+        ImageButton uploadBtn = findViewById(R.id.send);
+        ImageButton scanCam = findViewById(R.id.scan_cam);
+
+        int mode = getIntent().getIntExtra("mode", AppConfig.VIEW_MODE);
+        if(mode == AppConfig.VIEW_MODE)
         {
             docCreated = true;
             trxNo = getIntent().getStringExtra("trxNo");
@@ -134,8 +129,14 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                 whsCode = whs.getWhsCode();
                 whsName = whs.getWhsName();
 
-                if (docCreated) {updateDocSrc();}
-                else {createNewDoc();}
+                if(docCreated)
+                {
+                    updateDocSrc();
+                }
+                else
+                {
+                    createNewDoc();
+                }
 
                 loadWhsSumList();
             }
@@ -156,7 +157,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                 expCenterCode = expCenter.getExpCenterCode();
                 expCenterName = expCenter.getExpCenterName();
 
-                if (docCreated) updateDocExpCenter();
+                if(docCreated) updateDocExpCenter();
             }
 
             @Override
@@ -191,7 +192,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         selectInvBtn.setOnClickListener(v -> showInvList());
 
         View.OnClickListener clickListener = v -> {
-            if (trxList.size() > 0)
+            if(trxList.size() > 0)
             {
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
                         InternalUseTrxActivity.this);
@@ -204,12 +205,8 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         };
         uploadBtn.setOnClickListener(clickListener);
 
-        if (cameraScanning) cameraScanner.setVisibility(View.VISIBLE);
-
-        cameraScanner.setOnClickListener(v -> {
-            Intent barcodeIntent = new Intent(this, BarcodeScannerCamera.class);
-            startActivityForResult(barcodeIntent, 1);
-        });
+        scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
+        scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(1));
 
         loadWhsList();
 
@@ -223,19 +220,26 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
     @Override
     public void onBackPressed()
     {
-        if (!searchView.isIconified()) {searchView.setIconified(true);}
-        else if (trxList.size() == 0)
+        if(!searchView.isIconified())
         {
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-            dialogBuilder.setMessage("Mal daxil edilməyib. Sənəd silinsin?")
-                         .setPositiveButton("Bəli", (dialog1, which) -> {
-                             dbHelper.deleteInternalUseDoc(trxNo);
-                             finish();
-                         })
-                         .setNegativeButton("Xeyr", (dialog12, which) -> finish());
-            dialogBuilder.show();
+            searchView.setIconified(true);
         }
-        else {finish();}
+        else
+            if(trxList.size() == 0)
+            {
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+                dialogBuilder.setMessage("Mal daxil edilməyib. Sənəd silinsin?")
+                             .setPositiveButton("Bəli", (dialog1, which) -> {
+                                 dbHelper.deleteInternalUseDoc(trxNo);
+                                 finish();
+                             })
+                             .setNegativeButton("Xeyr", (dialog12, which) -> finish());
+                dialogBuilder.show();
+            }
+            else
+            {
+                finish();
+            }
     }
 
     @Override
@@ -266,17 +270,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             }
         });
         return true;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != -1 && data != null)
-        {
-            String barcode = data.getStringExtra("barcode");
-            if (barcode != null) onScanComplete(barcode);
-        }
     }
 
     private void createNewDoc()
@@ -341,8 +334,14 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         trxListView.setAdapter(adapter);
         notesEdit.setText(notes);
 
-        if (trxList.size() == 0) {findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);}
-        else {findViewById(R.id.trx_list_scroll).setVisibility(View.VISIBLE);}
+        if(trxList.size() == 0)
+        {
+            findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
+        }
+        else
+        {
+            findViewById(R.id.trx_list_scroll).setVisibility(View.VISIBLE);
+        }
     }
 
     private void loadWhsList()
@@ -354,7 +353,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             parameters.put("user-id", config().getUser().getId());
             url = addRequestParameters(url, parameters);
             whsList = getListData(url, "GET", null, Whs[].class);
-            if (whsList == null) whsList = Collections.singletonList(whs);
+            if(whsList == null) whsList = Collections.singletonList(whs);
             runOnUiThread(this::publishWhsList);
         }).start();
     }
@@ -373,7 +372,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("src", "exp-center");
             expCenterList = getListData(url, "GET", null, ExpCenter[].class);
-            if (expCenterList == null) expCenterList = Collections.singletonList(expCenter);
+            if(expCenterList == null) expCenterList = Collections.singletonList(expCenter);
             runOnUiThread(this::publishExpCenterList);
         }).start();
     }
@@ -402,7 +401,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             parameters.put("barcode", barcode);
             url = addRequestParameters(url, parameters);
             Inventory currentInv = getSimpleObject(url, "GET", null, Inventory.class);
-            if (currentInv != null) runOnUiThread(() -> showAddInvDialog(currentInv));
+            if(currentInv != null) runOnUiThread(() -> showAddInvDialog(currentInv));
         }).start();
     }
 
@@ -456,7 +455,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
 
     private void showAddInvDialog(Inventory inventory)
     {
-        if (inventory.getInvCode() == null)
+        if(inventory.getInvCode() == null)
         {
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
                               ic_dialog_info);
@@ -478,14 +477,14 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                              {
                                  double qty = Double.parseDouble(qtyEdit.getText().toString());
                                  Trx containingTrx = containingTrx(inventory.getInvCode());
-                                 if (qty + containingTrx.getQty() > inventory.getWhsQty())
+                                 if(qty + containingTrx.getQty() > inventory.getWhsQty())
                                  {
                                      showMessageDialog("Miqdar aşması",
                                                        "Anbar qalığı kifayət qədər deyil.\nMaksimum limit: " +
                                                        inventory.getWhsQty(), ic_dialog_info);
                                      return;
                                  }
-                                 if (containingTrx.getTrxId() > 0)
+                                 if(containingTrx.getTrxId() > 0)
                                  {
                                      updateInternalUseTrxQty(containingTrx,
                                                              qty + containingTrx.getQty());
@@ -500,7 +499,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                                  }
                                  loadData();
                              }
-                             catch (NumberFormatException e)
+                             catch(NumberFormatException e)
                              {
                                  showAddInvDialog(inventory);
                              }
@@ -516,7 +515,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
 
     private void showEditInvDialog(Trx trx)
     {
-        if (trx == null)
+        if(trx == null)
         {
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
                               ic_dialog_info);
@@ -539,7 +538,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                              try
                              {
                                  double qty = Double.parseDouble(qtyEdit.getText().toString());
-                                 if (qty > inventory.getWhsQty())
+                                 if(qty > inventory.getWhsQty())
                                  {
                                      showMessageDialog("Miqdar aşması",
                                                        "Anbar qalığı kifayət qədər deyil.\nMaksimum limit: " +
@@ -549,7 +548,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                                  updateInternalUseTrxQty(trx, qty);
                                  loadData();
                              }
-                             catch (NumberFormatException e)
+                             catch(NumberFormatException e)
                              {
                                  showEditInvDialog(trx);
                              }
@@ -567,8 +566,14 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
     {
         dbHelper.addInternalUseTrx(trx);
         amount += trx.getAmount();
-        if (docCreated) {updateDocAmount();}
-        else {createNewDoc();}
+        if(docCreated)
+        {
+            updateDocAmount();
+        }
+        else
+        {
+            createNewDoc();
+        }
         loadData();
     }
 
@@ -583,10 +588,12 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
 
     private Trx containingTrx(String invCode)
     {
-        for (Trx trx : trxList)
+        for(Trx trx : trxList)
         {
-            if (trx.getInvCode().equals(invCode))
-            {return trx;}
+            if(trx.getInvCode().equals(invCode))
+            {
+                return trx;
+            }
         }
 
         return new Trx();
@@ -594,7 +601,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
 
     private void uploadDoc()
     {
-        if (notes.isEmpty())
+        if(notes.isEmpty())
         {
             AlertDialog dialog = new AlertDialog.Builder(InternalUseTrxActivity.this).setMessage(
                     "Açıqlama boş ola bilməz!").setNeutralButton("OK", null).create();
@@ -605,7 +612,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("trx", "create-internal-use");
             List<InternalUseRequestItem> requestItems = new ArrayList<>();
-            for (Trx trx : trxList)
+            for(Trx trx : trxList)
             {
                 requestItems.add(InternalUseRequestItem.builder()
                                                        .invCode(trx.getInvCode())
@@ -625,7 +632,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                                                            .build();
 
             executeUpdate(url, request, message -> {
-                if (message.getStatusCode() == 0)
+                if(message.getStatusCode() == 0)
                 {
                     dbHelper.deleteInternalUseDoc(trxNo);
                     finish();
@@ -673,14 +680,14 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
         {
             Inventory inventory = list.get(position);
-            if (convertView == null)
+            if(convertView == null)
             {
                 convertView = LayoutInflater.from(parent.getContext())
                                             .inflate(R.layout.inv_list_item, parent, false);
             }
             TextView invCode = convertView.findViewById(R.id.inv_code);
             TextView invName = convertView.findViewById(R.id.inv_name);
-            TextView barcode = convertView.findViewById(R.id.barcode);
+            TextView barcode = convertView.findViewById(R.id.scan_cam);
             TextView invBrand = convertView.findViewById(R.id.inv_brand);
 
             invCode.setText(inventory.getInvCode());
@@ -705,15 +712,17 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                     List<Inventory> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for (Inventory inventory : activity.invList)
+                    for(Inventory inventory : activity.invList)
                     {
-                        if (inventory.getBarcode()
-                                     .concat(inventory.getInvCode())
-                                     .concat(inventory.getInvName())
-                                     .concat(inventory.getInvBrand())
-                                     .toLowerCase()
-                                     .contains(constraint))
-                        {filteredArrayData.add(inventory);}
+                        if(inventory.getBarcode()
+                                    .concat(inventory.getInvCode())
+                                    .concat(inventory.getInvName())
+                                    .concat(inventory.getInvBrand())
+                                    .toLowerCase()
+                                    .contains(constraint))
+                        {
+                            filteredArrayData.add(inventory);
+                        }
                     }
 
                     results.count = filteredArrayData.size();
@@ -759,7 +768,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             Trx trx = trxList.get(position);
             itemView.setOnLongClickListener(view -> {
                 Trx selectedTrx = trxList.get(position);
-                if (!selectedTrx.isReturned())
+                if(!selectedTrx.isReturned())
                 {
                     AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
                             InternalUseTrxActivity.this);
@@ -779,7 +788,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
             });
             itemView.setOnClickListener(view -> {
                 Trx selectedTrx = trxList.get(position);
-                if (!selectedTrx.isReturned()) showEditInvDialog(selectedTrx);
+                if(!selectedTrx.isReturned()) showEditInvDialog(selectedTrx);
             });
             holder.invCode.setText(trx.getInvCode());
             holder.invName.setText(trx.getInvName());
@@ -808,14 +817,16 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                     List<Trx> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for (Trx trx : activity.trxList)
+                    for(Trx trx : activity.trxList)
                     {
-                        if (trx.getInvCode()
-                               .concat(trx.getInvName())
-                               .concat(trx.getInvBrand())
-                               .toLowerCase()
-                               .contains(constraint))
-                        {filteredArrayData.add(trx);}
+                        if(trx.getInvCode()
+                              .concat(trx.getInvName())
+                              .concat(trx.getInvBrand())
+                              .toLowerCase()
+                              .contains(constraint))
+                        {
+                            filteredArrayData.add(trx);
+                        }
                     }
 
                     results.count = filteredArrayData.size();

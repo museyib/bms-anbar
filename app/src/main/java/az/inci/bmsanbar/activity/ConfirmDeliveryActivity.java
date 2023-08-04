@@ -1,12 +1,12 @@
 package az.inci.bmsanbar.activity;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,19 +25,11 @@ import az.inci.bmsanbar.model.v2.UpdateDeliveryRequest;
 
 public class ConfirmDeliveryActivity extends ScannerSupportActivity
 {
-
-    static final int SCAN_DRIVER_CODE = 0;
-    static final int SCAN_NEW_DOC = 1;
-    String driverCode;
-    String barcode;
-    ListView docListView;
-    Button scanDriverCode;
-    Button scanNewDoc;
-    Button cancel;
-    EditText driverCodeEditText;
-    ImageButton send;
-    List<String> docList;
-    boolean docCreated = false;
+    private String driverCode;
+    private ListView docListView;
+    private EditText driverCodeEditText;
+    private List<String> docList;
+    private boolean docCreated;
     private String note;
 
     @Override
@@ -47,22 +39,17 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         setContentView(R.layout.confirm_delivery_layout);
 
         driverCodeEditText = findViewById(R.id.driver);
-        scanDriverCode = findViewById(R.id.scan_driver_code);
-        scanNewDoc = findViewById(R.id.scan_new_doc);
+        Button scanCam = findViewById(R.id.scan_cam);
         docListView = findViewById(R.id.ship_trx_list_view);
-        send = findViewById(R.id.send);
-        cancel = findViewById(R.id.cancel_button);
+        ImageButton send = findViewById(R.id.send);
+        Button cancel = findViewById(R.id.cancel_button);
 
-        if (cameraScanning)
-        {
-            scanDriverCode.setVisibility(View.VISIBLE);
-            scanNewDoc.setVisibility(View.VISIBLE);
-        }
+        scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
 
         docList = new ArrayList<>();
 
         send.setOnClickListener(v -> {
-            if (docList.size() > 0)
+            if(docList.size() > 0)
                 changeDocStatus();
         });
 
@@ -79,21 +66,8 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
             return true;
         });
 
-        scanDriverCode.setOnClickListener(v -> {
-            Intent intent = new Intent(ConfirmDeliveryActivity.this, BarcodeScannerCamera.class);
-            startActivityForResult(intent, SCAN_DRIVER_CODE);
-        });
-
-        scanNewDoc.setOnClickListener(v -> {
-            if (!docCreated)
-            {
-                showMessageDialog(getString(R.string.info), getString(R.string.driver_not_defined),
-                                  android.R.drawable.ic_dialog_info);
-                return;
-            }
-            Intent intent = new Intent(ConfirmDeliveryActivity.this, BarcodeScannerCamera.class);
-            startActivityForResult(intent, SCAN_NEW_DOC);
-        });
+        scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
+        scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(0));
 
         cancel.setOnClickListener(v -> clearFields());
 
@@ -103,34 +77,14 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
     @Override
     public void onScanComplete(String barcode)
     {
-        this.barcode = barcode;
 
-        if (docCreated) getShipDetails(barcode);
+        if(docCreated) getShipDetails(barcode);
         else setDriverCode(barcode);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        barcode = data.getStringExtra("barcode");
-
-        if (resultCode == 1 && barcode != null)
-            switch (requestCode)
-            {
-                case SCAN_DRIVER_CODE:
-                    setDriverCode(barcode);
-                    break;
-                case SCAN_NEW_DOC:
-                    getShipDetails(barcode);
-                    break;
-            }
     }
 
     public void setDriverCode(String driverCode)
     {
-        if (driverCode.startsWith("PER"))
+        if(driverCode.startsWith("PER"))
         {
             showProgressDialog(true);
             new Thread(() -> {
@@ -140,9 +94,9 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                 url = addRequestParameters(url, parameters);
                 Log.e("URL", url);
                 String perName = getSimpleObject(url, "GET", null, String.class);
-                if (perName != null)
+                if(perName != null)
                     runOnUiThread(() -> {
-                        if (!perName.isEmpty())
+                        if(!perName.isEmpty())
                         {
                             this.driverCode = driverCode;
                             docCreated = true;
@@ -176,7 +130,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
 
     private void getShipDetails(String trxNo)
     {
-        if (docList.contains(trxNo)) return;
+        if(docList.contains(trxNo)) return;
 
         showProgressDialog(true);
         new Thread(() -> {
@@ -191,9 +145,9 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
 
     private void addDoc(String trxNo, ShipDocInfo docInfo)
     {
-        if (docInfo != null)
+        if(docInfo != null)
         {
-            if (!driverCode.equals(docInfo.getDriverCode()))
+            if(!driverCode.equals(docInfo.getDriverCode()))
             {
                 showMessageDialog(getString(R.string.info),
                                   getString(R.string.not_shipped_for_current_driver) +
@@ -207,7 +161,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
 
             playSound(SOUND_SUCCESS);
             docList.add(trxNo);
-            scanDriverCode.setVisibility(View.GONE);
             loadData();
         }
     }
@@ -219,7 +172,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
             List<UpdateDeliveryRequest> requestList = new ArrayList<>();
             note = "İstifadəçi: " + config().getUser().getId();
             String url = url("logistics", "confirm-shipment");
-            for (String trxNo : docList)
+            for(String trxNo : docList)
             {
                 UpdateDeliveryRequest request = new UpdateDeliveryRequest();
                 request.setTrxNo(trxNo);
@@ -232,7 +185,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                 {
                     showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
 
-                    if (message.getStatusCode() == 0)
+                    if(message.getStatusCode() == 0)
                         clearFields();
                 }
             });
@@ -246,7 +199,6 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         ((TextView) findViewById(R.id.driver_name)).setText("");
         docCreated = false;
         docList.clear();
-        scanDriverCode.setVisibility(View.VISIBLE);
         loadData();
     }
 }
