@@ -147,7 +147,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
 
         MenuItem report = menu.findItem(R.id.pick_report);
         report.setOnMenuItemClickListener(item1 -> {
-            showPickDateDialog("pack-report");
+            showPickDateDialog("pack");
             return true;
         });
 

@@ -403,9 +403,14 @@ public class PackTrxActivity extends ScannerSupportActivity
         parameters.put("trx-no", trxNo);
         url = addRequestParameters(url, parameters);
         executeUpdate(url, requestList, message -> {
-            dbHelper.deletePackTrx(trxNo);
-            finish();
-            showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
+            if(message.getStatusCode() == 0)
+            {
+                dbHelper.deletePackTrx(trxNo);
+                finish();
+                showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
+            }
+            else
+                showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
         });
     }
 

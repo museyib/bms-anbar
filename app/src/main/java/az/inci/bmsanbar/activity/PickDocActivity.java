@@ -119,7 +119,7 @@ public class PickDocActivity extends AppBaseActivity
         report.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         report.setOnMenuItemClickListener(item1 -> {
-            showPickDateDialog("pick-report");
+            showPickDateDialog("pick");
             return true;
         });
 

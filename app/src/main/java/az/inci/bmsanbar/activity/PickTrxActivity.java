@@ -419,9 +419,14 @@ public class PickTrxActivity extends ScannerSupportActivity
         parameters.put("trx-no", null);
         url = addRequestParameters(url, parameters);
         executeUpdate(url, requestList, message -> {
-            dbHelper.deletePickTrx(trxNo);
-            finish();
-            showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
+            if(message.getStatusCode() == 0)
+            {
+                dbHelper.deletePickTrx(trxNo);
+                finish();
+                showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
+            }
+            else
+                showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
         });
     }
 

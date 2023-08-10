@@ -12,6 +12,7 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -175,13 +176,14 @@ public abstract class AppBaseActivity extends AppCompatActivity
         dialogBuilder.setIcon(icon).setTitle(title).setMessage(message).show();
     }
 
-    protected void showPickDateDialog(String reportType)
+    protected void showPickDateDialog(String report)
     {
         View view = getLayoutInflater().inflate(R.layout.pick_date_dialog,
                                                 findViewById(android.R.id.content), false);
 
         EditText fromText = view.findViewById(R.id.from_date);
         EditText toText = view.findViewById(R.id.to_date);
+        CheckBox actualCheckBox = view.findViewById(R.id.actual);
 
         fromText.setText(new Date(System.currentTimeMillis()).toString());
         toText.setText(new Date(System.currentTimeMillis()).toString());
@@ -192,7 +194,11 @@ public abstract class AppBaseActivity extends AppCompatActivity
                      .setPositiveButton("OK", (dialogInterface, i) -> {
                          String startDate = fromText.getText().toString();
                          String endDate = toText.getText().toString();
-                         String url = url("inv", reportType);
+                         String url = url(report, "report");
+                         if(actualCheckBox.isChecked())
+                         {
+                             url = url(report, "report-actual");
+                         }
                          Map<String, String> parameters = new HashMap<>();
                          parameters.put("start-date", startDate);
                          parameters.put("end-date", endDate);
