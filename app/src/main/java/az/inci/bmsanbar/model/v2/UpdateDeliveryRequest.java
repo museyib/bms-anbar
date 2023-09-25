@@ -9,4 +9,5 @@ public class UpdateDeliveryRequest
     private String note;
     private String deliverPerson;
     private String driverCode;
+    private boolean transitionFlag;
 }

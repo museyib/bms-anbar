@@ -36,7 +36,7 @@
                 android:layout_marginStart="5dp"
                 android:contentDescription="@string/refresh"
                 android:src="@android:drawable/ic_menu_more"
-                android:visibility="gone" />
+                android:visibility="visible" />
     </LinearLayout>
 
     <HorizontalScrollView

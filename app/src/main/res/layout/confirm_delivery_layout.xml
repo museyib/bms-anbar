@@ -76,4 +76,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/doc_list" />
 
+    <CheckBox
+            android:text="@string/apply_to_central"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/transition_check"
+            app:layout_constraintStart_toEndOf="@+id/send"
+            app:layout_constraintTop_toTopOf="@+id/send"
+            app:layout_constraintBottom_toTopOf="@+id/ship_trx_list_view" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

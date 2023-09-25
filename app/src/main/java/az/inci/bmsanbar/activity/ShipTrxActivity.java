@@ -236,6 +236,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
             String url = url("shipment", "check-shipment");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("trx-no", trxNo);
+            parameters.put("driver-code", driverCode);
             url = addRequestParameters(url, parameters);
             CheckShipmentResponse shipmentResponse = getSimpleObject(url, "GET", null,
                                                                      CheckShipmentResponse.class);

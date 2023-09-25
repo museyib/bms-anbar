@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -31,6 +32,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
     private List<String> docList;
     private boolean docCreated;
     private String note;
+    private boolean transitionFlag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -43,6 +45,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         docListView = findViewById(R.id.ship_trx_list_view);
         ImageButton send = findViewById(R.id.send);
         Button cancel = findViewById(R.id.cancel_button);
+        CheckBox transitionCheck = findViewById(R.id.transition_check);
 
         scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
 
@@ -70,6 +73,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(0));
 
         cancel.setOnClickListener(v -> clearFields());
+        transitionCheck.setOnCheckedChangeListener((buttonView, isChecked) -> transitionFlag = isChecked);
 
         loadFooter();
     }
@@ -179,6 +183,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                 request.setNote(note);
                 request.setDeliverPerson("");
                 request.setDriverCode(driverCode);
+                request.setTransitionFlag(transitionFlag);
                 requestList.add(request);
             }
             executeUpdate(url, requestList, message -> {
