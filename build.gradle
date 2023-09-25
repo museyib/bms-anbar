@@ -11,7 +11,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.1.1'
     }
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy {
             eachDependency {
                 // https://issuetracker.google.com/issues/109894262#comment9
@@ -31,6 +31,6 @@ allprojects {
     }
 }
 
-task clean(type: Delete) {
+tasks.register('clean', Delete) {
     delete rootProject.buildDir
 }
