@@ -84,7 +84,7 @@ public class EditShelfActivity extends ScannerSupportActivity
                     return;
                 }
                 shelfBarcode = barcode;
-                shelfBarcodeEdit.setText(barcode);
+                shelfBarcodeEdit.setText(shelfBarcode);
             }
             else
             {
@@ -160,8 +160,8 @@ public class EditShelfActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("inv", "update-shelf-barcode");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("shelf-barcode", shelfBarcode);
             parameters.put("whs-code", config().getUser().getWhsCode());
+            parameters.put("shelf-barcode", shelfBarcode.replaceFirst("#", "%23"));
             url = addRequestParameters(url, parameters);
 
             List<String> barcodeList = new ArrayList<>();
