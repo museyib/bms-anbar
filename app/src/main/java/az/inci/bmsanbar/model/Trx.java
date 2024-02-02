@@ -41,6 +41,7 @@ public class Trx
     private String prevTrxDate;
     private int prevTrxId;
     private int minutes;
+    private String notPickedReasonId;
 
     public static Trx parseFromInv(Inventory inventory)
     {

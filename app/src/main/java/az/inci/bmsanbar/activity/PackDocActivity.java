@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -45,6 +46,16 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pack_dock_layout);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+
+                if(!searchView.isIconified())
+                    searchView.setIconified(true);
+                else
+                    finish();
+            }
+        });
 
         docListView = findViewById(R.id.doc_list);
         docListView.setOnItemClickListener((parent, view, position, id1) -> {
@@ -68,7 +79,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         View.OnClickListener clickListener = v -> {
             List<String> list = dbHelper.getIncompletePackDocList(
                     PackDocActivity.this.config().getUser().getId());
-            if(list.size() == 0)
+            if(list.isEmpty())
             {
                 PackDocActivity.this.showMessageDialog(
                         PackDocActivity.this.getString(R.string.info),
@@ -104,7 +115,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         docList = dbHelper.getPackDocsByApproveUser(config().getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
-        if(docList.size() == 0)
+        if(docList.isEmpty())
             findViewById(R.id.header).setVisibility(View.GONE);
         else
             findViewById(R.id.header).setVisibility(View.VISIBLE);
@@ -123,15 +134,6 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         if(adapter != null)
             adapter.getFilter().filter(s);
         return true;
-    }
-
-    @Override
-    public void onBackPressed()
-    {
-        if(!searchView.isIconified())
-            searchView.setIconified(true);
-        else
-            super.onBackPressed();
     }
 
     public boolean onCreateOptionsMenu(Menu menu)

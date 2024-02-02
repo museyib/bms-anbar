@@ -112,7 +112,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     private void showResultListDialog(List<Inventory> list)
     {
-        if(list.size() == 0)
+        if(list.isEmpty())
         {
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
                               android.R.drawable.ic_dialog_alert);

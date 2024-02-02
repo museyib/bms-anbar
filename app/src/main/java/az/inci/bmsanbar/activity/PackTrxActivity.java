@@ -1,5 +1,6 @@
 package az.inci.bmsanbar.activity;
 
+import static android.view.Gravity.CENTER_VERTICAL;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
@@ -25,11 +26,13 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,11 +42,13 @@ import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.Trx;
 import az.inci.bmsanbar.model.v2.CollectTrxRequest;
+import az.inci.bmsanbar.model.v3.NotPickedReason;
 
 public class PackTrxActivity extends ScannerSupportActivity
         implements SearchView.OnQueryTextListener
 {
     private List<Trx> trxList;
+    private List<NotPickedReason> reasonList;
     private ListView trxListView;
     private ImageButton sendButton;
     private SearchView searchView;
@@ -55,12 +60,23 @@ public class PackTrxActivity extends ScannerSupportActivity
     private boolean onFocus;
     private int focusPosition;
     private boolean packedAll;
+    private boolean deniedAll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pack_trx_layout);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+
+                if(!searchView.isIconified())
+                    searchView.setIconified(true);
+                else
+                    finish();
+            }
+        });
         sendButton = findViewById(R.id.send);
         trxListView = findViewById(R.id.trx_list);
 
@@ -107,14 +123,14 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         sendButton.setOnClickListener(v -> {
-            if(trxList.size() > 0 && packedAll)
-                sendTrx();
+            if(!trxList.isEmpty() && packedAll)
+                sendData();
             else
             {
                 AlertDialog dialog = new AlertDialog.Builder(this).setMessage(
                                                                           "Mallar tam yığılmayıb. Göndərmək istəyirsiniz?")
                                                                   .setNegativeButton("Bəli",
-                                                                                     (dialogInterface, i) -> sendTrx())
+                                                                                     (dialogInterface, i) -> sendData())
                                                                   .setPositiveButton("Xeyr", null)
                                                                   .create();
 
@@ -167,6 +183,7 @@ public class PackTrxActivity extends ScannerSupportActivity
         });
 
         loadData();
+        getNotPickedReasons();
     }
 
     private void showInfoDialog(Trx trx)
@@ -257,11 +274,21 @@ public class PackTrxActivity extends ScannerSupportActivity
     public void loadData()
     {
         packedAll = true;
+        deniedAll = true;
         trxList = dbHelper.getPackTrxByApproveUser(trxNo);
         TrxAdapter trxAdapter = new TrxAdapter(this, R.layout.pack_trx_item_layout, trxList);
         trxListView.setAdapter(trxAdapter);
         trxListView.setSelection(focusPosition);
         trxListView.requestFocus();
+    }
+
+    protected void getNotPickedReasons()
+    {
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("not-picked-reason");
+            reasonList = getListData(url, "GET", null, NotPickedReason[].class);
+        }).start();
     }
 
     public void showEditPackedQtyDialog(Trx trx)
@@ -352,15 +379,6 @@ public class PackTrxActivity extends ScannerSupportActivity
     }
 
     @Override
-    public void onBackPressed()
-    {
-        if(!searchView.isIconified())
-            searchView.setIconified(true);
-        else
-            super.onBackPressed();
-    }
-
-    @Override
     protected void onResume()
     {
         super.onResume();
@@ -372,7 +390,7 @@ public class PackTrxActivity extends ScannerSupportActivity
     protected void onPause()
     {
         super.onPause();
-        currentSeconds += (System.currentTimeMillis() - startTime) / 1000;
+        currentSeconds += (int) ((System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
@@ -383,18 +401,41 @@ public class PackTrxActivity extends ScannerSupportActivity
         dbHelper.updatePackActiveSeconds(trxNo, activeSeconds);
     }
 
-    private void sendTrx()
+    private void sendData()
+    {
+        currentSeconds += (int) ((System.currentTimeMillis() - startTime) / 1000);
+        activeSeconds += currentSeconds;
+        if (reasonList != null)
+        {
+            if (deniedAll)
+            {
+                setNotPickedReasonForDoc();
+            }
+            else
+            {
+                Iterator<Trx> iterator = trxList.iterator();
+                setNotPickedReasonForTrx(iterator, iterator.next());
+            }
+        }
+        else
+        {
+            showMessageDialog(getString(R.string.error),
+                    "Silinmə səbəbləri yüklənə bilmədi. Sənədi bağlayıb təkrar açıb.",
+                    android.R.drawable.ic_dialog_alert);
+        }
+    }
+
+    private void uploadData()
     {
         showProgressDialog(true);
         List<CollectTrxRequest> requestList = new ArrayList<>();
-        currentSeconds += (System.currentTimeMillis() - startTime) / 1000;
-        activeSeconds += currentSeconds;
         for(Trx trx : trxList)
         {
             CollectTrxRequest request = new CollectTrxRequest();
             request.setTrxId(trx.getTrxId());
             request.setQty(trx.getPackedQty());
             request.setSeconds(activeSeconds);
+            request.setNotPickedReasonId(trx.getNotPickedReasonId());
             requestList.add(request);
         }
 
@@ -412,6 +453,107 @@ public class PackTrxActivity extends ScannerSupportActivity
             else
                 showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
         });
+    }
+
+    private void setNotPickedReasonForTrx(Iterator<Trx> iterator, Trx trx)
+    {
+        View view = getNotPickedReasonView();
+        String message = trx.getInvCode() + " - " + trx.getInvName() + "\n" +
+                trx.getQty() + " - " + trx.getPackedQty() + " = " +
+                (trx.getQty()-trx.getPackedQty()) + " (Silinən say)";
+        AlertDialog dialog = getNotPickedReasonDialog(view, message);
+        ListView listView = view.findViewById(R.id.result_list);
+        if (trx.getPackedQty() < trx.getQty())
+            dialog.show();
+        else if (iterator.hasNext())
+            setNotPickedReasonForTrx(iterator, iterator.next());
+        else
+            uploadData();
+
+        listView.setOnItemClickListener((adapterView, view1, i, l) -> {
+            NotPickedReason reason = (NotPickedReason) adapterView.getItemAtPosition(i);
+            trx.setNotPickedReasonId(reason.getReasonId());
+            dialog.dismiss();
+            if (iterator.hasNext())
+                setNotPickedReasonForTrx(iterator, iterator.next());
+            else
+                uploadData();
+        });
+    }
+
+    private void setNotPickedReasonForDoc()
+    {
+        View view = getNotPickedReasonView();
+        AlertDialog dialog = getNotPickedReasonDialog(view, null);
+        ListView listView = view.findViewById(R.id.result_list);
+        dialog.show();
+
+        listView.setOnItemClickListener((adapterView, view1, i, l) -> {
+            NotPickedReason reason = (NotPickedReason) adapterView.getItemAtPosition(i);
+            for (Trx trx: trxList) {
+                trx.setNotPickedReasonId(reason.getReasonId());
+            }
+            dialog.dismiss();
+            uploadData();
+        });
+    }
+
+    private View getNotPickedReasonView()
+    {
+        View view = LayoutInflater.from(this)
+            .inflate(R.layout.result_list_dialog,
+                    findViewById(android.R.id.content), false);
+
+        ArrayAdapter<NotPickedReason> adapter = new ArrayAdapter<NotPickedReason>(this, R.layout.list_item_layout, reasonList){
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable @org.jetbrains.annotations.Nullable View convertView, @NonNull ViewGroup parent) {
+                NotPickedReason reason = reasonList.get(position);
+                if (convertView == null)
+                    convertView = LayoutInflater.from(getContext())
+                            .inflate(R.layout.list_item_layout, parent, false);
+                TextView listItemView = convertView.findViewById(R.id.list_item);
+                listItemView.setTextSize(20);
+                listItemView.setHeight(80);
+                listItemView.setGravity(CENTER_VERTICAL);
+                listItemView.setText(reason.toString());
+                return convertView;
+            }
+        };
+        ((ListView)view.findViewById(R.id.result_list)).setAdapter(adapter);
+        view.findViewById(R.id.search).setVisibility(GONE);
+
+        return view;
+    }
+
+    private AlertDialog getNotPickedReasonDialog(View view, String message)
+    {
+        ArrayAdapter<NotPickedReason> adapter = new ArrayAdapter<NotPickedReason>(this, R.layout.list_item_layout, reasonList){
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable @org.jetbrains.annotations.Nullable View convertView, @NonNull ViewGroup parent) {
+                NotPickedReason reason = reasonList.get(position);
+                if (convertView == null)
+                    convertView = LayoutInflater.from(getContext())
+                            .inflate(R.layout.list_item_layout, parent, false);
+                TextView listItemView = convertView.findViewById(R.id.list_item);
+                listItemView.setTextSize(20);
+                listItemView.setHeight(80);
+                listItemView.setGravity(CENTER_VERTICAL);
+                listItemView.setText(reason.toString());
+                return convertView;
+            }
+        };
+        ((ListView)view.findViewById(R.id.result_list)).setAdapter(adapter);
+        view.findViewById(R.id.search).setVisibility(GONE);
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog dialog = dialogBuilder
+                .setTitle("Silinmə səbəbini seçin")
+                .setMessage((message == null) ? "" : message)
+                .setView(view).create();
+
+        return dialog;
     }
 
     static class TrxAdapter extends ArrayAdapter<Trx> implements Filterable
@@ -471,6 +613,9 @@ public class PackTrxActivity extends ScannerSupportActivity
 
             if(trx.getPackedQty() < trx.getQty())
                 activity.packedAll = false;
+
+            if (trx.getPackedQty() != 0)
+                activity.deniedAll = false;
 
             return convertView;
         }

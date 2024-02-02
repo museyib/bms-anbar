@@ -9,4 +9,5 @@ public class CollectTrxRequest
     private double qty;
     private String pickStatus;
     private int seconds;
+    private String notPickedReasonId;
 }
