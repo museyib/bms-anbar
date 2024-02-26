@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +65,7 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         info = info.replaceAll("\\\\n", "\n");
         info += "\n\nÖlçü vahidi: " + trx.getUom();
         info += "\n\nBrend: " + trx.getInvBrand();
-        if(!trx.getPickUser().equals("null"))
+        if(!TextUtils.isEmpty(trx.getPickUser()))
         {
             info += "\n\nYığan: " + trx.getPickUser();
         }
