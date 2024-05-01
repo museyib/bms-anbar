@@ -48,7 +48,7 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
     protected void onResume()
     {
         super.onResume();
-        initS98Scanner();
+//        initS98Scanner();
     }
 
     private void initUrovoScanner()
@@ -61,7 +61,11 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
             scanManager.openScanner();
             IntentFilter filter = new IntentFilter();
             filter.addAction(ScanManager.ACTION_DECODE);
-            registerReceiver(urovoScanReceiver, filter);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                registerReceiver(urovoScanReceiver, filter, Context.RECEIVER_EXPORTED);
+            }
+            else
+                registerReceiver(urovoScanReceiver, filter);
         }
         catch(RuntimeException e)
         {
@@ -88,47 +92,47 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
         }
     }
 
-    private void initS98Scanner()
-    {
-        try
-        {
-            barcode2DWithSoft = Barcode2DWithSoft.getInstance();
-        }
-        catch(Throwable e)
-        {
-            e.printStackTrace();
-        }
-        scanTask = new ScanTask(this);
-        scanTask.execute();
-        model = DeviceConfiguration.getModel();
+//    private void initS98Scanner()
+//    {
+//        try
+//        {
+//            barcode2DWithSoft = Barcode2DWithSoft.getInstance();
+//        }
+//        catch(Throwable e)
+//        {
+//            e.printStackTrace();
+//        }
+//        scanTask = new ScanTask(this);
+//        scanTask.execute();
+//        model = DeviceConfiguration.getModel();
+//
+//        s98ScanCallback = (i, i2, bArr) ->
+//        {
+//            if(bArr != null)
+//            {
+//                String barcode = new String(bArr, 0, i2);
+//                onScanComplete(barcode);
+//                if(!isContinuous)
+//                {
+//                    busy = false;
+//                }
+//            }
+//        };
+//    }
 
-        s98ScanCallback = (i, i2, bArr) ->
-        {
-            if(bArr != null)
-            {
-                String barcode = new String(bArr, 0, i2);
-                onScanComplete(barcode);
-                if(!isContinuous)
-                {
-                    busy = false;
-                }
-            }
-        };
-    }
-
-    private void toggleS98Scanner()
-    {
-        if(!busy)
-        {
-            busy = true;
-            scan();
-        }
-        else
-        {
-            busy = false;
-            barcode2DWithSoft.stopScan();
-        }
-    }
+//    private void toggleS98Scanner()
+//    {
+//        if(!busy)
+//        {
+//            busy = true;
+//            scan();
+//        }
+//        else
+//        {
+//            busy = false;
+//            barcode2DWithSoft.stopScan();
+//        }
+//    }
 
     private void stopScan()
     {
@@ -146,19 +150,19 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
             e.printStackTrace();
         }
 
-        if(scanTask.getStatus() == AsyncTask.Status.FINISHED && barcode2DWithSoft != null &&
-           model.equals("C4000_6582"))
-        {
-            try
-            {
-                barcode2DWithSoft.close();
-                scanTask.cancel(true);
-            }
-            catch(IllegalArgumentException e)
-            {
-                e.printStackTrace();
-            }
-        }
+//        if(scanTask.getStatus() == AsyncTask.Status.FINISHED && barcode2DWithSoft != null &&
+//           model.equals("C4000_6582"))
+//        {
+//            try
+//            {
+//                barcode2DWithSoft.close();
+//                scanTask.cancel(true);
+//            }
+//            catch(IllegalArgumentException e)
+//            {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     public abstract void onScanComplete(String barcode);
@@ -166,10 +170,10 @@ public abstract class ScannerSupportActivity extends AppBaseActivity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        if(keyCode == 139)
-        {
-            toggleS98Scanner();
-        }
+//        if(keyCode == 139)
+//        {
+//            toggleS98Scanner();
+//        }
         if(keyCode == 520 || keyCode == 521 || keyCode == 522)
         {
             toggleUrovoScanner();

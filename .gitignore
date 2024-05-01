@@ -14,3 +14,4 @@
 .cxx
 /app/src/main/assets/app.properties
 /app/release/
+/app/src/main/assets/application.properties

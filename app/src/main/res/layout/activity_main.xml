@@ -80,11 +80,22 @@
                 android:id="@+id/confirm_delivery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableStart="@drawable/list"
+                android:drawableStart="@drawable/delivery"
                 android:gravity="start|center_vertical"
                 android:onClick="openConfirmDelivery"
                 android:text="@string/confirm_delivery"
                 android:textAllCaps="false"
                 android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/purchase_approve"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/list"
+            android:gravity="start|center_vertical"
+            android:onClick="openPurchaseOrders"
+            android:text="@string/purchase_orders"
+            android:textAllCaps="false"
+            android:textSize="18sp" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

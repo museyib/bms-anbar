@@ -161,8 +161,10 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
 
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(this);
-        searchView.setActivated(true);
+        if (searchView != null) {
+            searchView.setOnQueryTextListener(this);
+            searchView.setActivated(true);
+        }
         return true;
     }
 
@@ -295,7 +297,6 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
                     return results;
                 }
 
-                @SuppressWarnings("unchecked")
                 @Override
                 protected void publishResults(CharSequence constraint, FilterResults results)
                 {

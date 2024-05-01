@@ -21,4 +21,5 @@ public class User
     private boolean loadingFlag;
     private boolean approveFlag;
     private boolean approvePrdFlag;
+    private boolean purchaseOrdersFlag;
 }

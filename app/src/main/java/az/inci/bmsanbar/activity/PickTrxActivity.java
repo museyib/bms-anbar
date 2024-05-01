@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -112,7 +111,7 @@ public class PickTrxActivity extends ScannerSupportActivity
         });
 
         sendButton.setOnClickListener(v -> {
-            if(trxList.size() > 0)
+            if(!trxList.isEmpty())
                 if(pickedAll) sendTrx();
                 else
                 {
@@ -348,8 +347,10 @@ public class PickTrxActivity extends ScannerSupportActivity
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(this);
-        searchView.setActivated(true);
+        if (searchView != null) {
+            searchView.setOnQueryTextListener(this);
+            searchView.setActivated(true);
+        }
         return true;
     }
 
@@ -386,7 +387,7 @@ public class PickTrxActivity extends ScannerSupportActivity
     protected void onPause()
     {
         super.onPause();
-        currentSeconds += (System.currentTimeMillis() - startTime) / 1000;
+        currentSeconds += (int) ((System.currentTimeMillis() - startTime) / 1000);
     }
 
     @Override
@@ -401,9 +402,8 @@ public class PickTrxActivity extends ScannerSupportActivity
     {
         showProgressDialog(true);
         List<CollectTrxRequest> requestList = new ArrayList<>();
-        currentSeconds += (System.currentTimeMillis() - startTime) / 1000;
+        currentSeconds += (int) ((System.currentTimeMillis() - startTime) / 1000);
         activeSeconds += currentSeconds;
-        Log.e("SEC", String.valueOf(activeSeconds));
         for(Trx trx : trxList)
         {
             CollectTrxRequest request = new CollectTrxRequest();
@@ -534,7 +534,6 @@ public class PickTrxActivity extends ScannerSupportActivity
                     return results;
                 }
 
-                @SuppressWarnings("unchecked")
                 @Override
                 protected void publishResults(CharSequence constraint, FilterResults results)
                 {

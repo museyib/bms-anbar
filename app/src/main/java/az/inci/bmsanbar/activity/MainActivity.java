@@ -15,6 +15,7 @@ import static az.inci.bmsanbar.AppConfig.INV_ATTRIBUTE_MODE;
 import static az.inci.bmsanbar.AppConfig.PACK_MODE;
 import static az.inci.bmsanbar.AppConfig.PICK_MODE;
 import static az.inci.bmsanbar.AppConfig.PRODUCT_APPROVE_MODE;
+import static az.inci.bmsanbar.AppConfig.PURCHASE_ORDER_MODE;
 import static az.inci.bmsanbar.AppConfig.SHIP_MODE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 import static az.inci.bmsanbar.GlobalParameters.connectionTimeout;
@@ -182,6 +183,11 @@ public class MainActivity extends AppBaseActivity
         showLoginDialog(CONFIRM_DELIVERY_MODE);
     }
 
+    public void openPurchaseOrders(View view)
+    {
+        showLoginDialog(PURCHASE_ORDER_MODE);
+    }
+
     private void showLoginDialog(int mode)
     {
         this.mode = mode;
@@ -230,92 +236,96 @@ public class MainActivity extends AppBaseActivity
 
     private void attemptLogin(User user)
     {
-        if(!user.getPassword().equals(password))
+        preferences.edit().putString("last_login_id", id).apply();
+        preferences.edit().putString("last_login_password", password).apply();
+        Class<?> aClass;
+        switch(mode)
         {
-            loginViaServer();
+            case PICK_MODE:
+                if(!user.isPickFlag())
+                {
+                    showMessageDialog(getString(R.string.warning),
+                            getString(R.string.not_allowed),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
+                aClass = PickDocActivity.class;
+                break;
+            case PACK_MODE:
+                if(!user.isPackFlag())
+                {
+                    showMessageDialog(getString(R.string.warning),
+                            getString(R.string.not_allowed),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
+                aClass = PackDocActivity.class;
+                break;
+            case SHIP_MODE:
+                if(!user.isLoadingFlag())
+                {
+                    showMessageDialog(getString(R.string.warning),
+                            getString(R.string.not_allowed),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
+                aClass = ShipDocActivity.class;
+                break;
+            case APPROVE_MODE:
+                if(!user.isApproveFlag())
+                {
+                    showMessageDialog(getString(R.string.warning),
+                            getString(R.string.not_allowed),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
+                aClass = InternalUseDocActivity.class;
+                break;
+            case PRODUCT_APPROVE_MODE:
+                if(!(user.isApproveFlag() || user.isApprovePrdFlag()))
+                {
+                    showMessageDialog(getString(R.string.warning),
+                            getString(R.string.not_allowed),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
+                aClass = ProductApproveDocActivity.class;
+                break;
+            case INV_ATTRIBUTE_MODE:
+                aClass = InventoryInfoActivity.class;
+                break;
+            case CONFIRM_DELIVERY_MODE:
+                if(!user.isLoadingFlag())
+                {
+                    showMessageDialog(getString(R.string.warning),
+                            getString(R.string.not_allowed),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
+                aClass = ConfirmDeliveryActivity.class;
+                break;
+            case PURCHASE_ORDER_MODE:
+                if(!user.isPurchaseOrdersFlag())
+                {
+                    showMessageDialog(getString(R.string.warning),
+                            getString(R.string.not_allowed),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
+                aClass = PurchaseOrdersActivity.class;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + mode);
         }
-        else
-        {
-            preferences.edit().putString("last_login_id", id).apply();
-            preferences.edit().putString("last_login_password", password).apply();
-            Class<?> aClass;
-            switch(mode)
-            {
-                case PICK_MODE:
-                    if(!user.isPickFlag())
-                    {
-                        showMessageDialog(getString(R.string.warning),
-                                          getString(R.string.not_allowed),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                        return;
-                    }
-                    aClass = PickDocActivity.class;
-                    break;
-                case PACK_MODE:
-                    if(!user.isPackFlag())
-                    {
-                        showMessageDialog(getString(R.string.warning),
-                                          getString(R.string.not_allowed),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                        return;
-                    }
-                    aClass = PackDocActivity.class;
-                    break;
-                case SHIP_MODE:
-                    if(!user.isLoadingFlag())
-                    {
-                        showMessageDialog(getString(R.string.warning),
-                                          getString(R.string.not_allowed),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                        return;
-                    }
-                    aClass = ShipDocActivity.class;
-                    break;
-                case APPROVE_MODE:
-                    if(!user.isApproveFlag())
-                    {
-                        showMessageDialog(getString(R.string.warning),
-                                          getString(R.string.not_allowed),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                        return;
-                    }
-                    aClass = InternalUseDocActivity.class;
-                    break;
-                case PRODUCT_APPROVE_MODE:
-                    if(!(user.isApproveFlag() || user.isApprovePrdFlag()))
-                    {
-                        showMessageDialog(getString(R.string.warning),
-                                          getString(R.string.not_allowed),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                        return;
-                    }
-                    aClass = ProductApproveDocActivity.class;
-                    break;
-                case INV_ATTRIBUTE_MODE:
-                    aClass = InventoryInfoActivity.class;
-                    break;
-                case CONFIRM_DELIVERY_MODE:
-                    if(!user.isLoadingFlag())
-                    {
-                        showMessageDialog(getString(R.string.warning),
-                                          getString(R.string.not_allowed),
-                                          ic_dialog_alert);
-                        playSound(SOUND_FAIL);
-                        return;
-                    }
-                    aClass = ConfirmDeliveryActivity.class;
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + mode);
-            }
-            Intent intent = new Intent(MainActivity.this, aClass);
-            startActivity(intent);
-        }
+        Intent intent = new Intent(MainActivity.this, aClass);
+        startActivity(intent);
     }
 
     private void loginViaServer()

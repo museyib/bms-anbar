@@ -9,5 +9,6 @@
         <language minSize="103" name="Java" />
       </Languages>
     </inspection_tool>
+    <inspection_tool class="UNCHECKED_WARNING" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>

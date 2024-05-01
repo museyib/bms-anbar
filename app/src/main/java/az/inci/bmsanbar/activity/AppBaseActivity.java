@@ -6,11 +6,13 @@ import static az.inci.bmsanbar.GlobalParameters.connectionTimeout;
 import static az.inci.bmsanbar.GlobalParameters.jwt;
 import static az.inci.bmsanbar.GlobalParameters.serviceUrl;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -492,5 +494,11 @@ public abstract class AppBaseActivity extends AppCompatActivity
                         onInvBarcodeFetched.invBarcodeFetched(invBarcode);
                 });
         }).start();
+    }
+
+    @SuppressLint("HardwareIds")
+    public String getDeviceIdString()
+    {
+        return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 }

@@ -131,4 +131,10 @@
     <string name="no">Xeyr</string>
     <string name="actual">Aktual</string>
     <string name="apply_to_central">Mərkəzə qəbul</string>
+    <string name="purchase_orders">Alış sifarişləri</string>
+    <string name="seller">Satıcı</string>
+    <string name="sbe">Təmsilçi</string>
+    <string name="trx_no">Sənəd No</string>
+    <string name="trx_date">Sənəd tarixi</string>
+    <string name="counted">Sayılıb</string>
 </resources>
