@@ -137,4 +137,5 @@
     <string name="trx_no">Sənəd No</string>
     <string name="trx_date">Sənəd tarixi</string>
     <string name="counted">Sayılıb</string>
+    <string name="device_info">Cihaz ID-si</string>
 </resources>

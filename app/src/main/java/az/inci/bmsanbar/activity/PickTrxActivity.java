@@ -411,6 +411,7 @@ public class PickTrxActivity extends ScannerSupportActivity
             request.setQty(trx.getPickedQty());
             request.setSeconds(activeSeconds);
             request.setPickStatus("A");
+            request.setDeviceId(getDeviceIdString());
             requestList.add(request);
         }
 

@@ -10,4 +10,5 @@ public class CollectTrxRequest
     private String pickStatus;
     private int seconds;
     private String notPickedReasonId;
+    private String deviceId;
 }

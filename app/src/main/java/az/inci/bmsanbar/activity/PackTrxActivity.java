@@ -436,6 +436,7 @@ public class PackTrxActivity extends ScannerSupportActivity
             request.setQty(trx.getPackedQty());
             request.setSeconds(activeSeconds);
             request.setNotPickedReasonId(trx.getNotPickedReasonId());
+            request.setDeviceId(getDeviceIdString());
             requestList.add(request);
         }
 

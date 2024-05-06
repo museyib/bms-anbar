@@ -112,6 +112,11 @@ public class MainActivity extends AppBaseActivity
             showLoginDialog(INV_ATTRIBUTE_MODE);
             return true;
         });
+        MenuItem deiceInfo = menu.findItem(R.id.device_info);
+        deiceInfo.setOnMenuItemClickListener(item1 -> {
+            showMessageDialog(getString(R.string.device_info), getDeviceIdString(), ic_dialog_info);
+            return true;
+        });
         return true;
     }
 
