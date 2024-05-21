@@ -342,14 +342,21 @@ public class MainActivity extends AppBaseActivity
             request.setUserId(id);
             request.setPassword(password);
             User user = getSimpleObject(url, "POST", request, User.class);
-            if(user != null)
-            {
-                runOnUiThread(() -> {
+            runOnUiThread(() -> {
+                if(user != null)
+                {
                     user.setId(user.getId().toUpperCase());
                     loadUserInfo(user, true);
                     attemptLogin(user);
-                });
-            }
+                }
+                else
+                {
+                    showMessageDialog(getString(R.string.warning),
+                            getString(R.string.not_allowed),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                }
+            });
         }).start();
     }
 
