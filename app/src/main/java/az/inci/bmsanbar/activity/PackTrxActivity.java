@@ -1,5 +1,6 @@
 package az.inci.bmsanbar.activity;
 
+import static android.R.drawable.ic_dialog_alert;
 import static android.view.Gravity.CENTER_VERTICAL;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -250,7 +251,13 @@ public class PackTrxActivity extends ScannerSupportActivity
             {
                 double qty = trx.getPackedQty() + trx.getUomFactor();
                 if(qty > trx.getQty())
-                    qty = trx.getQty();
+                {
+//                    qty = trx.getQty();
+                    showMessageDialog(getString(R.string.warning), getString(R.string.exceeded_ordered_qty),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
                 trx.setPackedQty(qty);
                 dbHelper.updatePackTrx(trx);
             }

@@ -9,7 +9,7 @@ buildscript {
 
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.4.0'
+        classpath 'com.android.tools.build:gradle:8.4.1'
     }
     configurations.configureEach {
         resolutionStrategy {
@@ -32,5 +32,5 @@ allprojects {
 }
 
 tasks.register('clean', Delete) {
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }

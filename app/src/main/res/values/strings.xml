@@ -70,8 +70,9 @@
     <string name="reload_all">Hamısını sıfırla</string>
     <string name="serial_scan">Seriyalı</string>
     <string name="increase">Əlavə et</string>
-    <string name="already_picked">BU mal artıq yığılıb</string>
+    <string name="already_picked">Bu mal artıq yığılıb</string>
     <string name="already_packed">Bu mal artıq yoxlanıb</string>
+    <string name="exceeded_ordered_qty">Sifariş edilmiş saydan artıq yığıla bilməz</string>
     <string name="inv_attributes">Mal atributları</string>
     <string name="image">Şəkil</string>
     <string name="line">Sətir</string>

@@ -1,5 +1,6 @@
 package az.inci.bmsanbar.activity;
 
+import static android.R.drawable.ic_dialog_alert;
 import static android.R.drawable.ic_dialog_info;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -27,6 +28,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -193,6 +195,15 @@ public class PickTrxActivity extends ScannerSupportActivity
             dialogBuilder.show();
         });
 
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if(!searchView.isIconified())
+                    searchView.setIconified(true);
+                else finish();
+            }
+        });
+
         loadData();
     }
 
@@ -246,22 +257,31 @@ public class PickTrxActivity extends ScannerSupportActivity
         focusPosition = trxList.indexOf(trx);
         if(trx.getPickedQty() >= trx.getQty())
         {
-            showMessageDialog(getString(R.string.info), getString(R.string.already_picked),
-                              ic_dialog_info);
+            showMessageDialog(getString(R.string.warning), getString(R.string.already_picked),
+                              ic_dialog_alert);
             playSound(SOUND_FAIL);
         }
         else
         {
-            if(!isContinuous) showEditPickedQtyDialog(trx);
+            if(!isContinuous)
+                showEditPickedQtyDialog(trx);
             else
             {
                 double qty = trx.getPickedQty() + trx.getUomFactor();
-                if(qty > trx.getQty()) qty = trx.getQty();
+                if(qty > trx.getQty())
+                {
+//                    qty = trx.getQty();
+                    showMessageDialog(getString(R.string.warning), getString(R.string.exceeded_ordered_qty),
+                            ic_dialog_alert);
+                    playSound(SOUND_FAIL);
+                    return;
+                }
                 trx.setPickedQty(qty);
                 dbHelper.updatePickTrx(trx);
             }
             playSound(SOUND_SUCCESS);
         }
+        loadData();
     }
 
     @Override
@@ -270,8 +290,6 @@ public class PickTrxActivity extends ScannerSupportActivity
         Trx trx = dbHelper.getPickTrxByBarcode(barcode, trxNo);
         if(trx != null) goToScannedItem(trx);
         else getInvBarcodeFromServer(barcode, this::checkInvBarcode);
-
-        loadData();
     }
 
     public void loadData()
@@ -366,13 +384,6 @@ public class PickTrxActivity extends ScannerSupportActivity
         TrxAdapter adapter = (TrxAdapter) trxListView.getAdapter();
         if(adapter != null) adapter.getFilter().filter(newText);
         return true;
-    }
-
-    @Override
-    public void onBackPressed()
-    {
-        if(!searchView.isIconified()) searchView.setIconified(true);
-        else super.onBackPressed();
     }
 
     @Override

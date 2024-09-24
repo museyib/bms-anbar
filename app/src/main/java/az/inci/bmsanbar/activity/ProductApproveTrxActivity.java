@@ -1,5 +1,6 @@
 package az.inci.bmsanbar.activity;
 
+import static android.content.Intent.getIntent;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
@@ -33,6 +34,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -96,7 +98,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             trxNo = new SimpleDateFormat("yyyyMMddhhmmss", Locale.getDefault()).format(new Date());
 
         printBtn.setOnClickListener(v -> {
-            if(trxList.size() > 0)
+            if(!trxList.isEmpty())
             {
                 String report = getPrintForm();
                 showProgressDialog(true);
@@ -148,16 +150,18 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             }
         });
 
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if(!searchView.isIconified())
+                    searchView.setIconified(true);
+                else finish();
+            }
+        });
+
         loadData();
 
         loadFooter();
-    }
-
-    @Override
-    public void onBackPressed()
-    {
-        if(!searchView.isIconified()) searchView.setIconified(true);
-        else finish();
     }
 
     @Override
@@ -209,7 +213,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         trxListView.setLayoutManager(new LinearLayoutManager(this));
         trxListView.setAdapter(adapter);
 
-        if(trxList.size() == 0) findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
+        if(trxList.isEmpty()) findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
         else findViewById(R.id.trx_list_scroll).setVisibility(View.VISIBLE);
     }
 
@@ -636,7 +640,6 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
     {
         private final ProductApproveTrxActivity activity;
         List<Trx> trxList;
-        View itemView;
 
         public TrxAdapter(Context context, List<Trx> trxList)
         {
@@ -648,8 +651,8 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         @Override
         public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
         {
-            itemView = LayoutInflater.from(parent.getContext())
-                                     .inflate(R.layout.approve_trx_item_layout, parent, false);
+            View itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.approve_trx_item_layout, parent, false);
             return new Holder(itemView);
         }
 
@@ -657,7 +660,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         public void onBindViewHolder(@NonNull Holder holder, int position)
         {
             Trx trx = trxList.get(position);
-            itemView.setOnLongClickListener(view -> {
+            holder.itemView.setOnLongClickListener(view -> {
                 Trx selectedTrx = trxList.get(position);
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
                         ProductApproveTrxActivity.this);
@@ -671,7 +674,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                 dialogBuilder.show();
                 return true;
             });
-            itemView.setOnClickListener(view -> {
+            holder.itemView.setOnClickListener(view -> {
                 Trx selectedTrx = trxList.get(position);
                 showEditInvDialog(selectedTrx);
             });
@@ -680,7 +683,6 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             holder.qty.setText(String.valueOf(trx.getQty()));
             holder.invBrand.setText(String.valueOf(trx.getInvBrand()));
             holder.notes.setText(String.valueOf(trx.getNotes()));
-            itemView.setTag(trx);
         }
 
         @Override
