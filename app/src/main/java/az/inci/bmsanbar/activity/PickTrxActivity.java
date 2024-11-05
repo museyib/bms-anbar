@@ -223,7 +223,7 @@ public class PickTrxActivity extends ScannerSupportActivity
             photoIntent.putExtra("notes", trx.getNotes());
             startActivity(photoIntent);
         });
-        builder.setNeutralButton("Say", (dialog, which) -> {
+        builder.setNegativeButton("Say", (dialog, which) -> {
             String url = url("inv", "qty");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("whs-code", trx.getWhsCode());
@@ -231,6 +231,8 @@ public class PickTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             showStringData(url, "Anbarda say");
         });
+
+        builder.setNeutralButton("Son hərəkət tarixçəsi", (dialog, which) -> getLatestMovements(trx.getInvCode(), trx.getWhsCode()));
         builder.show();
     }
 

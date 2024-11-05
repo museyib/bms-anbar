@@ -35,14 +35,12 @@ import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -250,36 +248,32 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
         scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(1));
 
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if(!searchView.isIconified())
+                    searchView.setIconified(true);
+                else if(trxList.isEmpty())
+                {
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(ApproveTrxActivity.this);
+                    dialogBuilder.setMessage("Mal daxil edilməyib. Sənəd silinsin?")
+                            .setPositiveButton("Bəli", (dialog1, which) -> {
+                                dbHelper.deleteApproveDoc(trxNo);
+                                finish();
+                            })
+                            .setNegativeButton("Xeyr", (dialog12, which) -> finish());
+                    dialogBuilder.show();
+                }
+                else
+                    finish();
+            }
+        });
+
         loadTrgWhsList();
 
         loadData();
 
         loadFooter();
-    }
-
-    @Override
-    public void onBackPressed()
-    {
-        if(!searchView.isIconified())
-        {
-            searchView.setIconified(true);
-        }
-        else
-            if(trxList.size() == 0)
-            {
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-                dialogBuilder.setMessage("Mal daxil edilməyib. Sənəd silinsin?")
-                             .setPositiveButton("Bəli", (dialog1, which) -> {
-                                 dbHelper.deleteApproveDoc(trxNo);
-                                 finish();
-                             })
-                             .setNegativeButton("Xeyr", (dialog12, which) -> finish());
-                dialogBuilder.show();
-            }
-            else
-            {
-                finish();
-            }
     }
 
     @Override
@@ -294,21 +288,25 @@ public class ApproveTrxActivity extends ScannerSupportActivity
 
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
-            @Override
-            public boolean onQueryTextSubmit(String query)
+        if (searchView != null) {
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
             {
-                return false;
-            }
+                @Override
+                public boolean onQueryTextSubmit(String query)
+                {
+                    return false;
+                }
 
-            @Override
-            public boolean onQueryTextChange(String newText)
-            {
-                ((TrxAdapter) trxListView.getAdapter()).getFilter().filter(newText);
-                return true;
-            }
-        });
+                @Override
+                public boolean onQueryTextChange(String newText)
+                {
+                    TrxAdapter adapter = (TrxAdapter) trxListView.getAdapter();
+                    if (adapter != null)
+                        adapter.getFilter().filter(newText);
+                    return true;
+                }
+            });
+        }
         return true;
     }
 
@@ -414,7 +412,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         trxListView.setLayoutManager(new LinearLayoutManager(this));
         trxListView.setAdapter(adapter);
 
-        if(trxList.size() == 0)
+        if(trxList.isEmpty())
         {
             findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
         }
@@ -438,7 +436,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
 
     private void updateButtonsStatus()
     {
-        if(trxTypeId == 27 && trxList.size() > 0)
+        if(trxTypeId == 27 && !trxList.isEmpty())
         {
             fromWhsBtn.setEnabled(!isReady);
             selectSrcBtn.setEnabled(!isReady);
@@ -528,7 +526,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     private void showInvList()
     {
         View view = LayoutInflater.from(this)
-                                  .inflate(R.layout.inv_list_dialog,
+                                  .inflate(R.layout.result_list_dialog,
                                            findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
         InventoryAdapter adapter = new InventoryAdapter(this, invList);
@@ -574,7 +572,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                                   .inflate(R.layout.result_list_dialog,
                                            findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
-        ArrayAdapter<Sbe> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, sbeList);
+        ArrayAdapter<Sbe> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item, sbeList);
         SearchView searchView = view.findViewById(R.id.search);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
         {
@@ -609,7 +607,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                                   .inflate(R.layout.result_list_dialog,
                                            findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
-        ArrayAdapter<Customer> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout,
+        ArrayAdapter<Customer> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
                                                             customerList);
         SearchView searchView = view.findViewById(R.id.search);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
@@ -637,7 +635,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             customer = (Customer) adapterView.getItemAtPosition(i);
             srcTxt.setText(customer.toString());
             updateDocSrc();
-            if(trxList.size() > 0)
+            if(!trxList.isEmpty())
             {
                 fromWhsBtn.setEnabled(false);
                 selectSrcBtn.setEnabled(false);
@@ -657,7 +655,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                                   .inflate(R.layout.result_list_dialog,
                                            findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
-        ArrayAdapter<Whs> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, whsList);
+        ArrayAdapter<Whs> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item, whsList);
         SearchView searchView = view.findViewById(R.id.search);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
         {
@@ -859,7 +857,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             if(splitTrxList != null)
             {
                 runOnUiThread(() -> {
-                    if(splitTrxList.size() > 0)
+                    if(!splitTrxList.isEmpty())
                     {
                         addSplitTrx(splitTrxList, trx);
                     }
@@ -938,50 +936,13 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         PrintAttributes.Builder builder = new PrintAttributes.Builder().setMediaSize(
                 PrintAttributes.MediaSize.ISO_A4);
 
-        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+        printAdapter = webView.createPrintDocumentAdapter(jobName);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
         {
-            printAdapter = webView.createPrintDocumentAdapter(jobName);
-
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            {
-                builder.setDuplexMode(PrintAttributes.DUPLEX_MODE_LONG_EDGE);
-            }
-            printManager.print(jobName, printAdapter, builder.build());
+            builder.setDuplexMode(PrintAttributes.DUPLEX_MODE_LONG_EDGE);
         }
-        else
-        {
-            try
-            {
-                Class<?> adapterClass = Class.forName(
-                        "android.print.PrintDocumentAdapter");
-                Method createPrintDocumentAdapterMethod = webView.getClass()
-                                                                 .getMethod(
-                                                                         "createPrintDocumentAdapter");
-                printAdapter = (PrintDocumentAdapter) createPrintDocumentAdapterMethod.invoke(
-                        webView);
-
-                Class<?> printAttributesBuilderClass = Class.forName(
-                        "android.print.PrintAttributes$Builder");
-                Constructor<?> constructor = printAttributesBuilderClass.getConstructor();
-                Object printAttributes = constructor.newInstance();
-                Method buildMethod = printAttributes.getClass().getMethod("build");
-                Object printAttributesBuild = buildMethod.invoke(printAttributes);
-
-                if(printAttributesBuild != null)
-                {
-                    Method printMethod = printManager.getClass()
-                                                     .getMethod("print", String.class,
-                                                                adapterClass,
-                                                                printAttributesBuild.getClass());
-                    printMethod.invoke(printManager, jobName, printAdapter, builder.build());
-                }
-            }
-            catch(ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
-                  IllegalAccessException | InstantiationException e)
-            {
-                e.printStackTrace();
-            }
-        }
+        printManager.print(jobName, printAdapter, builder.build());
     }
 
     private String getTransferForm()
@@ -1152,7 +1113,6 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         dialogbuilder.show();
     }
 
-    @SuppressWarnings("unchecked")
     private static class InventoryAdapter extends ArrayAdapter<Inventory> implements Filterable
     {
         List<Inventory> list;
@@ -1236,7 +1196,6 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         }
     }
 
-    @SuppressWarnings("unchecked")
     private class TrxAdapter extends RecyclerView.Adapter<TrxAdapter.Holder> implements Filterable
     {
         private final ApproveTrxActivity activity;

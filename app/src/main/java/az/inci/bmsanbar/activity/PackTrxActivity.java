@@ -206,7 +206,7 @@ public class PackTrxActivity extends ScannerSupportActivity
             startActivity(photoIntent);
         });
 
-        builder.setNeutralButton("Say", (dialog, which) -> {
+        builder.setNegativeButton("Say", (dialog, which) -> {
             String url = url("inv", "qty");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("whs-code", trx.getWhsCode());
@@ -214,6 +214,8 @@ public class PackTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             showStringData(url, "Anbarda say");
         });
+
+        builder.setNeutralButton("Son hərəkət tarixçəsi", (dialog, which) -> getLatestMovements(trx.getInvCode(), trx.getWhsCode()));
         builder.show();
     }
 
@@ -365,8 +367,10 @@ public class PackTrxActivity extends ScannerSupportActivity
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(this);
-        searchView.setActivated(true);
+        if (searchView != null) {
+            searchView.setOnQueryTextListener(this);
+            searchView.setActivated(true);
+        }
         return true;
     }
 
@@ -512,14 +516,14 @@ public class PackTrxActivity extends ScannerSupportActivity
             .inflate(R.layout.result_list_dialog,
                     findViewById(android.R.id.content), false);
 
-        ArrayAdapter<NotPickedReason> adapter = new ArrayAdapter<NotPickedReason>(this, R.layout.list_item_layout, reasonList){
+        ArrayAdapter<NotPickedReason> adapter = new ArrayAdapter<NotPickedReason>(this, R.layout.simple_list_item, reasonList){
             @NonNull
             @Override
             public View getView(int position, @Nullable @org.jetbrains.annotations.Nullable View convertView, @NonNull ViewGroup parent) {
                 NotPickedReason reason = reasonList.get(position);
                 if (convertView == null)
                     convertView = LayoutInflater.from(getContext())
-                            .inflate(R.layout.list_item_layout, parent, false);
+                            .inflate(R.layout.simple_list_item, parent, false);
                 TextView listItemView = convertView.findViewById(R.id.list_item);
                 listItemView.setTextSize(20);
                 listItemView.setHeight(80);
@@ -536,14 +540,14 @@ public class PackTrxActivity extends ScannerSupportActivity
 
     private AlertDialog getNotPickedReasonDialog(View view, String message)
     {
-        ArrayAdapter<NotPickedReason> adapter = new ArrayAdapter<NotPickedReason>(this, R.layout.list_item_layout, reasonList){
+        ArrayAdapter<NotPickedReason> adapter = new ArrayAdapter<NotPickedReason>(this, R.layout.simple_list_item, reasonList){
             @NonNull
             @Override
             public View getView(int position, @Nullable @org.jetbrains.annotations.Nullable View convertView, @NonNull ViewGroup parent) {
                 NotPickedReason reason = reasonList.get(position);
                 if (convertView == null)
                     convertView = LayoutInflater.from(getContext())
-                            .inflate(R.layout.list_item_layout, parent, false);
+                            .inflate(R.layout.simple_list_item, parent, false);
                 TextView listItemView = convertView.findViewById(R.id.list_item);
                 listItemView.setTextSize(20);
                 listItemView.setHeight(80);
@@ -556,12 +560,11 @@ public class PackTrxActivity extends ScannerSupportActivity
         view.findViewById(R.id.search).setVisibility(GONE);
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        AlertDialog dialog = dialogBuilder
+
+        return dialogBuilder
                 .setTitle("Silinmə səbəbini seçin")
                 .setMessage((message == null) ? "" : message)
                 .setView(view).create();
-
-        return dialog;
     }
 
     static class TrxAdapter extends ArrayAdapter<Trx> implements Filterable
@@ -658,7 +661,6 @@ public class PackTrxActivity extends ScannerSupportActivity
                     return results;
                 }
 
-                @SuppressWarnings("unchecked")
                 @Override
                 protected void publishResults(CharSequence constraint, FilterResults results)
                 {

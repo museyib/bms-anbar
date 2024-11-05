@@ -139,4 +139,6 @@
     <string name="trx_date">Sənəd tarixi</string>
     <string name="counted">Sayılıb</string>
     <string name="device_info">Cihaz ID-si</string>
+    <string name="info_not_found">Məlumat tapılmadı</string>
+    <string name="latest_movements">Son hərəkət tarixçəsi</string>
 </resources>

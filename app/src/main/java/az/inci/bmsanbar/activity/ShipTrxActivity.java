@@ -67,7 +67,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
         toCentralCheck.setOnCheckedChangeListener((buttonView, isChecked) -> toCentral = isChecked);
 
         send.setOnClickListener(v -> {
-            if(trxList.size() > 0 && !checkModeOn && docCreated)
+            if(!trxList.isEmpty() && !checkModeOn && docCreated)
                 createShipment();
         });
 
@@ -224,7 +224,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
         if(trxList == null)
             trxList = new ArrayList<>();
 
-        ArrayAdapter<ShipTrx> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout,
+        ArrayAdapter<ShipTrx> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
                                                            trxList);
         trxListView.setAdapter(adapter);
     }

@@ -2,6 +2,8 @@ package az.inci.bmsanbar.activity;
 
 import static android.R.drawable.ic_dialog_alert;
 import static android.R.drawable.ic_dialog_info;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.connectionTimeout;
 import static az.inci.bmsanbar.GlobalParameters.jwt;
 import static az.inci.bmsanbar.GlobalParameters.serviceUrl;
@@ -9,16 +11,25 @@ import static az.inci.bmsanbar.GlobalParameters.serviceUrl;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,6 +61,7 @@ import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.User;
 import az.inci.bmsanbar.model.v2.CustomResponse;
 import az.inci.bmsanbar.model.v2.ResponseMessage;
+import az.inci.bmsanbar.model.v3.LatestMovementItem;
 import az.inci.bmsanbar.security.JwtResolver;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -63,6 +75,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
     protected static int SOUND_SUCCESS = R.raw.barcodebeep;
     protected static int SOUND_FAIL = R.raw.serror3;
 
+    private boolean spinnerChanged;
     protected SoundPool soundPool;
     protected AudioManager audioManager;
     protected int sound;
@@ -91,7 +104,14 @@ public abstract class AppBaseActivity extends AppCompatActivity
         dbHelper = new DBHelper(this);
         dbHelper.open();
 
-        soundPool = new SoundPool(10, 3, 5);
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build();
+        soundPool = new SoundPool.Builder()
+                .setMaxStreams(10)
+                .setAudioAttributes(audioAttributes)
+                .build();
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         jwt = preferences.getString("jwt", "");
@@ -226,15 +246,24 @@ public abstract class AppBaseActivity extends AppCompatActivity
         clientBuilder.connectTimeout(connectionTimeout, TimeUnit.SECONDS);
         OkHttpClient httpClient = clientBuilder.build();
 
-        RequestBody requestBody = null;
+        Request request;
 
-        if(method.equals("POST"))
-            requestBody = RequestBody.create(MediaType.get("application/json;charset=UTF-8"),
-                                             new Gson().toJson(requestBodyData));
-        Request request = new Request.Builder().method(method, requestBody)
-                                               .header("Authorization", "Bearer " + jwt)
-                                               .url(url)
-                                               .build();
+        if(method.equals("POST")) {
+            RequestBody requestBody = RequestBody.create(MediaType.get("application/json;charset=UTF-8"),
+                    new Gson().toJson(requestBodyData));
+            request = new Request.Builder()
+                    .post(requestBody)
+                    .header("Authorization", "Bearer " + jwt)
+                    .url(url)
+                    .build();
+        }
+        else {
+            request = new Request.Builder()
+                    .get()
+                    .header("Authorization", "Bearer " + jwt)
+                    .url(url)
+                    .build();
+        }
 
         return httpClient.newCall(request).execute();
     }
@@ -500,5 +529,83 @@ public abstract class AppBaseActivity extends AppCompatActivity
     public String getDeviceIdString()
     {
         return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    protected void getLatestMovements(String invCode, String whsCode)
+    {
+        spinnerChanged = false;
+        View view = LayoutInflater.from(this)
+                .inflate(R.layout.result_list_dialog,
+                        findViewById(android.R.id.content), false);
+        Spinner spinner = view.findViewById(R.id.top_spinner);
+        spinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Arrays.asList(5, 10, 15, 20, 25, 30)));
+        spinner.setVisibility(VISIBLE);
+
+        android.app.AlertDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(this);
+        android.app.AlertDialog dialog = dialogBuilder.setTitle("Son hərəkət tarixçəsi").setView(view).create();
+        dialog.show();
+
+        ListView listView = view.findViewById(R.id.result_list);
+        SearchView searchView = view.findViewById(R.id.search);
+        searchView.setVisibility(GONE);
+
+        spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (spinnerChanged)
+                    refreshLatestMovements(invCode, whsCode, (int) parent.getItemAtPosition(position), listView);
+                else
+                    spinnerChanged = true;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        refreshLatestMovements(invCode, whsCode, 5, listView);
+    }
+
+    private void refreshLatestMovements(String invCode, String whsCode, int top, ListView listView)
+    {
+        showProgressDialog(true);
+        new Thread(() -> {
+            String url = url("inv", "latest-movements");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("inv-code", invCode);
+            parameters.put("whs-code", whsCode);
+            parameters.put("top", String.valueOf(top));
+            url = addRequestParameters(url, parameters);
+            List<LatestMovementItem> latestMovementItems = getListData(url, "GET", null, LatestMovementItem[].class);
+            runOnUiThread(() -> {
+                if(latestMovementItems != null)
+                {
+                    ArrayAdapter<LatestMovementItem> adapter = (ArrayAdapter<LatestMovementItem>) listView.getAdapter();
+                    if (adapter == null) {
+                        adapter = new ArrayAdapter<LatestMovementItem>(this, R.layout.simple_list_item, latestMovementItems) {
+                            @NonNull
+                            @Override
+                            public View getView(int position, @Nullable @org.jetbrains.annotations.Nullable View convertView, @NonNull ViewGroup parent) {
+                                if (convertView == null)
+                                    convertView = LayoutInflater.from(getContext())
+                                            .inflate(R.layout.latest_movements_layout_item, parent, false);
+                                LatestMovementItem item = latestMovementItems.get(position);
+                                ((TextView) convertView.findViewById(R.id.trx_no)).setText(item.getTrxNo());
+                                ((TextView) convertView.findViewById(R.id.trx_date)).setText(item.getTrxDate());
+                                ((TextView) convertView.findViewById(R.id.quantity)).setText(String.valueOf(item.getQuantity()));
+                                return convertView;
+                            }
+                        };
+                        listView.setAdapter(adapter);
+                    }
+                    else {
+                        adapter.clear();
+                        adapter.addAll(latestMovementItems);
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+            });
+        }).start();
     }
 }

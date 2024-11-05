@@ -31,6 +31,7 @@ import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -192,7 +193,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         selectInvBtn.setOnClickListener(v -> showInvList());
 
         View.OnClickListener clickListener = v -> {
-            if(trxList.size() > 0)
+            if(!trxList.isEmpty())
             {
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
                         InternalUseTrxActivity.this);
@@ -208,6 +209,27 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
         scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(1));
 
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if(!searchView.isIconified())
+                    searchView.setIconified(true);
+                else if(trxList.isEmpty())
+                {
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(InternalUseTrxActivity.this);
+                    dialogBuilder.setMessage("Mal daxil edilməyib. Sənəd silinsin?")
+                            .setPositiveButton("Bəli", (dialog1, which) -> {
+                                dbHelper.deleteInternalUseDoc(trxNo);
+                                finish();
+                            })
+                            .setNegativeButton("Xeyr", (dialog12, which) -> finish());
+                    dialogBuilder.show();
+                }
+                else
+                    finish();
+            }
+        });
+
         loadWhsList();
 
         loadExpCenterList();
@@ -215,31 +237,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         loadData();
 
         loadFooter();
-    }
-
-    @Override
-    public void onBackPressed()
-    {
-        if(!searchView.isIconified())
-        {
-            searchView.setIconified(true);
-        }
-        else
-            if(trxList.size() == 0)
-            {
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-                dialogBuilder.setMessage("Mal daxil edilməyib. Sənəd silinsin?")
-                             .setPositiveButton("Bəli", (dialog1, which) -> {
-                                 dbHelper.deleteInternalUseDoc(trxNo);
-                                 finish();
-                             })
-                             .setNegativeButton("Xeyr", (dialog12, which) -> finish());
-                dialogBuilder.show();
-            }
-            else
-            {
-                finish();
-            }
     }
 
     @Override
@@ -254,21 +251,25 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
 
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
-            @Override
-            public boolean onQueryTextSubmit(String query)
+        if (searchView != null) {
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
             {
-                return false;
-            }
+                @Override
+                public boolean onQueryTextSubmit(String query)
+                {
+                    return false;
+                }
 
-            @Override
-            public boolean onQueryTextChange(String newText)
-            {
-                ((TrxAdapter) trxListView.getAdapter()).getFilter().filter(newText);
-                return true;
-            }
-        });
+                @Override
+                public boolean onQueryTextChange(String newText)
+                {
+                    TrxAdapter adapter = (TrxAdapter) trxListView.getAdapter();
+                    if (adapter != null)
+                        adapter.getFilter().filter(newText);
+                    return true;
+                }
+            });
+        }
         return true;
     }
 
@@ -334,7 +335,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         trxListView.setAdapter(adapter);
         notesEdit.setText(notes);
 
-        if(trxList.size() == 0)
+        if(trxList.isEmpty())
         {
             findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
         }
@@ -421,7 +422,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
     private void showInvList()
     {
         View view = LayoutInflater.from(this)
-                                  .inflate(R.layout.inv_list_dialog,
+                                  .inflate(R.layout.result_list_dialog,
                                            findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
         InventoryAdapter adapter = new InventoryAdapter(this, invList);
@@ -656,7 +657,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         builder.show();
     }
 
-    @SuppressWarnings("unchecked")
     private static class InventoryAdapter extends ArrayAdapter<Inventory> implements Filterable
     {
         List<Inventory> list;
@@ -740,7 +740,6 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         }
     }
 
-    @SuppressWarnings("unchecked")
     private class TrxAdapter extends RecyclerView.Adapter<TrxAdapter.Holder> implements Filterable
     {
         private final InternalUseTrxActivity activity;

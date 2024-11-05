@@ -52,7 +52,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         docList = new ArrayList<>();
 
         send.setOnClickListener(v -> {
-            if(docList.size() > 0)
+            if(!docList.isEmpty())
                 changeDocStatus();
         });
 
@@ -128,7 +128,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
 
     public void loadData()
     {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, docList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item, docList);
         docListView.setAdapter(adapter);
     }
 

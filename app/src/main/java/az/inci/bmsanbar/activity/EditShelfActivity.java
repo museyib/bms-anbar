@@ -44,7 +44,7 @@ public class EditShelfActivity extends ScannerSupportActivity
         scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(0));
 
         sendBtn.setOnClickListener(v -> {
-            if(inventoryList.size() > 0) uploadData();
+            if(!inventoryList.isEmpty()) uploadData();
         });
 
         clearBtn.setOnClickListener(v -> clearAndRefreshList());
@@ -102,7 +102,7 @@ public class EditShelfActivity extends ScannerSupportActivity
     private void addAndRefreshList(Inventory inventory)
     {
         if(!inventoryList.contains(inventory)) inventoryList.add(inventory);
-        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout,
+        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
                                                              inventoryList);
         invListView.setAdapter(adapter);
     }
@@ -110,7 +110,7 @@ public class EditShelfActivity extends ScannerSupportActivity
     private void deleteAndRefreshList(Inventory inventory)
     {
         inventoryList.remove(inventory);
-        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout,
+        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
                                                              inventoryList);
         invListView.setAdapter(adapter);
     }
@@ -120,7 +120,7 @@ public class EditShelfActivity extends ScannerSupportActivity
         shelfBarcodeEdit.setText("");
         inventoryList.clear();
         shelfBarcode = "";
-        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout,
+        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
                                                              inventoryList);
         invListView.setAdapter(adapter);
     }

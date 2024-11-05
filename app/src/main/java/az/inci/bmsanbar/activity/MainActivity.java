@@ -349,13 +349,6 @@ public class MainActivity extends AppBaseActivity
                     loadUserInfo(user, true);
                     attemptLogin(user);
                 }
-                else
-                {
-                    showMessageDialog(getString(R.string.warning),
-                            getString(R.string.not_allowed),
-                            ic_dialog_alert);
-                    playSound(SOUND_FAIL);
-                }
             });
         }).start();
     }

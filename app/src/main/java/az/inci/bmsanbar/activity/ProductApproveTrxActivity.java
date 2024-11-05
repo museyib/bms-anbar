@@ -1,6 +1,5 @@
 package az.inci.bmsanbar.activity;
 
-import static android.content.Intent.getIntent;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
@@ -40,9 +39,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -176,22 +172,24 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
 
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
-            @Override
-            public boolean onQueryTextSubmit(String query)
+        if (searchView != null) {
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
             {
-                return false;
-            }
+                @Override
+                public boolean onQueryTextSubmit(String query)
+                {
+                    return false;
+                }
 
-            @Override
-            public boolean onQueryTextChange(String newText)
-            {
-                ((TrxAdapter) Objects.requireNonNull(trxListView.getAdapter())).getFilter()
-                                                                               .filter(newText);
-                return true;
-            }
-        });
+                @Override
+                public boolean onQueryTextChange(String newText)
+                {
+                    ((TrxAdapter) Objects.requireNonNull(trxListView.getAdapter())).getFilter()
+                                                                                   .filter(newText);
+                    return true;
+                }
+            });
+        }
         return true;
     }
 
@@ -256,7 +254,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
     private void showInvList()
     {
         View view = LayoutInflater.from(this)
-                                  .inflate(R.layout.inv_list_dialog,
+                                  .inflate(R.layout.result_list_dialog,
                                            findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
         InventoryAdapter adapter = new InventoryAdapter(this, invList);
@@ -464,46 +462,11 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         PrintAttributes.Builder builder = new PrintAttributes.Builder().setMediaSize(
                 PrintAttributes.MediaSize.ISO_A4);
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-            printAdapter = webView.createPrintDocumentAdapter(jobName);
+        printAdapter = webView.createPrintDocumentAdapter(jobName);
 
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                builder.setDuplexMode(PrintAttributes.DUPLEX_MODE_LONG_EDGE);
-            printManager.print(jobName, printAdapter, builder.build());
-        }
-        else
-            try
-            {
-                Class<?> adapterClass = Class.forName(
-                        "android.print.PrintDocumentAdapter");
-                Method createPrintDocumentAdapterMethod = webView.getClass()
-                                                                 .getMethod(
-                                                                         "createPrintDocumentAdapter");
-                printAdapter = (PrintDocumentAdapter) createPrintDocumentAdapterMethod.invoke(
-                        webView);
-
-                Class<?> printAttributesBuilderClass = Class.forName(
-                        "android.print.PrintAttributes$Builder");
-                Constructor<?> constructor = printAttributesBuilderClass.getConstructor();
-                Object printAttributes = constructor.newInstance();
-                Method buildMethod = printAttributes.getClass().getMethod("build");
-                Object printAttributesBuild = buildMethod.invoke(printAttributes);
-
-                if(printAttributesBuild != null)
-                {
-                    Method printMethod = printManager.getClass()
-                                                     .getMethod("print", String.class,
-                                                                adapterClass,
-                                                                printAttributesBuild.getClass());
-                    printMethod.invoke(printManager, jobName, printAdapter, builder.build());
-                }
-            }
-            catch(ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
-                  IllegalAccessException | InstantiationException e)
-            {
-                e.printStackTrace();
-            }
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            builder.setDuplexMode(PrintAttributes.DUPLEX_MODE_LONG_EDGE);
+        printManager.print(jobName, printAdapter, builder.build());
     }
 
     private String getPrintForm()
@@ -555,7 +518,6 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         builder.show();
     }
 
-    @SuppressWarnings("unchecked")
     private static class InventoryAdapter extends ArrayAdapter<Inventory> implements Filterable
     {
         List<Inventory> list;
@@ -635,7 +597,6 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         }
     }
 
-    @SuppressWarnings("unchecked")
     private class TrxAdapter extends RecyclerView.Adapter<TrxAdapter.Holder> implements Filterable
     {
         private final ProductApproveTrxActivity activity;

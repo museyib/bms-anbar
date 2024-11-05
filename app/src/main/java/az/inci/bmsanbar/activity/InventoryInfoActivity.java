@@ -30,9 +30,11 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     private TextView infoText;
     private EditText keywordEdit;
     private Spinner searchField;
+    private Button latestMovements;
     private String invCode;
     private String invName;
     private String defaultUomCode;
+    private String whsCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -49,6 +51,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         Button editShelf = findViewById(R.id.edit_shelf_location);
         Button editBarcodes = findViewById(R.id.edit_barcodes);
         Button viewImage = findViewById(R.id.photo);
+        latestMovements = findViewById(R.id.latest_movements);
 
         scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
         searchField.setAdapter(ArrayAdapter.createFromResource(this, R.array.search_field_list,
@@ -125,7 +128,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
                                            findViewById(android.R.id.content), false);
 
         ListView listView = view.findViewById(R.id.result_list);
-        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.list_item_layout, list);
+        ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item, list);
         listView.setAdapter(adapter);
         SearchView searchView = view.findViewById(R.id.search);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
@@ -181,6 +184,8 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         String info = "Mal kodu: " + invCode + "\nMal adı: " + invName + "\nAnbar qalığı: " +
                       invInfo.getWhsQty() + "\n" + invInfo.getInfo();
         defaultUomCode = invInfo.getDefaultUomCode();
+        whsCode = invInfo.getWhsCode();
+        latestMovements.setOnClickListener(v -> getLatestMovements(invCode, whsCode));
         info = info.replaceAll("; ", "\n");
         info = info.replaceAll("\\\\n", "\n");
         infoText.setText(info);

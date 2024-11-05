@@ -10,4 +10,5 @@ public class InvInfo
     private String defaultUomCode;
     private double whsQty;
     private String info;
+    private String whsCode;
 }

@@ -1,110 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".activity.InventoryInfoActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.InventoryInfoActivity">
 
     <LinearLayout
-            android:id="@+id/top"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        android:id="@+id/top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <EditText
-                android:id="@+id/keyword_edit"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:autofillHints="@string/keyword"
-                android:ems="10"
-                android:hint="@string/keyword"
-                android:inputType="textFilter" />
+            android:id="@+id/keyword_edit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:autofillHints="@string/keyword"
+            android:ems="10"
+            android:hint="@string/keyword"
+            android:inputType="textFilter" />
 
         <Spinner
-                android:id="@+id/search_field"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+            android:id="@+id/search_field"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <Button
-                android:id="@+id/search"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/search" />
+            android:id="@+id/search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/search" />
     </LinearLayout>
 
     <ScrollView
-            android:id="@+id/good_info_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="240dp"
-            app:layout_constraintBottom_toTopOf="@+id/scan_cam"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/top"
-            app:layout_constraintVertical_bias="0.0">
+        android:id="@+id/good_info_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="240dp"
+        app:layout_constraintBottom_toTopOf="@+id/scan_cam"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/top"
+        app:layout_constraintVertical_bias="0.0">
 
         <TextView
-                android:id="@+id/good_info"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:gravity="start|top"
-                android:scrollbars="vertical"
-                android:textColor="@android:color/black"
-                android:textSize="24sp" />
+            android:id="@+id/good_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:gravity="start|top"
+            android:scrollbars="vertical"
+            android:textColor="@android:color/black"
+            android:textSize="24sp" />
     </ScrollView>
 
     <Button
-            android:id="@+id/scan_cam"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/camera_scanner"
-            android:textAllCaps="false"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toTopOf="@+id/edit_attributes"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintVertical_bias="1.0" />
+        android:id="@+id/scan_cam"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/camera_scanner"
+        android:textAllCaps="false"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/edit_attributes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
-            android:id="@+id/edit_attributes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/edit_attributes"
-            android:textAllCaps="false"
-            app:layout_constraintBottom_toTopOf="@+id/edit_barcodes"
-            app:layout_constraintStart_toStartOf="parent" />
+        android:id="@+id/edit_attributes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_attributes"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/latest_movements"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-            android:id="@+id/edit_shelf_location"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/shelf_location"
-            android:textAllCaps="false"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/edit_barcodes" />
+        android:id="@+id/edit_shelf_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/shelf_location"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/latest_movements"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-            android:id="@+id/edit_barcodes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/edit_barcodes"
-            android:textAllCaps="false"
-            app:layout_constraintBottom_toTopOf="@+id/photo"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+        android:id="@+id/latest_movements"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/latest_movements"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/edit_barcodes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-            android:id="@+id/photo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/image"
-            android:textAllCaps="false"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+        android:id="@+id/edit_barcodes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_barcodes"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/photo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/photo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/image"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
