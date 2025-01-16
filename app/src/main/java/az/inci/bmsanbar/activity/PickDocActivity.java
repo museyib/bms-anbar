@@ -1,6 +1,5 @@
 package az.inci.bmsanbar.activity;
 
-import static android.R.drawable.ic_dialog_alert;
 import static android.R.drawable.ic_dialog_info;
 
 import android.content.Context;
@@ -34,7 +33,6 @@ public class PickDocActivity extends AppBaseActivity
     ListView docListView;
     ImageButton newDocs;
     ImageButton newDocsByUserId;
-    ImageButton newDocsIncomplete;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
@@ -61,22 +59,6 @@ public class PickDocActivity extends AppBaseActivity
 
         newDocsByUserId = findViewById(R.id.newDocsByUserId);
         newDocsByUserId.setOnClickListener(v -> loadTrxFromServer(0));
-
-        newDocsIncomplete = findViewById(R.id.newDocsIncomplete);
-        newDocsIncomplete.setOnClickListener(v -> {
-            List<String> list = dbHelper.getIncompletePickDocList(config().getUser().getId());
-            if(list.size() == 0)
-            {
-                showMessageDialog(getString(R.string.info), getString(R.string.no_incomplete_doc),
-                                  ic_dialog_alert);
-                playSound(SOUND_FAIL);
-            }
-            else
-                for(String trxNo : list)
-                {
-                    loadDocFromServer(trxNo);
-                }
-        });
     }
 
     @Override
@@ -98,7 +80,7 @@ public class PickDocActivity extends AppBaseActivity
         docList = dbHelper.getPickDocsByPickUser(config().getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, docList);
         docListView.setAdapter(docAdapter);
-        if(docList.size() == 0)
+        if(docList.isEmpty())
             findViewById(R.id.header).setVisibility(View.GONE);
         else
             findViewById(R.id.header).setVisibility(View.VISIBLE);
@@ -127,26 +109,6 @@ public class PickDocActivity extends AppBaseActivity
         menu.findItem(R.id.doc_list).setVisible(false);
 
         return true;
-    }
-
-    private void loadDocFromServer(String trxNo)
-    {
-        showProgressDialog(true);
-        new Thread(() -> {
-            String url = url("doc", "pick");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("trx-no", trxNo);
-            parameters.put("pick-user", config().getUser().getId());
-            url = addRequestParameters(url, parameters);
-            Doc doc = getSimpleObject(url, "GET", null, Doc.class);
-
-            if(doc != null)
-                runOnUiThread(() -> {
-                    dbHelper.addPickDoc(doc);
-                    dbHelper.updatePickTrxStatus(doc.getTrxNo(), 1);
-                    loadData();
-                });
-        }).start();
     }
 
     private void loadTrxFromServer(int mode)

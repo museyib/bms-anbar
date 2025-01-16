@@ -17,13 +17,13 @@ import static az.inci.bmsanbar.AppConfig.PICK_MODE;
 import static az.inci.bmsanbar.AppConfig.PRODUCT_APPROVE_MODE;
 import static az.inci.bmsanbar.AppConfig.PURCHASE_ORDER_MODE;
 import static az.inci.bmsanbar.AppConfig.SHIP_MODE;
+import static az.inci.bmsanbar.GlobalParameters.apiVersion;
 import static az.inci.bmsanbar.GlobalParameters.cameraScanning;
 import static az.inci.bmsanbar.GlobalParameters.connectionTimeout;
 import static az.inci.bmsanbar.GlobalParameters.imageUrl;
 import static az.inci.bmsanbar.GlobalParameters.serviceUrl;
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import az.inci.bmsanbar.R;
@@ -78,10 +79,21 @@ public class MainActivity extends AppBaseActivity
 
     private void loadConfig()
     {
+
+        Properties properties = new Properties();
+        try
+        {
+            properties.load(getAssets().open("app.properties"));
+        }
+        catch(IOException e)
+        {
+            apiVersion = "v4";
+        }
         serviceUrl = preferences.getString("service_url", "http://185.129.0.46:8022");
         imageUrl = preferences.getString("image_url", "http://185.129.0.46:8025");
         connectionTimeout = Integer.parseInt(preferences.getString("connection_timeout", "5"));
         cameraScanning = preferences.getBoolean("camera_scanning", false);
+        apiVersion = properties.getProperty("app.api-version");
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -356,6 +368,37 @@ public class MainActivity extends AppBaseActivity
     private void checkForNewVersion()
     {
         showProgressDialog(true);
+
+        new Thread(() -> {
+            int version;
+            try
+            {
+                version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+            }
+            catch(PackageManager.NameNotFoundException e)
+            {
+                version = 0;
+            }
+            String url = url("app-version", "check");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("app-name", "BMSAnbar");
+            parameters.put("current-version", String.valueOf(version));
+            url = addRequestParameters(url, parameters);
+            Boolean newVersionAvailable = getSimpleObject(url, "GET", null, Boolean.class);
+            if (newVersionAvailable != null)
+                runOnUiThread(() -> {
+                    if(newVersionAvailable)
+                        getApkFile();
+                    else
+                        showMessageDialog(getString(R.string.info), getString(R.string.no_new_version),
+                                ic_dialog_info);
+                });
+        }).start();
+    }
+
+    private void getApkFile()
+    {
+        showProgressDialog(true);
         new Thread(() -> {
             String url = url("download");
             Map<String, String> parameters = new HashMap<>();
@@ -367,107 +410,68 @@ public class MainActivity extends AppBaseActivity
                 if(bytes != null)
                 {
                     byte[] fileBytes = android.util.Base64.decode(bytes, Base64.DEFAULT);
-                    runOnUiThread(() -> {
-                        showProgressDialog(false);
-                        updateVersion(fileBytes);
-                    });
+                    if (fileBytes != null)
+                        runOnUiThread(() -> installApp(fileBytes));
                 }
             }
             catch(RuntimeException e)
             {
-                runOnUiThread(() -> showMessageDialog(getString(R.string.error), e.toString(),
-                                                      ic_dialog_alert));
+                runOnUiThread(() -> showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert));
             }
         }).start();
     }
 
-    private void updateVersion(byte[] bytes)
+    private void installApp(byte[] bytes)
     {
-        if(bytes != null)
+        File file = new File(
+                Environment.getExternalStorageDirectory().getPath() + "/BMSAnbar.apk");
+        if(!file.exists())
         {
-            File file = new File(
-                    Environment.getExternalStorageDirectory().getPath() + "/BMSAnbar.apk");
-            if(!file.exists())
+            try
             {
-                try
+                boolean newFile = file.createNewFile();
+                if(!newFile)
                 {
-                    boolean newFile = file.createNewFile();
-                    if(!newFile)
-                    {
-                        showMessageDialog(getString(R.string.info),
-                                          getString(R.string.error_occurred),
-                                          ic_dialog_info);
-                        return;
-                    }
-                }
-                catch(IOException e)
-                {
-                    showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
+                    showMessageDialog(getString(R.string.info),
+                            getString(R.string.error_occurred),
+                            ic_dialog_info);
                     return;
                 }
             }
-
-            try(FileOutputStream stream = new FileOutputStream(file))
-            {
-                stream.write(bytes);
-            }
-            catch(Exception e)
+            catch(IOException e)
             {
                 showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
                 return;
             }
+        }
 
-            PackageManager pm = getPackageManager();
-            PackageInfo info = pm.getPackageArchiveInfo(file.getAbsolutePath(), 0);
-            int version;
-            try
-            {
-                version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
-            }
-            catch(PackageManager.NameNotFoundException e)
-            {
-                showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
-                return;
-            }
+        try(FileOutputStream stream = new FileOutputStream(file))
+        {
+            stream.write(bytes);
+        }
+        catch(Exception e)
+        {
+            showMessageDialog(getString(R.string.error), e.toString(), ic_dialog_alert);
+            return;
+        }
 
-            if(info == null)
-            {
-                showMessageDialog(getString(R.string.error), new String(bytes),
-                                  ic_dialog_alert);
-                return;
-            }
-
-            if(file.length() > 0 && info.versionCode > version)
-            {
-                Intent installIntent;
-                Uri uri;
-                if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
-                {
-                    installIntent = new Intent(Intent.ACTION_VIEW);
-                    uri = Uri.fromFile(file);
-                    installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    installIntent.setDataAndType(uri, "application/vnd.android.package-archive");
-                }
-                else
-                {
-                    installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-                    uri = FileProvider.getUriForFile(this, "az.inci.bmsanbar.provider",
-                                                     file);
-                    installIntent.setData(uri);
-                    installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                }
-                startActivity(installIntent);
-            }
-            else
-            {
-                showMessageDialog(getString(R.string.info), getString(R.string.no_new_version),
-                                  ic_dialog_info);
-            }
+        Intent installIntent;
+        Uri uri;
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+        {
+            installIntent = new Intent(Intent.ACTION_VIEW);
+            uri = Uri.fromFile(file);
+            installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            installIntent.setDataAndType(uri, "application/vnd.android.package-archive");
         }
         else
         {
-            showMessageDialog(getString(R.string.info), getString(R.string.no_new_version),
-                              ic_dialog_info);
+            installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+            uri = FileProvider.getUriForFile(this, "az.inci.bmsanbar.provider",
+                    file);
+            installIntent.setData(uri);
+            installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
+        startActivity(installIntent);
     }
 }

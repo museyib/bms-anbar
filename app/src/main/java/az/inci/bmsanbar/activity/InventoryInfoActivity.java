@@ -17,6 +17,8 @@ import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +65,21 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         editBarcodes.setOnClickListener(v -> editBarcodes());
         viewImage.setOnClickListener(v -> viewImage());
         editShelf.setOnClickListener(v -> editShelfLocation());
+
+        keywordEdit.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus)
+                findViewById(R.id.foot).setVisibility(GONE);
+            else
+                findViewById(R.id.foot).setVisibility(VISIBLE);
+        });
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true){
+            @Override
+            public void handleOnBackPressed() {
+                if (keywordEdit.hasFocus()) keywordEdit.clearFocus();
+                else finish();
+            }
+        });
     }
 
     @Override
@@ -99,6 +116,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     public void searchKeyword()
     {
+        keywordEdit.clearFocus();
         String keyword = keywordEdit.getText().toString();
 
         if(keyword.isEmpty())

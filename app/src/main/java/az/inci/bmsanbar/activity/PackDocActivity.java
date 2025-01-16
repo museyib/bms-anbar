@@ -1,6 +1,5 @@
 package az.inci.bmsanbar.activity;
 
-import static android.R.drawable.ic_dialog_alert;
 import static android.R.drawable.ic_dialog_info;
 
 import android.content.Context;
@@ -38,7 +37,6 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     List<Doc> docList;
     ListView docListView;
     ImageButton newDocs;
-    ImageButton newDocsIncomplete;
     private SearchView searchView;
 
     @Override
@@ -75,25 +73,6 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         newDocs = findViewById(R.id.newDocs);
         newDocs.setOnClickListener(v -> loadTrxFromServer(1));
 
-        newDocsIncomplete = findViewById(R.id.newDocsIncomplete);
-        View.OnClickListener clickListener = v -> {
-            List<String> list = dbHelper.getIncompletePackDocList(
-                    PackDocActivity.this.config().getUser().getId());
-            if(list.isEmpty())
-            {
-                PackDocActivity.this.showMessageDialog(
-                        PackDocActivity.this.getString(R.string.info),
-                        PackDocActivity.this.getString(R.string.no_incomplete_doc),
-                        ic_dialog_alert);
-                PackDocActivity.this.playSound(SOUND_FAIL);
-            }
-            else
-                for(String trxNo : list)
-                {
-                    PackDocActivity.this.loadDocFromServer(trxNo);
-                }
-        };
-        newDocsIncomplete.setOnClickListener(clickListener);
     }
 
     @Override
@@ -166,25 +145,6 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             searchView.setActivated(true);
         }
         return true;
-    }
-
-    private void loadDocFromServer(String trxNo)
-    {
-        showProgressDialog(true);
-        new Thread(() -> {
-            String url = url("doc", "pack");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("trx-no", trxNo);
-            url = addRequestParameters(url, parameters);
-            Doc doc = getSimpleObject(url, "GET", null, Doc.class);
-
-            if(doc != null)
-                runOnUiThread(() -> {
-                    dbHelper.addPackDoc(doc);
-                    dbHelper.updatePackTrxStatus(doc.getTrxNo(), 1);
-                    loadData();
-                });
-        }).start();
     }
 
     private void loadTrxFromServer(int mode)

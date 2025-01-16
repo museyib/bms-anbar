@@ -4,6 +4,7 @@ import static android.R.drawable.ic_dialog_alert;
 import static android.R.drawable.ic_dialog_info;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static az.inci.bmsanbar.GlobalParameters.apiVersion;
 import static az.inci.bmsanbar.GlobalParameters.connectionTimeout;
 import static az.inci.bmsanbar.GlobalParameters.jwt;
 import static az.inci.bmsanbar.GlobalParameters.serviceUrl;
@@ -149,7 +150,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
     public String url(String... value)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(serviceUrl).append("/v3");
+        sb.append(serviceUrl).append("/").append(apiVersion);
         for(String s : value)
         {
             sb.append("/").append(s);
@@ -347,10 +348,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
         }).start();
     }
 
-    protected void loadData()
-    {
-
-    }
+    protected void loadData() {}
 
     protected void showStringData(String url, String title)
     {
@@ -362,7 +360,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
         }).start();
     }
 
-    protected <T> T getSimpleObject(String url, String method, Object request, Class<T> tClass)
+    public  <T> T getSimpleObject(String url, String method, Object request, Class<T> tClass)
     {
         try
         {
@@ -430,7 +428,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
         }
     }
 
-    protected <T> List<T> getListData(String url, String method, Object request, Class<T[]> tClass)
+    public  <T> List<T> getListData(String url, String method, Object request, Class<T[]> tClass)
     {
         try
         {

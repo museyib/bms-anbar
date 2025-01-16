@@ -232,7 +232,7 @@ public class PickTrxActivity extends ScannerSupportActivity
             showStringData(url, "Anbarda say");
         });
 
-        builder.setNeutralButton("Son hərəkət tarixçəsi", (dialog, which) -> getLatestMovements(trx.getInvCode(), trx.getWhsCode()));
+        builder.setNeutralButton("Tarixçə", (dialog, which) -> getLatestMovements(trx.getInvCode(), trx.getWhsCode()));
         builder.show();
     }
 

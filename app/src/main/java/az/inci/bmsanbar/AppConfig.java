@@ -1,7 +1,12 @@
 package az.inci.bmsanbar;
 
 import az.inci.bmsanbar.model.User;
+import lombok.Getter;
+import lombok.Setter;
 
+
+@Setter
+@Getter
 public class AppConfig
 {
     public static final int PICK_MODE = 0;
@@ -15,20 +20,6 @@ public class AppConfig
     public static final int VIEW_MODE = 0;
     public static final int NEW_MODE = 1;
     static final String DB_NAME = "BMS_ANBAR";
-    static final int DB_VERSION = 15;
+    static final int DB_VERSION = 16;
     private User user;
-
-    public User getUser()
-    {
-        return user;
-    }
-
-    public void setUser(User user)
-    {
-        this.user = user;
-    }
-
-    public String getDeviceId() {
-        return null;
-    }
 }
