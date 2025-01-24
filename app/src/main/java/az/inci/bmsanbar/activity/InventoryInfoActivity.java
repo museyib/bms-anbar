@@ -217,7 +217,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
     public void editAttributes()
     {
-        if(!config().getUser().isAttributeFlag())
+        if(!getUser().isAttributeFlag())
         {
             showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
                               android.R.drawable.ic_dialog_alert);
@@ -241,7 +241,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             String url = url("inv", "info-by-inv-code");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("inv-code", invCode);
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             url = addRequestParameters(url, parameters);
             getInfo(url);
         }).start();
@@ -254,7 +254,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             String url = url("inv", "info-by-barcode");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("barcode", barcode);
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             url = addRequestParameters(url, parameters);
             getInfo(url);
         }).start();

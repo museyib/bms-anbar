@@ -203,7 +203,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
         trx.setDriverName(driverName);
         trx.setVehicleCode(vehicleCode);
         trx.setRegionCode("SHR0000001");
-        trx.setUserId(config().getUser().getId());
+        trx.setUserId(getUser().getId());
         trx.setTaxed(taxed);
 
         if(checkModeOn)
@@ -286,7 +286,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
                                                  .regionCode(trxList.get(0).getRegionCode())
                                                  .driverCode(trxList.get(0).getDriverCode())
                                                  .vehicleCode(trxList.get(0).getVehicleCode())
-                                                 .userId(config().getUser().getId())
+                                                 .userId(getUser().getId())
                                                  .build();
         List<ShipmentRequestItem> requestItems = new ArrayList<>();
         for(ShipTrx trx : trxList)

@@ -2,24 +2,20 @@ package az.inci.bmsanbar;
 
 import androidx.multidex.MultiDexApplication;
 
+import az.inci.bmsanbar.model.User;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class App extends MultiDexApplication
 {
-    private AppConfig config;
+    private User user;
 
     @Override
     public void onCreate()
     {
         super.onCreate();
-        setConfig(new AppConfig());
-    }
-
-    public AppConfig getConfig()
-    {
-        return config;
-    }
-
-    public void setConfig(AppConfig config)
-    {
-        this.config = config;
+        user = new User();
     }
 }

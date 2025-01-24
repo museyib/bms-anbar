@@ -21,5 +21,4 @@ public class AppConfig
     public static final int NEW_MODE = 1;
     static final String DB_NAME = "BMS_ANBAR";
     static final int DB_VERSION = 16;
-    private User user;
 }

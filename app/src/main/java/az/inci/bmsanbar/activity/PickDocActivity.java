@@ -77,7 +77,7 @@ public class PickDocActivity extends AppBaseActivity
     @Override
     public void loadData()
     {
-        docList = dbHelper.getPickDocsByPickUser(config().getUser().getId());
+        docList = dbHelper.getPickDocsByPickUser(getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, docList);
         docListView.setAdapter(docAdapter);
         if(docList.isEmpty())
@@ -117,7 +117,7 @@ public class PickDocActivity extends AppBaseActivity
         new Thread(() -> {
             String url = url("pick", "get-doc");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("pick-user", config().getUser().getId());
+            parameters.put("pick-user", getUser().getId());
             parameters.put("mode", String.valueOf(mode));
             url = addRequestParameters(url, parameters);
 

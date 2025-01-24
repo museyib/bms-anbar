@@ -91,7 +91,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     @Override
     public void loadData()
     {
-        docList = dbHelper.getPackDocsByApproveUser(config().getUser().getId());
+        docList = dbHelper.getPackDocsByApproveUser(getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
         if(docList.isEmpty())
@@ -153,7 +153,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         new Thread(() -> {
             String url = url("pack", "get-doc");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("approve-user", config().getUser().getId());
+            parameters.put("approve-user", getUser().getId());
             parameters.put("mode", String.valueOf(mode));
             url = addRequestParameters(url, parameters);
             Doc doc = getSimpleObject(url, "GET", null, Doc.class);

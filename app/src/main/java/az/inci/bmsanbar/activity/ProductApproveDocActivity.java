@@ -43,7 +43,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
         add = findViewById(R.id.add);
         download = findViewById(R.id.download);
 
-        if(config().getUser().isApproveFlag()) download.setVisibility(View.VISIBLE);
+        if(getUser().isApproveFlag()) download.setVisibility(View.VISIBLE);
 
         add.setOnClickListener(v -> {
             Intent intent = new Intent(this, ProductApproveTrxActivity.class);

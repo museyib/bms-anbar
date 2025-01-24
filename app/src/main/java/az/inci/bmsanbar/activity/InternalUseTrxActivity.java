@@ -351,7 +351,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("src", "whs", "target");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             url = addRequestParameters(url, parameters);
             whsList = getListData(url, "GET", null, Whs[].class);
             if(whsList == null) whsList = Collections.singletonList(whs);
@@ -412,7 +412,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("inv", "whs-sum");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             parameters.put("whs-code", whsCode);
             url = addRequestParameters(url, parameters);
             invList = getListData(url, "GET", null, Inventory[].class);
@@ -628,7 +628,7 @@ public class InternalUseTrxActivity extends ScannerSupportActivity
                                                            .whsCode(whsCode)
                                                            .expCenterCode(expCenterCode)
                                                            .notes(notes)
-                                                           .userId(config().getUser().getId())
+                                                           .userId(getUser().getId())
                                                            .requestItems(requestItems)
                                                            .build();
 

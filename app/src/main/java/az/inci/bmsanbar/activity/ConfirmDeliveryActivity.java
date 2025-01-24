@@ -174,7 +174,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         showProgressDialog(true);
         new Thread(() -> {
             List<UpdateDeliveryRequest> requestList = new ArrayList<>();
-            note = "İstifadəçi: " + config().getUser().getId();
+            note = "İstifadəçi: " + getUser().getId();
             String url = url("logistics", "confirm-shipment");
             for(String trxNo : docList)
             {

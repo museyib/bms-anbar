@@ -166,7 +166,7 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("purchase", "update-qty");
             UpdatePurchaseTrxRequest request = new UpdatePurchaseTrxRequest();
-            request.setUserId(config().getUser().getId());
+            request.setUserId(getUser().getId());
             request.setDeviceId(getDeviceIdString());
             request.setTrxNo(trxNo);
             request.setTrxId(trx.getTrxId());

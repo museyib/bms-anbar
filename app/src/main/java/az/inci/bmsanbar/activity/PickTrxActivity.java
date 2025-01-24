@@ -450,7 +450,7 @@ public class PickTrxActivity extends ScannerSupportActivity
         String url = url("pick", "reset");
         ResetPickRequest request = new ResetPickRequest();
         request.setTrxNo(trxNo);
-        request.setUserId(config().getUser().getId());
+        request.setUserId(getUser().getId());
         executeUpdate(url, request, message -> {
             if(message.getStatusCode() == 0)
             {

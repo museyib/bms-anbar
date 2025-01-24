@@ -160,7 +160,7 @@ public class EditShelfActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("inv", "update-shelf-barcode");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("whs-code", config().getUser().getWhsCode());
+            parameters.put("whs-code", getUser().getWhsCode());
             parameters.put("shelf-barcode", shelfBarcode.replaceFirst("#", "%23"));
             url = addRequestParameters(url, parameters);
 

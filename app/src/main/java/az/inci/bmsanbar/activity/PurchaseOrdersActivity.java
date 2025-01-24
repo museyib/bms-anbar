@@ -51,7 +51,7 @@ public class PurchaseOrdersActivity extends AppBaseActivity implements SearchVie
         showProgressDialog(true);
         new Thread(() -> {
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             String url = addRequestParameters(url("purchase", "doc"), parameters);
             docList = getListData(url, "GET", null, PurchaseDoc[].class);
 

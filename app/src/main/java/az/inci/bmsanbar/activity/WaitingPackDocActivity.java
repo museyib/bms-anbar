@@ -65,7 +65,7 @@ public class WaitingPackDocActivity extends AppBaseActivity
         new Thread(() -> {
             String url = url("pack", "waiting-docs");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             url = addRequestParameters(url, parameters);
             docList = getListData(url, "GET", null, Doc[].class);
             if(docList != null)

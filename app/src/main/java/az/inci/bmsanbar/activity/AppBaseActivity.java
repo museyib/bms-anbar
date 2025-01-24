@@ -53,7 +53,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import az.inci.bmsanbar.App;
-import az.inci.bmsanbar.AppConfig;
 import az.inci.bmsanbar.DBHelper;
 import az.inci.bmsanbar.OnExecuteComplete;
 import az.inci.bmsanbar.OnInvBarcodeFetched;
@@ -129,9 +128,9 @@ public abstract class AppBaseActivity extends AppCompatActivity
     public void loadFooter()
     {
         TextView userId = findViewById(R.id.user_info_id);
-        userId.setText(config().getUser().getId());
+        userId.setText(getUser().getId());
         userId.append(" - ");
-        userId.append(config().getUser().getName());
+        userId.append(getUser().getName());
     }
 
     public void showProgressDialog(boolean b)
@@ -179,12 +178,12 @@ public abstract class AppBaseActivity extends AppCompatActivity
             dbHelper.addUser(user);
             dbHelper.addUserPermission(user);
         }
-        config().setUser(user);
+        ((App) getApplication()).setUser(user);
     }
-
-    public AppConfig config()
+    
+    public User getUser()
     {
-        return ((App) getApplication()).getConfig();
+        return ((App) getApplication()).getUser();
     }
 
     protected void showToastMessage(String message)
@@ -225,7 +224,7 @@ public abstract class AppBaseActivity extends AppCompatActivity
                          Map<String, String> parameters = new HashMap<>();
                          parameters.put("start-date", startDate);
                          parameters.put("end-date", endDate);
-                         parameters.put("user-id", config().getUser().getId());
+                         parameters.put("user-id", getUser().getId());
                          url = addRequestParameters(url, parameters);
                          showStringData(url, "Yığım hesabatı");
                      });

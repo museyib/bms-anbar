@@ -503,7 +503,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("src", "whs", "target");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             url = addRequestParameters(url, parameters);
             trgWhsList = getListData(url, "GET", null, Whs[].class);
 
@@ -1070,7 +1070,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                 TransferRequest request = new TransferRequest();
                 request.setSrcWhsCode(srcWhs.getWhsCode());
                 request.setTrgWhsCode(trgWhs.getWhsCode());
-                request.setUserId(config().getUser().getId());
+                request.setUserId(getUser().getId());
                 List<TransferRequestItem> items = new ArrayList<>();
                 for(Trx trx : trxList)
                 {

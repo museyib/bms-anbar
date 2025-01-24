@@ -80,7 +80,7 @@ public class ShipDocActivity extends AppBaseActivity
 
     void loadDocs()
     {
-        docList = dbHelper.getShipDocs(config().getUser().getId());
+        docList = dbHelper.getShipDocs(getUser().getId());
         DocAdapter adapter = new DocAdapter(this, R.layout.ship_doc_item_layout, docList);
         docListView.setAdapter(adapter);
     }

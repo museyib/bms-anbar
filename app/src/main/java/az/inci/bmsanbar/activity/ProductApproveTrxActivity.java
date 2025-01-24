@@ -112,7 +112,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
                     ProductApproveTrxActivity.this);
             dialogBuilder.setMessage("Göndərmək istəyirsiniz?")
                          .setPositiveButton("Bəli", (dialog1, which) -> {
-                             int status = config().getUser().isApprovePrdFlag() ? 0 : 2;
+                             int status = getUser().isApprovePrdFlag() ? 0 : 2;
                              uploadDoc(status);
                          })
                          .setNegativeButton("Xeyr", null);
@@ -241,7 +241,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
         new Thread(() -> {
             String url = url("inv", "by-user-producer-list");
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             url = addRequestParameters(url, parameters);
             invList = getListData(url, "GET", null, Inventory[].class);
 
@@ -406,7 +406,7 @@ public class ProductApproveTrxActivity extends ScannerSupportActivity
             request.setTrxDate(new java.sql.Date(System.currentTimeMillis()).toString());
             request.setStatus(status);
             request.setNotes(notes);
-            request.setUserId(config().getUser().getId());
+            request.setUserId(getUser().getId());
             List<ProductApproveRequestItem> requestItems = new ArrayList<>();
             for(Trx trx : trxList)
             {

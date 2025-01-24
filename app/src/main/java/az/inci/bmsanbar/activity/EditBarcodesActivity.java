@@ -29,6 +29,7 @@ import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.InvBarcode;
 import az.inci.bmsanbar.model.Uom;
 import az.inci.bmsanbar.model.v2.InvInfo;
+import az.inci.bmsanbar.model.v4.Request;
 
 public class EditBarcodesActivity extends ScannerSupportActivity
 {
@@ -111,7 +112,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
 
     public void updatePage()
     {
-        if(barcodeList.size() > 0)
+        if(!barcodeList.isEmpty())
         {
             findViewById(R.id.save).setOnClickListener(v -> updateBarcodes());
         }
@@ -201,7 +202,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
     {
         showProgressDialog(true);
         String url = url("inv", "update-barcodes");
-        executeUpdate(url, barcodeList,
+        executeUpdate(url, Request.create(this, barcodeList),
                       message -> showMessageDialog(message.getTitle(), message.getBody(),
                                                    message.getIconId()));
     }
@@ -213,7 +214,7 @@ public class EditBarcodesActivity extends ScannerSupportActivity
             String url = url("inv", "info-by-barcode");
             Map<String, String> parameters = new HashMap<>();
             parameters.put("barcode", barcode);
-            parameters.put("user-id", config().getUser().getId());
+            parameters.put("user-id", getUser().getId());
             url = addRequestParameters(url, parameters);
             InvInfo invInfo = getSimpleObject(url, "GET", null, InvInfo.class);
 

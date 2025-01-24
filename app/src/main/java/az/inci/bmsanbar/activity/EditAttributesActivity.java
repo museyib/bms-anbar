@@ -97,7 +97,7 @@ public class EditAttributesActivity extends AppBaseActivity
         String url = url("inv", "attribute-list-by-whs");
         Map<String, String> parameters = new HashMap<>();
         parameters.put("inv-code", invCode);
-        parameters.put("user-id", config().getUser().getId());
+        parameters.put("user-id", getUser().getId());
         url = addRequestParameters(url, parameters);
         return getListData(url, "GET", null, InvAttribute[].class);
     }
@@ -157,10 +157,10 @@ public class EditAttributesActivity extends AppBaseActivity
                 holder.valueCheck.setVisibility(View.GONE);
             }
 
-            if(((EditAttributesActivity) context).config().getUser().isLocationFlag() &&
+            if(((EditAttributesActivity) context).getUser().isLocationFlag() &&
                (attribute.getAttributeId().equals("AT010") ||
                 attribute.getAttributeId().equals("AT011")) ||
-               !((EditAttributesActivity) context).config().getUser().isLocationFlag())
+               !((EditAttributesActivity) context).getUser().isLocationFlag())
             {
                 convertView.setVisibility(View.VISIBLE);
             }
