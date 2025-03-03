@@ -14,7 +14,7 @@ public class PhotoActivity extends AppBaseActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_inventory_info);
+        setContentView(R.layout.activity_inventory_photo);
         WebView webView = findViewById(R.id.photo_view);
         webView.getSettings().setBuiltInZoomControls(true);
 

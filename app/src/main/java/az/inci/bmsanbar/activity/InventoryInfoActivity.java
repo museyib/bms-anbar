@@ -42,7 +42,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_inventar_info);
+        setContentView(R.layout.activity_inventory_info);
         infoText = findViewById(R.id.good_info);
         keywordEdit = findViewById(R.id.keyword_edit);
         searchField = findViewById(R.id.search_field);
