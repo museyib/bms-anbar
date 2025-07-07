@@ -24,8 +24,7 @@ import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.v2.ShipDocInfo;
 import az.inci.bmsanbar.model.v2.UpdateDeliveryRequest;
 
-public class ConfirmDeliveryActivity extends ScannerSupportActivity
-{
+public class ConfirmDeliveryActivity extends ScannerSupportActivity {
     private String driverCode;
     private ListView docListView;
     private EditText driverCodeEditText;
@@ -35,8 +34,7 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
     private boolean transitionFlag = false;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.confirm_delivery_layout);
 
@@ -52,19 +50,19 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         docList = new ArrayList<>();
 
         send.setOnClickListener(v -> {
-            if(!docList.isEmpty())
+            if (!docList.isEmpty())
                 changeDocStatus();
         });
 
         docListView.setOnItemLongClickListener((parent, view, position, id) -> {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setMessage(R.string.want_to_delete)
-                         .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
-                             String trxNo = (String) parent.getItemAtPosition(position);
-                             docList.remove(trxNo);
-                             loadData();
-                         })
-                         .setNegativeButton(R.string.cancel, null);
+                    .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
+                        String trxNo = (String) parent.getItemAtPosition(position);
+                        docList.remove(trxNo);
+                        loadData();
+                    })
+                    .setNegativeButton(R.string.cancel, null);
             dialogBuilder.show();
             return true;
         });
@@ -79,17 +77,14 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
     }
 
     @Override
-    public void onScanComplete(String barcode)
-    {
+    public void onScanComplete(String barcode) {
 
-        if(docCreated) getShipDetails(barcode);
+        if (docCreated) getShipDetails(barcode);
         else setDriverCode(barcode);
     }
 
-    public void setDriverCode(String driverCode)
-    {
-        if(driverCode.startsWith("PER"))
-        {
+    public void setDriverCode(String driverCode) {
+        if (driverCode.startsWith("PER")) {
             showProgressDialog(true);
             new Thread(() -> {
                 String url = url("personnel", "get-name");
@@ -98,43 +93,36 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                 url = addRequestParameters(url, parameters);
                 Log.e("URL", url);
                 String perName = getSimpleObject(url, "GET", null, String.class);
-                if(perName != null)
+                if (perName != null)
                     runOnUiThread(() -> {
-                        if(!perName.isEmpty())
-                        {
+                        if (!perName.isEmpty()) {
                             this.driverCode = driverCode;
                             docCreated = true;
                             driverCodeEditText.setText(driverCode);
                             ((TextView) findViewById(R.id.driver_name)).setText(perName);
                             playSound(SOUND_SUCCESS);
-                        }
-                        else
-                        {
+                        } else {
                             showMessageDialog(getString(R.string.error),
-                                              getString(R.string.driver_code_incorrect),
-                                              android.R.drawable.ic_dialog_alert);
+                                    getString(R.string.driver_code_incorrect),
+                                    android.R.drawable.ic_dialog_alert);
                             playSound(SOUND_FAIL);
                         }
                     });
             }).start();
-        }
-        else
-        {
+        } else {
             showMessageDialog(getString(R.string.error), getString(R.string.driver_code_incorrect),
-                              android.R.drawable.ic_dialog_alert);
+                    android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
         }
     }
 
-    public void loadData()
-    {
+    public void loadData() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item, docList);
         docListView.setAdapter(adapter);
     }
 
-    private void getShipDetails(String trxNo)
-    {
-        if(docList.contains(trxNo)) return;
+    private void getShipDetails(String trxNo) {
+        if (docList.contains(trxNo)) return;
 
         showProgressDialog(true);
         new Thread(() -> {
@@ -147,18 +135,15 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         }).start();
     }
 
-    private void addDoc(String trxNo, ShipDocInfo docInfo)
-    {
-        if(docInfo != null)
-        {
-            if(!driverCode.equals(docInfo.getDriverCode()))
-            {
+    private void addDoc(String trxNo, ShipDocInfo docInfo) {
+        if (docInfo != null) {
+            if (!driverCode.equals(docInfo.getDriverCode())) {
                 showMessageDialog(getString(R.string.info),
-                                  getString(R.string.not_shipped_for_current_driver) +
-                                  "\n\nYükləndiyi sürücü  və N/V nömrəsi:\n" +
-                                  docInfo.getDriverName() + " - " + docInfo.getVehicleCode() +
-                                  "\n" + docInfo.getDeliverNotes(),
-                                  android.R.drawable.ic_dialog_info);
+                        getString(R.string.not_shipped_for_current_driver) +
+                                "\n\nYükləndiyi sürücü  və N/V nömrəsi:\n" +
+                                docInfo.getDriverName() + " - " + docInfo.getVehicleCode() +
+                                "\n" + docInfo.getDeliverNotes(),
+                        android.R.drawable.ic_dialog_info);
                 playSound(SOUND_FAIL);
                 return;
             }
@@ -169,15 +154,13 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
         }
     }
 
-    private void changeDocStatus()
-    {
+    private void changeDocStatus() {
         showProgressDialog(true);
         new Thread(() -> {
             List<UpdateDeliveryRequest> requestList = new ArrayList<>();
             note = "İstifadəçi: " + getUser().getId();
             String url = url("logistics", "confirm-shipment");
-            for(String trxNo : docList)
-            {
+            for (String trxNo : docList) {
                 UpdateDeliveryRequest request = new UpdateDeliveryRequest();
                 request.setTrxNo(trxNo);
                 request.setNote(note);
@@ -190,15 +173,14 @@ public class ConfirmDeliveryActivity extends ScannerSupportActivity
                 {
                     showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
 
-                    if(message.getStatusCode() == 0)
+                    if (message.getStatusCode() == 0)
                         clearFields();
                 }
             });
         }).start();
     }
 
-    private void clearFields()
-    {
+    private void clearFields() {
         driverCode = "";
         driverCodeEditText.setText("");
         ((TextView) findViewById(R.id.driver_name)).setText("");

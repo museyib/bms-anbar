@@ -1,198 +1,198 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout
-            android:id="@+id/buttons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        android:id="@+id/buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
-                android:id="@+id/send"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:layout_margin="3dp"
-                android:contentDescription="@string/send"
-                android:src="@android:drawable/ic_menu_upload" />
+            android:id="@+id/send"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_margin="3dp"
+            android:contentDescription="@string/send"
+            android:src="@android:drawable/ic_menu_upload" />
 
         <ImageButton
-                android:id="@+id/scan_cam"
-                android:layout_width="70dp"
-                android:layout_height="50dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/barcode_search"
-                android:visibility="gone"
-                app:srcCompat="@drawable/barcode" />
+            android:id="@+id/scan_cam"
+            android:layout_width="70dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/barcode_search"
+            android:visibility="gone"
+            app:srcCompat="@drawable/barcode" />
 
         <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <CheckBox
+                android:id="@+id/continuous_check"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:checked="true"
+                android:enabled="true"
+                android:text="@string/serial_scan" />
 
             <CheckBox
-                    android:id="@+id/continuous_check"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:enabled="true"
-                    android:text="@string/serial_scan" />
-
-            <CheckBox
-                    android:id="@+id/readyToSend"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/ready" />
+                android:id="@+id/readyToSend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ready" />
 
         </LinearLayout>
 
     </LinearLayout>
 
     <ImageButton
-            android:id="@+id/reset"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription="@string/reset"
-            app:layout_constraintBottom_toBottomOf="@id/buttons"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/reload"
-            app:srcCompat="@android:drawable/ic_menu_revert"
-            tools:layout_editor_absoluteX="262dp" />
+        android:id="@+id/reset"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:contentDescription="@string/reset"
+        app:layout_constraintBottom_toBottomOf="@id/buttons"
+        app:layout_constraintEnd_toStartOf="@id/reload"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/ic_menu_revert"
+        tools:layout_editor_absoluteX="262dp" />
 
     <ImageButton
-            android:id="@+id/reload"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription="@string/reload_all"
-            app:layout_constraintBottom_toBottomOf="@+id/buttons"
-            app:layout_constraintEnd_toStartOf="@+id/equate_all"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/refresh" />
+        android:id="@+id/reload"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:contentDescription="@string/reload_all"
+        app:layout_constraintBottom_toBottomOf="@+id/buttons"
+        app:layout_constraintEnd_toStartOf="@+id/equate_all"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/refresh" />
 
     <ImageButton
-            android:id="@+id/equate_all"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:contentDescription="@string/equate_all"
-            app:layout_constraintBottom_toTopOf="@+id/trx_list_scroll"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/equate" />
+        android:id="@+id/equate_all"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:contentDescription="@string/equate_all"
+        app:layout_constraintBottom_toTopOf="@+id/trx_list_scroll"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/equate" />
 
     <HorizontalScrollView
-            android:id="@+id/trx_list_scroll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/user_info"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/buttons"
-            app:layout_constraintVertical_bias="0.0">
+        android:id="@+id/trx_list_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/user_info"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttons"
+        app:layout_constraintVertical_bias="0.0">
 
         <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
             <TableRow
-                    android:id="@+id/header"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:background="#D3F6FA">
+                android:id="@+id/header"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:background="#D3F6FA">
 
                 <View
-                        android:layout_width="3dp"
-                        android:layout_height="match_parent"
-                        android:background="?android:attr/listDivider"
-                        android:foreground="@android:color/black" />
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
 
                 <TextView
-                        android:layout_width="60dp"
-                        android:layout_height="match_parent"
-                        android:text="@string/inv_code"
-                        android:textColor="@android:color/black" />
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/inv_code"
+                    android:textColor="@android:color/black" />
 
                 <View
-                        android:layout_width="3dp"
-                        android:layout_height="match_parent"
-                        android:background="?android:attr/listDivider"
-                        android:foreground="@android:color/black" />
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
 
                 <TextView
-                        android:layout_width="130dp"
-                        android:layout_height="match_parent"
-                        android:text="@string/inv_name"
-                        android:textColor="@android:color/black" />
+                    android:layout_width="130dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/inv_name"
+                    android:textColor="@android:color/black" />
 
                 <View
-                        android:layout_width="3dp"
-                        android:layout_height="match_parent"
-                        android:background="?android:attr/listDivider"
-                        android:foreground="@android:color/black" />
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
 
                 <TextView
-                        android:layout_width="50dp"
-                        android:layout_height="match_parent"
-                        android:text="@string/qty"
-                        android:textColor="@android:color/black" />
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/qty"
+                    android:textColor="@android:color/black" />
 
                 <View
-                        android:layout_width="3dp"
-                        android:layout_height="match_parent"
-                        android:background="?android:attr/listDivider"
-                        android:foreground="@android:color/black" />
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
 
                 <TextView
-                        android:layout_width="50dp"
-                        android:layout_height="match_parent"
-                        android:text="@string/picked"
-                        android:textColor="@android:color/black" />
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/picked"
+                    android:textColor="@android:color/black" />
 
                 <View
-                        android:layout_width="3dp"
-                        android:layout_height="match_parent"
-                        android:background="?android:attr/listDivider"
-                        android:foreground="@android:color/black" />
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
 
                 <TextView
-                        android:layout_width="80dp"
-                        android:layout_height="match_parent"
-                        android:text="@string/brand"
-                        android:textColor="@android:color/black" />
+                    android:layout_width="80dp"
+                    android:layout_height="match_parent"
+                    android:text="@string/brand"
+                    android:textColor="@android:color/black" />
 
                 <View
-                        android:layout_width="3dp"
-                        android:layout_height="match_parent"
-                        android:background="?android:attr/listDivider"
-                        android:foreground="@android:color/black" />
+                    android:layout_width="3dp"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider"
+                    android:foreground="@android:color/black" />
             </TableRow>
 
             <ListView
-                    android:id="@+id/trx_list"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:divider="@android:color/black"
-                    android:dividerHeight="3dp"
-                    android:paddingBottom="90dp" />
+                android:id="@+id/trx_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:divider="@android:color/black"
+                android:dividerHeight="3dp"
+                android:paddingBottom="90dp" />
         </RelativeLayout>
 
     </HorizontalScrollView>
 
     <include
-            layout="@layout/footer_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+        layout="@layout/footer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

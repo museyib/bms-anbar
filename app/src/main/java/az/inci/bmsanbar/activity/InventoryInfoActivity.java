@@ -27,8 +27,7 @@ import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Inventory;
 import az.inci.bmsanbar.model.v2.InvInfo;
 
-public class InventoryInfoActivity extends ScannerSupportActivity
-{
+public class InventoryInfoActivity extends ScannerSupportActivity {
     private TextView infoText;
     private EditText keywordEdit;
     private Spinner searchField;
@@ -39,8 +38,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     private String whsCode;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory_info);
         infoText = findViewById(R.id.good_info);
@@ -57,7 +55,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
 
         scanCam.setVisibility(cameraScanning ? VISIBLE : GONE);
         searchField.setAdapter(ArrayAdapter.createFromResource(this, R.array.search_field_list,
-                                                               R.layout.spinner_item));
+                R.layout.spinner_item));
 
         searchBtn.setOnClickListener(v -> searchKeyword());
         scanCam.setOnClickListener(v -> scanWithCamera());
@@ -73,7 +71,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
                 findViewById(R.id.foot).setVisibility(VISIBLE);
         });
 
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true){
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 if (keywordEdit.hasFocus()) keywordEdit.clearFocus();
@@ -83,83 +81,68 @@ public class InventoryInfoActivity extends ScannerSupportActivity
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
-        if(invCode != null)
-        {
+        if (invCode != null) {
             getDataByInvCode(invCode);
         }
     }
 
     @Override
-    public void onScanComplete(String barcode)
-    {
+    public void onScanComplete(String barcode) {
         getDataByBarcode(barcode);
     }
 
-    public void viewImage()
-    {
-        if(invCode != null)
-        {
+    public void viewImage() {
+        if (invCode != null) {
             Intent intent = new Intent(this, PhotoActivity.class);
             intent.putExtra("invCode", invCode);
             startActivity(intent);
         }
     }
 
-    public void editShelfLocation()
-    {
+    public void editShelfLocation() {
         Intent intent = new Intent(this, EditShelfActivity.class);
         startActivity(intent);
     }
 
-    public void searchKeyword()
-    {
+    public void searchKeyword() {
         keywordEdit.clearFocus();
         String keyword = keywordEdit.getText().toString();
 
-        if(keyword.isEmpty())
-        {
+        if (keyword.isEmpty()) {
             showMessageDialog(getString(R.string.info), getString(R.string.keyword_not_entered),
-                              android.R.drawable.ic_dialog_info);
+                    android.R.drawable.ic_dialog_info);
             playSound(SOUND_FAIL);
-        }
-        else
-        {
+        } else {
             searchForKeyword(keyword);
         }
     }
 
-    private void showResultListDialog(List<Inventory> list)
-    {
-        if(list.isEmpty())
-        {
+    private void showResultListDialog(List<Inventory> list) {
+        if (list.isEmpty()) {
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
-                              android.R.drawable.ic_dialog_alert);
+                    android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
 
         View view = LayoutInflater.from(this)
-                                  .inflate(R.layout.result_list_dialog,
-                                           findViewById(android.R.id.content), false);
+                .inflate(R.layout.result_list_dialog,
+                        findViewById(android.R.id.content), false);
 
         ListView listView = view.findViewById(R.id.result_list);
         ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item, list);
         listView.setAdapter(adapter);
         SearchView searchView = view.findViewById(R.id.search);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query)
-            {
+            public boolean onQueryTextSubmit(String query) {
                 return false;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText)
-            {
+            public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
                 return true;
             }
@@ -179,28 +162,24 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         });
     }
 
-    private void getInfo(String url)
-    {
+    private void getInfo(String url) {
         InvInfo invInfo = getSimpleObject(url, "GET", null, InvInfo.class);
-        if(invInfo != null)
-        {
+        if (invInfo != null) {
             runOnUiThread(() -> printInfo(invInfo));
         }
     }
 
-    private void printInfo(InvInfo invInfo)
-    {
-        if(invInfo.getInvCode() == null)
-        {
+    private void printInfo(InvInfo invInfo) {
+        if (invInfo.getInvCode() == null) {
             showMessageDialog(getString(R.string.error), getString(R.string.good_not_found),
-                              android.R.drawable.ic_dialog_alert);
+                    android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
         invCode = invInfo.getInvCode();
         invName = invInfo.getInvName();
         String info = "Mal kodu: " + invCode + "\nMal adı: " + invName + "\nAnbar qalığı: " +
-                      invInfo.getWhsQty() + "\n" + invInfo.getInfo();
+                invInfo.getWhsQty() + "\n" + invInfo.getInfo();
         defaultUomCode = invInfo.getDefaultUomCode();
         whsCode = invInfo.getWhsCode();
         latestMovements.setOnClickListener(v -> getLatestMovements(invCode, whsCode));
@@ -210,22 +189,18 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         playSound(SOUND_SUCCESS);
     }
 
-    public void scanWithCamera()
-    {
+    public void scanWithCamera() {
         barcodeResultLauncher.launch(1);
     }
 
-    public void editAttributes()
-    {
-        if(!getUser().isAttributeFlag())
-        {
+    public void editAttributes() {
+        if (!getUser().isAttributeFlag()) {
             showMessageDialog(getString(R.string.warning), getString(R.string.not_allowed),
-                              android.R.drawable.ic_dialog_alert);
+                    android.R.drawable.ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
-        if(invCode != null)
-        {
+        if (invCode != null) {
             Intent intent = new Intent(this, EditAttributesActivity.class);
             intent.putExtra("invCode", invCode);
             intent.putExtra("invName", invName);
@@ -234,8 +209,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }
     }
 
-    private void getDataByInvCode(String invCode)
-    {
+    private void getDataByInvCode(String invCode) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("inv", "info-by-inv-code");
@@ -247,8 +221,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }).start();
     }
 
-    private void getDataByBarcode(String barcode)
-    {
+    private void getDataByBarcode(String barcode) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("inv", "info-by-barcode");
@@ -260,8 +233,7 @@ public class InventoryInfoActivity extends ScannerSupportActivity
         }).start();
     }
 
-    private void searchForKeyword(String keyword)
-    {
+    private void searchForKeyword(String keyword) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("inv", "search");
@@ -271,18 +243,15 @@ public class InventoryInfoActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             List<Inventory> inventoryList = getListData(url, "GET", null, Inventory[].class);
             runOnUiThread(() -> {
-                if(inventoryList != null)
-                {
+                if (inventoryList != null) {
                     showResultListDialog(inventoryList);
                 }
             });
         }).start();
     }
 
-    public void editBarcodes()
-    {
-        if(invCode != null)
-        {
+    public void editBarcodes() {
+        if (invCode != null) {
             Intent intent = new Intent(this, EditBarcodesActivity.class);
             intent.putExtra("invCode", invCode);
             intent.putExtra("invName", invName);

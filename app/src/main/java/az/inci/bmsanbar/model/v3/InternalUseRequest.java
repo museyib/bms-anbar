@@ -7,8 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class InternalUseRequest
-{
+public class InternalUseRequest {
     private String userId;
     private String whsCode;
     private String expCenterCode;

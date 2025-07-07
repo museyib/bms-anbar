@@ -1,7 +1,5 @@
 package az.inci.bmsanbar.model.v3;
 
-import java.util.List;
-
 import lombok.Data;
 
 @Data

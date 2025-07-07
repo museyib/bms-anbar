@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -21,16 +20,14 @@ import az.inci.bmsanbar.AppConfig;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.ShipDoc;
 
-public class ShipDocActivity extends AppBaseActivity
-{
+public class ShipDocActivity extends AppBaseActivity {
 
     ListView docListView;
     ImageButton add;
     List<ShipDoc> docList;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ship_doc_layout);
         setTitle("Yükləmə sənədləri");
@@ -56,12 +53,12 @@ public class ShipDocActivity extends AppBaseActivity
         docListView.setOnItemLongClickListener((parent, view, position, id) -> {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setMessage("Silmək istəyirsinizmi?")
-                         .setPositiveButton("Sil", (dialogInterface, i) -> {
-                             ShipDoc doc = (ShipDoc) parent.getItemAtPosition(position);
-                             dbHelper.deleteShipTrxByDriver(doc.getDriverCode());
-                             loadDocs();
-                         })
-                         .setNegativeButton("Ləğv et", null);
+                    .setPositiveButton("Sil", (dialogInterface, i) -> {
+                        ShipDoc doc = (ShipDoc) parent.getItemAtPosition(position);
+                        dbHelper.deleteShipTrxByDriver(doc.getDriverCode());
+                        loadDocs();
+                    })
+                    .setNegativeButton("Ləğv et", null);
             dialogBuilder.show();
             return true;
         });
@@ -72,34 +69,28 @@ public class ShipDocActivity extends AppBaseActivity
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         loadDocs();
     }
 
-    void loadDocs()
-    {
+    void loadDocs() {
         docList = dbHelper.getShipDocs(getUser().getId());
         DocAdapter adapter = new DocAdapter(this, R.layout.ship_doc_item_layout, docList);
         docListView.setAdapter(adapter);
     }
 
-    private static class DocAdapter extends ArrayAdapter<ShipDoc>
-    {
-        public DocAdapter(@NonNull Context context, int resource, @NonNull List<ShipDoc> objects)
-        {
+    private class DocAdapter extends ArrayAdapter<ShipDoc> {
+        public DocAdapter(@NonNull Context context, int resource, @NonNull List<ShipDoc> objects) {
             super(context, resource, objects);
         }
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
-            if(convertView == null)
-            {
-                convertView = LayoutInflater.from(getContext())
-                                            .inflate(R.layout.ship_doc_item_layout, parent, false);
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            if (convertView == null) {
+                convertView = getLayoutInflater()
+                        .inflate(R.layout.ship_doc_item_layout, parent, false);
             }
 
             ShipDoc doc = getItem(position);

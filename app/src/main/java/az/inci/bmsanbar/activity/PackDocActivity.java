@@ -5,7 +5,6 @@ import static android.R.drawable.ic_dialog_info;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,8 +30,7 @@ import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Doc;
 import az.inci.bmsanbar.model.Trx;
 
-public class PackDocActivity extends AppBaseActivity implements SearchView.OnQueryTextListener
-{
+public class PackDocActivity extends AppBaseActivity implements SearchView.OnQueryTextListener {
 
     List<Doc> docList;
     ListView docListView;
@@ -40,15 +38,14 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     private SearchView searchView;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pack_dock_layout);
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
 
-                if(!searchView.isIconified())
+                if (!searchView.isIconified())
                     searchView.setIconified(true);
                 else
                     finish();
@@ -76,47 +73,41 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         loadData();
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState)
-    {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
     }
 
     @Override
-    public void loadData()
-    {
+    public void loadData() {
         docList = dbHelper.getPackDocsByApproveUser(getUser().getId());
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
-        if(docList.isEmpty())
+        if (docList.isEmpty())
             findViewById(R.id.header).setVisibility(View.GONE);
         else
             findViewById(R.id.header).setVisibility(View.VISIBLE);
     }
 
     @Override
-    public boolean onQueryTextSubmit(String s)
-    {
+    public boolean onQueryTextSubmit(String s) {
         return false;
     }
 
     @Override
-    public boolean onQueryTextChange(String s)
-    {
+    public boolean onQueryTextChange(String s) {
         DocAdapter adapter = (DocAdapter) docListView.getAdapter();
-        if(adapter != null)
+        if (adapter != null)
             adapter.getFilter().filter(s);
         return true;
     }
 
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.pick_menu, menu);
 
@@ -147,8 +138,7 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         return true;
     }
 
-    private void loadTrxFromServer(int mode)
-    {
+    private void loadTrxFromServer(int mode) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("pack", "get-doc");
@@ -159,18 +149,14 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             Doc doc = getSimpleObject(url, "GET", null, Doc.class);
 
             runOnUiThread(() -> {
-                if(doc != null)
-                {
+                if (doc != null) {
                     dbHelper.addPackDoc(doc);
-                    for(Trx trx : doc.getTrxList())
-                    {
+                    for (Trx trx : doc.getTrxList()) {
                         dbHelper.addPackTrx(trx);
                     }
-                }
-                else
-                {
+                } else {
                     showMessageDialog(getString(R.string.info), getString(R.string.no_data),
-                                      ic_dialog_info);
+                            ic_dialog_info);
                     playSound(SOUND_FAIL);
                 }
                 loadData();
@@ -178,33 +164,29 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
         }).start();
     }
 
-    static class DocAdapter extends ArrayAdapter<Doc> implements Filterable
-    {
+    class DocAdapter extends ArrayAdapter<Doc> implements Filterable {
         PackDocActivity activity;
         List<Doc> list;
 
-        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects)
-        {
+        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects) {
             super(context, resourceId, objects);
             list = objects;
             activity = (PackDocActivity) context;
         }
 
         @Override
-        public int getCount()
-        {
+        public int getCount() {
             return list.size();
         }
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             Doc doc = list.get(position);
 
-            if(convertView == null)
-                convertView = LayoutInflater.from(getContext())
-                                            .inflate(R.layout.pack_doc_item_layout, parent, false);
+            if (convertView == null)
+                convertView = getLayoutInflater()
+                        .inflate(R.layout.pack_doc_item_layout, parent, false);
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);
             TextView itemCount = convertView.findViewById(R.id.item_count);
@@ -214,7 +196,6 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
             TextView sbeName = convertView.findViewById(R.id.sbe_name);
             TextView whsCode = convertView.findViewById(R.id.whs_code);
 
-            assert doc != null;
             trxNo.setText(doc.getPrevTrxNo());
             itemCount.setText(String.valueOf(doc.getItemCount()));
             docDesc.setText(doc.getDescription());
@@ -229,26 +210,22 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
 
         @NonNull
         @Override
-        public Filter getFilter()
-        {
-            return new Filter()
-            {
+        public Filter getFilter() {
+            return new Filter() {
                 @Override
-                protected FilterResults performFiltering(CharSequence constraint)
-                {
+                protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults results = new FilterResults();
                     List<Doc> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for(Doc doc : activity.docList)
-                    {
-                        if(doc.getTrxNo()
-                              .concat(doc.getPrevTrxNo())
-                              .concat(doc.getBpName())
-                              .concat(doc.getSbeName())
-                              .concat(doc.getDescription())
-                              .toLowerCase()
-                              .contains(constraint))
+                    for (Doc doc : activity.docList) {
+                        if (doc.getTrxNo()
+                                .concat(doc.getPrevTrxNo())
+                                .concat(doc.getBpName())
+                                .concat(doc.getSbeName())
+                                .concat(doc.getDescription())
+                                .toLowerCase()
+                                .contains(constraint))
                             filteredArrayData.add(doc);
                     }
 
@@ -258,13 +235,11 @@ public class PackDocActivity extends AppBaseActivity implements SearchView.OnQue
                 }
 
                 @Override
-                protected void publishResults(CharSequence constraint, FilterResults results)
-                {
+                protected void publishResults(CharSequence constraint, FilterResults results) {
                     list = (List<Doc>) results.values;
                     notifyDataSetChanged();
                 }
             };
         }
     }
-
 }

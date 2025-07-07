@@ -1,14 +1,12 @@
 package az.inci.bmsanbar;
 
-import az.inci.bmsanbar.model.User;
 import lombok.Getter;
 import lombok.Setter;
 
 
 @Setter
 @Getter
-public class AppConfig
-{
+public class AppConfig {
     public static final int PICK_MODE = 0;
     public static final int PACK_MODE = 1;
     public static final int SHIP_MODE = 2;

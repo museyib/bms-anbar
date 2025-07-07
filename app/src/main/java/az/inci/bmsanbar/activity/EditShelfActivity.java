@@ -21,16 +21,14 @@ import java.util.Map;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Inventory;
 
-public class EditShelfActivity extends ScannerSupportActivity
-{
+public class EditShelfActivity extends ScannerSupportActivity {
     private final List<Inventory> inventoryList = new ArrayList<>();
     private EditText shelfBarcodeEdit;
     private ListView invListView;
     private String shelfBarcode = "";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_shelf);
         shelfBarcodeEdit = findViewById(R.id.shelf_barcode);
@@ -44,7 +42,7 @@ public class EditShelfActivity extends ScannerSupportActivity
         scanCam.setOnClickListener(v -> barcodeResultLauncher.launch(0));
 
         sendBtn.setOnClickListener(v -> {
-            if(!inventoryList.isEmpty()) uploadData();
+            if (!inventoryList.isEmpty()) uploadData();
         });
 
         clearBtn.setOnClickListener(v -> clearAndRefreshList());
@@ -53,8 +51,8 @@ public class EditShelfActivity extends ScannerSupportActivity
             Inventory item = (Inventory) parent.getItemAtPosition(position);
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setMessage("Silmək istəyirsinizmi? " + item)
-                         .setPositiveButton("Bəli", (dialog, which) -> deleteAndRefreshList(item))
-                         .setNegativeButton("Xeyr", null);
+                    .setPositiveButton("Bəli", (dialog, which) -> deleteAndRefreshList(item))
+                    .setNegativeButton("Xeyr", null);
             dialogBuilder.create().show();
             return true;
         });
@@ -71,27 +69,20 @@ public class EditShelfActivity extends ScannerSupportActivity
     }
 
     @Override
-    public void onScanComplete(String barcode)
-    {
-        if(barcode != null)
-        {
-            if(shelfBarcode.isEmpty())
-            {
-                if(!barcode.startsWith("#"))
-                {
+    public void onScanComplete(String barcode) {
+        if (barcode != null) {
+            if (shelfBarcode.isEmpty()) {
+                if (!barcode.startsWith("#")) {
                     showMessageDialog(getString(R.string.info), "Vitrin barkodu daxil etməlisiniz!",
-                                      ic_dialog_alert);
+                            ic_dialog_alert);
                     return;
                 }
                 shelfBarcode = barcode;
                 shelfBarcodeEdit.setText(shelfBarcode);
-            }
-            else
-            {
-                if(barcode.startsWith("#"))
-                {
+            } else {
+                if (barcode.startsWith("#")) {
                     showMessageDialog(getString(R.string.info), "Mal barkodu daxil etməlisiniz!",
-                                      ic_dialog_alert);
+                            ic_dialog_alert);
                     return;
                 }
                 getDataByBarcode(barcode);
@@ -99,34 +90,30 @@ public class EditShelfActivity extends ScannerSupportActivity
         }
     }
 
-    private void addAndRefreshList(Inventory inventory)
-    {
-        if(!inventoryList.contains(inventory)) inventoryList.add(inventory);
+    private void addAndRefreshList(Inventory inventory) {
+        if (!inventoryList.contains(inventory)) inventoryList.add(inventory);
         ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
-                                                             inventoryList);
+                inventoryList);
         invListView.setAdapter(adapter);
     }
 
-    private void deleteAndRefreshList(Inventory inventory)
-    {
+    private void deleteAndRefreshList(Inventory inventory) {
         inventoryList.remove(inventory);
         ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
-                                                             inventoryList);
+                inventoryList);
         invListView.setAdapter(adapter);
     }
 
-    private void clearAndRefreshList()
-    {
+    private void clearAndRefreshList() {
         shelfBarcodeEdit.setText("");
         inventoryList.clear();
         shelfBarcode = "";
         ArrayAdapter<Inventory> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
-                                                             inventoryList);
+                inventoryList);
         invListView.setAdapter(adapter);
     }
 
-    private void getDataByBarcode(String barcode)
-    {
+    private void getDataByBarcode(String barcode) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("inv", "by-barcode");
@@ -134,18 +121,14 @@ public class EditShelfActivity extends ScannerSupportActivity
             parameters.put("barcode", barcode);
             url = addRequestParameters(url, parameters);
             Inventory inventory = getSimpleObject(url, "GET", null, Inventory.class);
-            if(inventory != null)
-            {
+            if (inventory != null) {
                 runOnUiThread(() -> {
-                    if(inventory.getInvCode() == null)
-                    {
+                    if (inventory.getInvCode() == null) {
                         showMessageDialog(getString(R.string.error),
-                                          getString(R.string.good_not_found),
-                                          ic_dialog_alert);
+                                getString(R.string.good_not_found),
+                                ic_dialog_alert);
                         playSound(SOUND_FAIL);
-                    }
-                    else
-                    {
+                    } else {
                         addAndRefreshList(inventory);
                         playSound(SOUND_SUCCESS);
                     }
@@ -154,8 +137,7 @@ public class EditShelfActivity extends ScannerSupportActivity
         }).start();
     }
 
-    private void uploadData()
-    {
+    private void uploadData() {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("inv", "update-shelf-barcode");
@@ -165,13 +147,12 @@ public class EditShelfActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
 
             List<String> barcodeList = new ArrayList<>();
-            for(Inventory inventory : inventoryList)
-            {
+            for (Inventory inventory : inventoryList) {
                 barcodeList.add(inventory.getBarcode());
             }
             executeUpdate(url, barcodeList,
-                          message -> showMessageDialog(message.getTitle(), message.getBody(),
-                                                       message.getIconId()));
+                    message -> showMessageDialog(message.getTitle(), message.getBody(),
+                            message.getIconId()));
         }).start();
     }
 }

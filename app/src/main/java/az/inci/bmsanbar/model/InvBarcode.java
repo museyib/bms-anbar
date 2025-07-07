@@ -5,8 +5,7 @@ import java.util.Objects;
 import lombok.Data;
 
 @Data
-public class InvBarcode
-{
+public class InvBarcode {
     private String invCode;
     private String barcode;
     private String uom;
@@ -14,17 +13,15 @@ public class InvBarcode
     private boolean defined;
 
     @Override
-    public boolean equals(Object o)
-    {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         InvBarcode barcode1 = (InvBarcode) o;
         return Objects.equals(barcode, barcode1.barcode);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(barcode);
     }
 }

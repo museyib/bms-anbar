@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,13 +24,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -46,7 +45,6 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
     private ImageButton sendButton;
     private String trxNo;
     private int focusPosition;
-    private boolean onFocus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +68,7 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
                     b ? Color.GREEN : getResources().getColor(R.color.colorZeroQty));
         });
 
-        if(cameraScanning) scanCam.setVisibility(View.VISIBLE);
+        if (cameraScanning) scanCam.setVisibility(View.VISIBLE);
 
         loadFooter();
 
@@ -99,8 +97,7 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem item = menu.findItem(R.id.search);
         SearchView searchView = (SearchView) item.getActionView();
-        if (searchView != null)
-        {
+        if (searchView != null) {
             searchView.setOnQueryTextListener(this);
             searchView.setActivated(true);
         }
@@ -110,50 +107,42 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
     @Override
     public void onScanComplete(String barcode) {
         PurchaseTrx trx = getByBarcode(barcode);
-        if(trx != null)
+        if (trx != null)
             goToScannedItem(trx);
 
         loadData();
     }
 
-    public void loadData()
-    {
+    public void loadData() {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("purchase", "trx-list") + "?trx-no=" + trxNo;
             trxList = getListData(url, "GET", null, PurchaseTrx[].class);
             Log.e("TRX_LIST", String.valueOf(trxList));
 
-            if (trxList != null)
-            {
+            if (trxList != null) {
                 runOnUiThread(() -> {
                     PurchaseTrxAdapter adapter = new PurchaseTrxAdapter(this, trxList);
                     trxListView.setLayoutManager(new LinearLayoutManager(this));
                     trxListView.setAdapter(adapter);
-                    adapter.notifyDataSetChanged();
+                    adapter.notifyItemRangeChanged(0, trxList.size());
                 });
             }
 
         }).start();
     }
 
-    private void goToScannedItem(PurchaseTrx trx)
-    {
-        onFocus = true;
+    private void goToScannedItem(PurchaseTrx trx) {
         focusPosition = trxList.indexOf(trx);
-        if(trx.getCountedQty() >= trx.getQty())
-        {
+        if (trx.getCountedQty() >= trx.getQty()) {
             showMessageDialog(getString(R.string.info), getString(R.string.already_picked),
                     ic_dialog_info);
             playSound(SOUND_FAIL);
-        }
-        else
-        {
-            if(!isContinuous) showEditPickedQtyDialog(trx);
-            else
-            {
+        } else {
+            if (!isContinuous) showEditPickedQtyDialog(trx);
+            else {
                 double qty = trx.getCountedQty() + trx.getUomFactor();
-                if(qty > trx.getQty()) qty = trx.getQty();
+                if (qty > trx.getQty()) qty = trx.getQty();
                 trx.setCountedQty(qty);
                 updatePickTrx(trx);
             }
@@ -173,13 +162,15 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
             request.setQty(trx.getCountedQty());
             executeUpdate(url, request, message -> {
                 showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
-                trxListView.getAdapter().notifyDataSetChanged();
+                PurchaseTrxAdapter adapter = (PurchaseTrxAdapter) trxListView.getAdapter();
+                if (adapter != null) {
+                    adapter.notifyItemChanged(focusPosition);
+                }
             });
         }).start();
     }
 
-    public void showEditPickedQtyDialog(PurchaseTrx trx)
-    {
+    public void showEditPickedQtyDialog(PurchaseTrx trx) {
         focusPosition = trxList.indexOf(trx);
         View view = getLayoutInflater().inflate(R.layout.edit_picked_qty_dialog_layout,
                 findViewById(android.R.id.content), false);
@@ -205,18 +196,15 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
         dialogBuilder.setView(view)
                 .setPositiveButton(R.string.ok, (dialog1, which) -> {
                     double pickedQty;
-                    if(!pickedQtyEdit.getText().toString().isEmpty())
+                    if (!pickedQtyEdit.getText().toString().isEmpty())
                         pickedQty = Double.parseDouble(pickedQtyEdit.getText().toString());
                     else pickedQty = -1;
 
-                    if(pickedQty < 0 || pickedQty > trx.getQty())
-                    {
+                    if (pickedQty < 0 || pickedQty > trx.getQty()) {
                         Toast.makeText(this, R.string.quantity_not_correct, Toast.LENGTH_LONG)
                                 .show();
                         showEditPickedQtyDialog(trx);
-                    }
-                    else
-                    {
+                    } else {
                         trx.setCountedQty(pickedQty);
                         updatePickTrx(trx);
                         loadData();
@@ -235,8 +223,7 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
         dialog.show();
     }
 
-    private void showInfoDialog(PurchaseTrx trx)
-    {
+    private void showInfoDialog(PurchaseTrx trx) {
         Log.e("WHS_CODE", trx.getWhsCode());
         StringBuilder info = new StringBuilder();
         info.append("\n\nÖlçü vahidi: ").append(trx.getUom());
@@ -263,10 +250,8 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
         builder.show();
     }
 
-    private PurchaseTrx getByBarcode(String barcode)
-    {
-        for (PurchaseTrx trx : trxList)
-        {
+    private PurchaseTrx getByBarcode(String barcode) {
+        for (PurchaseTrx trx : trxList) {
             if (trx.getBarcodes().contains(barcode))
                 return trx;
         }
@@ -274,22 +259,21 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
         return null;
     }
 
-    private class PurchaseTrxAdapter extends RecyclerView.Adapter<PurchaseTrxAdapter.ViewHolder> implements Filterable
-    {
+    private class PurchaseTrxAdapter extends RecyclerView.Adapter<PurchaseTrxAdapter.ViewHolder> implements Filterable {
         private final Context context;
         private List<PurchaseTrx> localDataList;
         private View itemView;
 
-        public PurchaseTrxAdapter(Context context, List<PurchaseTrx> localDataList)
-        {
+        public PurchaseTrxAdapter(Context context, List<PurchaseTrx> localDataList) {
             this.context = context;
             this.localDataList = localDataList;
         }
+
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            itemView = LayoutInflater.from(context)
-                            .inflate(R.layout.purch_trx_item_layout, parent, false);
+            itemView = getLayoutInflater()
+                    .inflate(R.layout.purch_trx_item_layout, parent, false);
             return new ViewHolder(itemView);
         }
 
@@ -301,11 +285,12 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
             holder.qty.setText(String.valueOf(trx.getQty()));
             holder.pickedQty.setText(String.valueOf(trx.getCountedQty()));
             itemView.setOnClickListener(v -> {
-                ((PurchaseTrxActivity)context).showEditPickedQtyDialog(trx);
+                focusPosition = localDataList.indexOf(trx);
+                ((PurchaseTrxActivity) context).showEditPickedQtyDialog(trx);
             });
 
             itemView.setOnLongClickListener(v -> {
-                ((PurchaseTrxActivity)context).showInfoDialog(trx);
+                ((PurchaseTrxActivity) context).showInfoDialog(trx);
                 return true;
             });
         }
@@ -321,27 +306,49 @@ public class PurchaseTrxActivity extends ScannerSupportActivity
                 protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults filterResults = new FilterResults();
                     List<PurchaseTrx> filteredData = new ArrayList<>();
-                    constraint =constraint.toString().toLowerCase();
+                    constraint = constraint.toString().toLowerCase();
 
-                    for (PurchaseTrx trx : trxList)
-                    {
+                    for (PurchaseTrx trx : trxList) {
                         if (trx.getInvCode()
                                 .concat(trx.getInvName())
-                                .concat(trx.getBarcodes().toString()).contains(constraint))
-                        {
+                                .concat(trx.getBarcodes().toString()).contains(constraint)) {
                             filteredData.add(trx);
                         }
                     }
 
-                    filterResults.count = filteredData.size();;
+                    filterResults.count = filteredData.size();
                     filterResults.values = filteredData;
                     return filterResults;
                 }
 
+                /** @noinspection unchecked*/
                 @Override
                 protected void publishResults(CharSequence constraint, FilterResults results) {
-                    localDataList = (List<PurchaseTrx>) results.values;
-                    notifyDataSetChanged();
+                    List<PurchaseTrx> newList = (List<PurchaseTrx>) results.values;
+                    DiffUtil.DiffResult result = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+                        @Override
+                        public int getOldListSize() {
+                            return localDataList.size();
+                        }
+
+                        @Override
+                        public int getNewListSize() {
+                            return newList.size();
+                        }
+
+                        @Override
+                        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                            return false;
+                        }
+                    });
+                    localDataList.clear();
+                    localDataList.addAll(newList);
+                    result.dispatchUpdatesTo(PurchaseTrxAdapter.this);
                 }
             };
         }

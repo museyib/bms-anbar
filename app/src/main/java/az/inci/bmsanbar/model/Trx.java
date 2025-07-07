@@ -5,8 +5,7 @@ import java.util.Objects;
 import lombok.Data;
 
 @Data
-public class Trx
-{
+public class Trx {
     private int position;
     private int trxId;
     private String trxNo;
@@ -43,8 +42,7 @@ public class Trx
     private int minutes;
     private String notPickedReasonId;
 
-    public static Trx parseFromInv(Inventory inventory)
-    {
+    public static Trx parseFromInv(Inventory inventory) {
         Trx trx = new Trx();
         trx.setInvCode(inventory.getInvCode());
         trx.setInvName(inventory.getInvName());
@@ -56,23 +54,20 @@ public class Trx
         return trx;
     }
 
-    public boolean isReturned()
-    {
+    public boolean isReturned() {
         return prevTrxId != 0;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Trx trx = (Trx) o;
         return trxId == trx.trxId;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(trxId);
     }
 }

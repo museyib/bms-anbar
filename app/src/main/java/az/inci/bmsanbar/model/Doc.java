@@ -6,8 +6,7 @@ import java.util.Objects;
 import lombok.Data;
 
 @Data
-public class Doc
-{
+public class Doc {
     private String trxNo;
     private String trxDate;
     private int recStatus;
@@ -37,17 +36,15 @@ public class Doc
     private List<Trx> trxList;
 
     @Override
-    public boolean equals(Object o)
-    {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Doc doc = (Doc) o;
         return Objects.equals(trxNo, doc.trxNo);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(trxNo);
     }
 }

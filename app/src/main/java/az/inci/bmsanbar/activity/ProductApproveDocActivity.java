@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,8 +23,7 @@ import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Doc;
 import az.inci.bmsanbar.model.Trx;
 
-public class ProductApproveDocActivity extends AppBaseActivity
-{
+public class ProductApproveDocActivity extends AppBaseActivity {
 
     ListView docListView;
     ImageButton add;
@@ -33,8 +31,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
     List<Doc> docList;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.product_approve_doc_layout);
         setTitle("Mal qəbulu (İstehsalat)");
@@ -43,7 +40,7 @@ public class ProductApproveDocActivity extends AppBaseActivity
         add = findViewById(R.id.add);
         download = findViewById(R.id.download);
 
-        if(getUser().isApproveFlag()) download.setVisibility(View.VISIBLE);
+        if (getUser().isApproveFlag()) download.setVisibility(View.VISIBLE);
 
         add.setOnClickListener(v -> {
             Intent intent = new Intent(this, ProductApproveTrxActivity.class);
@@ -64,12 +61,12 @@ public class ProductApproveDocActivity extends AppBaseActivity
         docListView.setOnItemLongClickListener((parent, view, position, id) -> {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setMessage("Silmək istəyirsiniz?")
-                         .setPositiveButton("Bəli", (dialog1, which) -> {
-                             Doc doc = (Doc) parent.getItemAtPosition(position);
-                             dbHelper.deleteApproveDoc(doc.getTrxNo());
-                             loadData();
-                         })
-                         .setNegativeButton("Xeyr", null);
+                    .setPositiveButton("Bəli", (dialog1, which) -> {
+                        Doc doc = (Doc) parent.getItemAtPosition(position);
+                        dbHelper.deleteApproveDoc(doc.getTrxNo());
+                        loadData();
+                    })
+                    .setNegativeButton("Xeyr", null);
             dialogBuilder.show();
             return true;
         });
@@ -80,14 +77,12 @@ public class ProductApproveDocActivity extends AppBaseActivity
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         loadData();
     }
 
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.pick_menu, menu);
         MenuItem attributes = menu.findItem(R.id.inv_attributes);
@@ -104,63 +99,54 @@ public class ProductApproveDocActivity extends AppBaseActivity
         return true;
     }
 
-    public void loadData()
-    {
+    public void loadData() {
         docList = dbHelper.getProductApproveDocList();
-        if(docList.size() == 0) findViewById(R.id.doc_list_scroll).setVisibility(View.INVISIBLE);
-        else
-        {
+        if (docList.isEmpty()) findViewById(R.id.doc_list_scroll).setVisibility(View.INVISIBLE);
+        else {
             findViewById(R.id.doc_list_scroll).setVisibility(View.VISIBLE);
             DocAdapter adapter = new DocAdapter(this, R.layout.product_approve_doc_item_layout,
-                                                docList);
+                    docList);
             docListView.setAdapter(adapter);
         }
     }
 
-    private void loadDocsFromServer()
-    {
+    private void loadDocsFromServer() {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("inv-move", "approve-prd", "trx-list");
             List<Trx> trxList = getListData(url, "GET", null, Trx[].class);
 
-            if(trxList != null)
-                if(trxList.size() > 0)
+            if (trxList != null)
+                if (!trxList.isEmpty())
                     loadDocListFromServer(trxList);
                 else
                     runOnUiThread(() -> showMessageDialog(getString(R.string.info),
-                                                          getString(R.string.no_data),
-                                                          android.R.drawable.ic_dialog_info));
+                            getString(R.string.no_data),
+                            android.R.drawable.ic_dialog_info));
         }).start();
     }
 
-    private void loadDocListFromServer(List<Trx> trxList)
-    {
-
+    private void loadDocListFromServer(List<Trx> trxList) {
         String url = url("inv-move", "approve-prd", "doc-list");
         List<Doc> docList = getListData(url, "GET", null, Doc[].class);
         runOnUiThread(() -> {
-            for(Doc doc : docList)
-            {
+            for (Doc doc : docList) {
                 doc.setTrxTypeId(4);
                 dbHelper.addApproveDoc(doc);
             }
 
-            for(Trx trx : trxList)
-            {
+            for (Trx trx : trxList) {
                 dbHelper.addApproveTrx(trx);
             }
             loadData();
         });
     }
 
-    static class DocAdapter extends ArrayAdapter<Doc>
-    {
+    class DocAdapter extends ArrayAdapter<Doc> {
         ProductApproveDocActivity activity;
         List<Doc> list;
 
-        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects)
-        {
+        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects) {
             super(context, resourceId, objects);
             list = objects;
             activity = (ProductApproveDocActivity) context;
@@ -168,14 +154,13 @@ public class ProductApproveDocActivity extends AppBaseActivity
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             Doc doc = list.get(position);
 
-            if(convertView == null)
-                convertView = LayoutInflater.from(getContext())
-                                            .inflate(R.layout.product_approve_doc_item_layout,
-                                                     parent, false);
+            if (convertView == null)
+                convertView = getLayoutInflater()
+                        .inflate(R.layout.product_approve_doc_item_layout,
+                                parent, false);
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);
             TextView trxDate = convertView.findViewById(R.id.trx_date);

@@ -64,8 +64,7 @@ import az.inci.bmsanbar.model.Whs;
 import az.inci.bmsanbar.model.v2.TransferRequest;
 import az.inci.bmsanbar.model.v2.TransferRequestItem;
 
-public class ApproveTrxActivity extends ScannerSupportActivity
-{
+public class ApproveTrxActivity extends ScannerSupportActivity {
     private RadioButton fromWhsBtn;
     private Button selectSrcBtn;
     private RecyclerView trxListView;
@@ -94,8 +93,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     private Whs trgWhs;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.approve_trx_layout);
         selectSrcBtn = findViewById(R.id.select_src);
@@ -111,8 +109,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         RadioButton fromCustomerBtn = findViewById(R.id.customer_btn);
 
         int mode = getIntent().getIntExtra("mode", AppConfig.VIEW_MODE);
-        if(mode == AppConfig.VIEW_MODE)
-        {
+        if (mode == AppConfig.VIEW_MODE) {
             docCreated = true;
             trxNo = getIntent().getStringExtra("trxNo");
             trxTypeId = getIntent().getIntExtra("trxTypeId", 27);
@@ -126,8 +123,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             sbeName = getIntent().getStringExtra("sbeName");
             amount = getIntent().getDoubleExtra("amount", 0);
 
-            switch(trxTypeId)
-            {
+            switch (trxTypeId) {
                 case 27:
                     fromCustomerBtn.setChecked(true);
                     break;
@@ -137,9 +133,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             }
 
             isReady = !srcTxt.getText().toString().isEmpty();
-        }
-        else
-        {
+        } else {
             trxNo = new SimpleDateFormat("yyyyMMddhhmmss", Locale.getDefault()).format(new Date());
         }
 
@@ -156,11 +150,9 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         });
 
         printBtn.setOnClickListener(v -> {
-            if(isReady)
-            {
+            if (isReady) {
                 String report;
-                switch(trxTypeId)
-                {
+                switch (trxTypeId) {
                     case 27:
                         report = getReturnForm();
                         break;
@@ -172,17 +164,14 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                 }
                 showProgressDialog(true);
                 print(report);
-            }
-            else
-            {
+            } else {
                 showMessageDialog(getString(R.string.info), "Mənbə seçilməyib",
-                                  android.R.drawable.ic_dialog_info);
+                        android.R.drawable.ic_dialog_info);
             }
         });
 
         selectSrcBtn.setOnClickListener(v -> {
-            switch(trxTypeId)
-            {
+            switch (trxTypeId) {
                 case 27:
                     getSbeList();
                     break;
@@ -192,38 +181,29 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             }
         });
 
-        trgWhsListSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-        {
+        trgWhsListSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-            {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 trgWhs = (Whs) parent.getItemAtPosition(position);
                 trgWhsCode = trgWhs.getWhsCode();
                 trgWhsName = trgWhs.getWhsName();
-                if(docCreated)
-                {
+                if (docCreated) {
                     updateDocTrg();
-                }
-                else
-                {
+                } else {
                     createNewDoc();
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent)
-            {
+            public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
 
         selectInvBtn.setOnClickListener(v -> {
-            if(invList == null)
-            {
+            if (invList == null) {
                 getInvList();
-            }
-            else
-            {
+            } else {
                 showInvList();
             }
         });
@@ -231,17 +211,16 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         uploadBtn.setOnClickListener(v -> {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(ApproveTrxActivity.this);
             dialogBuilder.setMessage("Göndərmək istəyirsiniz?")
-                         .setPositiveButton("Bəli", (dialog1, which) -> {
-                             switch(trxTypeId)
-                             {
-                                 case 27:
-                                     break;
-                                 case 53:
-                                     uploadTransfer();
-                                     break;
-                             }
-                         })
-                         .setNegativeButton("Xeyr", null);
+                    .setPositiveButton("Bəli", (dialog1, which) -> {
+                        switch (trxTypeId) {
+                            case 27:
+                                break;
+                            case 53:
+                                uploadTransfer();
+                                break;
+                        }
+                    })
+                    .setNegativeButton("Xeyr", null);
             dialogBuilder.show();
         });
 
@@ -251,10 +230,9 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if(!searchView.isIconified())
+                if (!searchView.isIconified())
                     searchView.setIconified(true);
-                else if(trxList.isEmpty())
-                {
+                else if (trxList.isEmpty()) {
                     AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(ApproveTrxActivity.this);
                     dialogBuilder.setMessage("Mal daxil edilməyib. Sənəd silinsin?")
                             .setPositiveButton("Bəli", (dialog1, which) -> {
@@ -263,8 +241,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                             })
                             .setNegativeButton("Xeyr", (dialog12, which) -> finish());
                     dialogBuilder.show();
-                }
-                else
+                } else
                     finish();
             }
         });
@@ -277,8 +254,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.pick_menu, menu);
 
@@ -289,17 +265,14 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         MenuItem searchItem = menu.findItem(R.id.search);
         searchView = (SearchView) searchItem.getActionView();
         if (searchView != null) {
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-            {
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
-                public boolean onQueryTextSubmit(String query)
-                {
+                public boolean onQueryTextSubmit(String query) {
                     return false;
                 }
 
                 @Override
-                public boolean onQueryTextChange(String newText)
-                {
+                public boolean onQueryTextChange(String newText) {
                     TrxAdapter adapter = (TrxAdapter) trxListView.getAdapter();
                     if (adapter != null)
                         adapter.getFilter().filter(newText);
@@ -310,15 +283,13 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         return true;
     }
 
-    private void createNewDoc()
-    {
+    private void createNewDoc() {
         Doc doc = new Doc();
         doc.setTrxNo(trxNo);
         doc.setTrxTypeId(trxTypeId);
         doc.setTrxDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
         doc.setWhsCode(trgWhs.getWhsCode());
-        switch(trxTypeId)
-        {
+        switch (trxTypeId) {
             case 27:
                 doc.setBpCode(bpCode);
                 doc.setBpName(bpName);
@@ -335,8 +306,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         setTitle(trxNo);
     }
 
-    private void updateDocAmount()
-    {
+    private void updateDocAmount() {
         ContentValues values = new ContentValues();
         values.put(DBHelper.AMOUNT, amount);
         dbHelper.updateApproveDoc(trxNo, values);
@@ -344,8 +314,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         updateButtonsStatus();
     }
 
-    private void updateDocTrg()
-    {
+    private void updateDocTrg() {
         ContentValues values = new ContentValues();
         values.put(DBHelper.TRG_WHS_CODE, trgWhs.getWhsCode());
         values.put(DBHelper.TRG_WHS_NAME, trgWhs.getWhsName());
@@ -354,11 +323,9 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         updateButtonsStatus();
     }
 
-    private void updateDocSrc()
-    {
+    private void updateDocSrc() {
         ContentValues values = new ContentValues();
-        switch(trxTypeId)
-        {
+        switch (trxTypeId) {
             case 27:
                 bpCode = customer.getBpCode();
                 bpName = customer.getBpName();
@@ -389,8 +356,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         updateButtonsStatus();
     }
 
-    public void loadData()
-    {
+    public void loadData() {
         customer = new Customer();
         customer.setBpCode(bpCode);
         customer.setBpName(bpName);
@@ -412,12 +378,9 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         trxListView.setLayoutManager(new LinearLayoutManager(this));
         trxListView.setAdapter(adapter);
 
-        if(trxList.isEmpty())
-        {
+        if (trxList.isEmpty()) {
             findViewById(R.id.trx_list_scroll).setVisibility(View.GONE);
-        }
-        else
-        {
+        } else {
             findViewById(R.id.trx_list_scroll).setVisibility(View.VISIBLE);
         }
 
@@ -425,31 +388,24 @@ public class ApproveTrxActivity extends ScannerSupportActivity
     }
 
     @Override
-    public void onScanComplete(String barcode)
-    {
+    public void onScanComplete(String barcode) {
         getInvFromServer(barcode);
     }
 
-    public void onScanComplete(Intent intent)
-    {
+    public void onScanComplete(Intent intent) {
     }
 
-    private void updateButtonsStatus()
-    {
-        if(trxTypeId == 27 && !trxList.isEmpty())
-        {
+    private void updateButtonsStatus() {
+        if (trxTypeId == 27 && !trxList.isEmpty()) {
             fromWhsBtn.setEnabled(!isReady);
             selectSrcBtn.setEnabled(!isReady);
-        }
-        else
-        {
+        } else {
             fromWhsBtn.setEnabled(true);
             selectSrcBtn.setEnabled(true);
         }
     }
 
-    private void getInvFromServer(String barcode)
-    {
+    private void getInvFromServer(String barcode) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("inv", "by-barcode");
@@ -458,23 +414,21 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             Inventory currentInv = getSimpleObject(url, "GET", null, Inventory.class);
 
-            if(currentInv != null) showAddInvDialog(currentInv);
+            if (currentInv != null) showAddInvDialog(currentInv);
         }).start();
     }
 
-    private void getSbeList()
-    {
+    private void getSbeList() {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("src", "sbe");
             List<Sbe> sbeList = getListData(url, "GET", null, Sbe[].class);
 
-            if(sbeList != null) runOnUiThread(() -> showSbeList(sbeList));
+            if (sbeList != null) runOnUiThread(() -> showSbeList(sbeList));
         }).start();
     }
 
-    private void getCustomerList(String sbeCode)
-    {
+    private void getCustomerList(String sbeCode) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("src", "customer");
@@ -483,22 +437,20 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             List<Customer> customerList = getListData(url, "GET", null, Customer[].class);
 
-            if(customerList != null) runOnUiThread(() -> showCustomerList(customerList));
+            if (customerList != null) runOnUiThread(() -> showCustomerList(customerList));
         }).start();
     }
 
-    private void getWhsList()
-    {
+    private void getWhsList() {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("src", "whs");
             List<Whs> whsList = getListData(url, "GET", null, Whs[].class);
-            if(whsList != null) runOnUiThread(() -> showSrcWhsList(whsList));
+            if (whsList != null) runOnUiThread(() -> showSrcWhsList(whsList));
         }).start();
     }
 
-    private void loadTrgWhsList()
-    {
+    private void loadTrgWhsList() {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("src", "whs", "target");
@@ -507,41 +459,36 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             trgWhsList = getListData(url, "GET", null, Whs[].class);
 
-            if(trgWhsList == null) trgWhsList = Collections.emptyList();
+            if (trgWhsList == null) trgWhsList = Collections.emptyList();
 
             runOnUiThread(this::publishTrgWhsList);
         }).start();
     }
 
-    private void getInvList()
-    {
+    private void getInvList() {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("inv");
             invList = getListData(url, "GET", null, Inventory[].class);
-            if(invList != null) runOnUiThread(this::showInvList);
+            if (invList != null) runOnUiThread(this::showInvList);
         }).start();
     }
 
-    private void showInvList()
-    {
+    private void showInvList() {
         View view = LayoutInflater.from(this)
-                                  .inflate(R.layout.result_list_dialog,
-                                           findViewById(android.R.id.content), false);
+                .inflate(R.layout.result_list_dialog,
+                        findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
         InventoryAdapter adapter = new InventoryAdapter(this, invList);
         SearchView searchView = view.findViewById(R.id.search);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query)
-            {
+            public boolean onQueryTextSubmit(String query) {
                 return false;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText)
-            {
+            public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
                 return true;
             }
@@ -557,34 +504,29 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         dialogBuilder.setTitle("Mallar").setView(view).show();
     }
 
-    private void publishTrgWhsList()
-    {
+    private void publishTrgWhsList() {
         ArrayAdapter<Whs> adapter = new ArrayAdapter<>(this,
-                                                       R.layout.support_simple_spinner_dropdown_item,
-                                                       trgWhsList);
+                R.layout.support_simple_spinner_dropdown_item,
+                trgWhsList);
         trgWhsListSpinner.setAdapter(adapter);
         trgWhsListSpinner.setSelection(trgWhsList.indexOf(trgWhs));
     }
 
-    private void showSbeList(List<Sbe> sbeList)
-    {
+    private void showSbeList(List<Sbe> sbeList) {
         View view = LayoutInflater.from(this)
-                                  .inflate(R.layout.result_list_dialog,
-                                           findViewById(android.R.id.content), false);
+                .inflate(R.layout.result_list_dialog,
+                        findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
         ArrayAdapter<Sbe> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item, sbeList);
         SearchView searchView = view.findViewById(R.id.search);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query)
-            {
+            public boolean onQueryTextSubmit(String query) {
                 return false;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText)
-            {
+            public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
                 return true;
             }
@@ -601,26 +543,22 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         });
     }
 
-    private void showCustomerList(List<Customer> customerList)
-    {
+    private void showCustomerList(List<Customer> customerList) {
         View view = LayoutInflater.from(this)
-                                  .inflate(R.layout.result_list_dialog,
-                                           findViewById(android.R.id.content), false);
+                .inflate(R.layout.result_list_dialog,
+                        findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
         ArrayAdapter<Customer> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
-                                                            customerList);
+                customerList);
         SearchView searchView = view.findViewById(R.id.search);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query)
-            {
+            public boolean onQueryTextSubmit(String query) {
                 return false;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText)
-            {
+            public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
                 return true;
             }
@@ -635,12 +573,10 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             customer = (Customer) adapterView.getItemAtPosition(i);
             srcTxt.setText(customer.toString());
             updateDocSrc();
-            if(!trxList.isEmpty())
-            {
+            if (!trxList.isEmpty()) {
                 fromWhsBtn.setEnabled(false);
                 selectSrcBtn.setEnabled(false);
-                for(Trx trx : trxList)
-                {
+                for (Trx trx : trxList) {
                     dbHelper.deleteApproveTrx(String.valueOf(trx.getTrxId()));
                     amount -= trx.getAmount();
                     splitTrx(trx);
@@ -649,25 +585,21 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         });
     }
 
-    private void showSrcWhsList(List<Whs> whsList)
-    {
+    private void showSrcWhsList(List<Whs> whsList) {
         View view = LayoutInflater.from(this)
-                                  .inflate(R.layout.result_list_dialog,
-                                           findViewById(android.R.id.content), false);
+                .inflate(R.layout.result_list_dialog,
+                        findViewById(android.R.id.content), false);
         ListView listView = view.findViewById(R.id.result_list);
         ArrayAdapter<Whs> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item, whsList);
         SearchView searchView = view.findViewById(R.id.search);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-        {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query)
-            {
+            public boolean onQueryTextSubmit(String query) {
                 return false;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText)
-            {
+            public boolean onQueryTextChange(String newText) {
                 adapter.getFilter().filter(newText);
                 return true;
             }
@@ -682,85 +614,65 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             dialog.dismiss();
             srcWhs = (Whs) adapterView.getItemAtPosition(i);
             srcTxt.setText(srcWhs.toString());
-            if(docCreated)
-            {
+            if (docCreated) {
                 updateDocSrc();
-            }
-            else
-            {
+            } else {
                 createNewDoc();
             }
         });
     }
 
-    private void showAddInvDialog(Inventory inventory)
-    {
-        if(inventory.getInvCode() == null)
-        {
+    private void showAddInvDialog(Inventory inventory) {
+        if (inventory.getInvCode() == null) {
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
-                              android.R.drawable.ic_dialog_info);
-        }
-        else
-        {
+                    android.R.drawable.ic_dialog_info);
+        } else {
             EditText qtyEdit = new EditText(this);
             qtyEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
             qtyEdit.selectAll();
             qtyEdit.requestFocus();
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setTitle(inventory.getInvCode())
-                         .setMessage(inventory.getInvName())
-                         .setCancelable(false)
-                         .setView(qtyEdit)
-                         .setPositiveButton("OK", (dialog1, which) -> {
-                             try
-                             {
-                                 double qty = Double.parseDouble(qtyEdit.getText().toString());
-                                 Trx containingTrx = containingTrx(inventory.getInvCode());
-                                 if(containingTrx.getTrxId() > 0)
-                                 {
-                                     updateApproveTrxQty(containingTrx,
-                                                         qty + containingTrx.getQty());
-                                 }
-                                 else
-                                 {
-                                     Trx trx = Trx.parseFromInv(inventory);
-                                     trx.setQty(qty);
-                                     trx.setTrxNo(trxNo);
-                                     trx.setAmount(trx.getPrice() * qty);
-                                     if(trxTypeId == 27 && !isReturned(trx.getInvCode()))
-                                     {
-                                         splitTrx(trx);
-                                     }
-                                     else
-                                     {
-                                         addApproveTrx(trx);
-                                     }
-                                 }
-                                 loadData();
-                             }
-                             catch(NumberFormatException e)
-                             {
-                                 showAddInvDialog(inventory);
-                             }
-                         })
-                         .setNegativeButton("Ləğv et", null);
+                    .setMessage(inventory.getInvName())
+                    .setCancelable(false)
+                    .setView(qtyEdit)
+                    .setPositiveButton("OK", (dialog1, which) -> {
+                        try {
+                            double qty = Double.parseDouble(qtyEdit.getText().toString());
+                            Trx containingTrx = containingTrx(inventory.getInvCode());
+                            if (containingTrx.getTrxId() > 0) {
+                                updateApproveTrxQty(containingTrx,
+                                        qty + containingTrx.getQty());
+                            } else {
+                                Trx trx = Trx.parseFromInv(inventory);
+                                trx.setQty(qty);
+                                trx.setTrxNo(trxNo);
+                                trx.setAmount(trx.getPrice() * qty);
+                                if (trxTypeId == 27 && !isReturned(trx.getInvCode())) {
+                                    splitTrx(trx);
+                                } else {
+                                    addApproveTrx(trx);
+                                }
+                            }
+                            loadData();
+                        } catch (NumberFormatException e) {
+                            showAddInvDialog(inventory);
+                        }
+                    })
+                    .setNegativeButton("Ləğv et", null);
             AlertDialog dialog = dialogBuilder.create();
 
             Objects.requireNonNull(dialog.getWindow())
-                   .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                    .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
             dialog.show();
         }
     }
 
-    private void showEditInvDialog(Trx trx)
-    {
-        if(trx == null)
-        {
+    private void showEditInvDialog(Trx trx) {
+        if (trx == null) {
             showMessageDialog(getString(R.string.info), getString(R.string.good_not_found),
-                              android.R.drawable.ic_dialog_info);
-        }
-        else
-        {
+                    android.R.drawable.ic_dialog_info);
+        } else {
             EditText qtyEdit = new EditText(this);
             qtyEdit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
             qtyEdit.setText(String.format(Locale.getDefault(), "%.0f", trx.getQty()));
@@ -768,47 +680,39 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             qtyEdit.requestFocus();
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setTitle(trx.getInvCode())
-                         .setMessage(trx.getInvName())
-                         .setCancelable(false)
-                         .setView(qtyEdit)
-                         .setPositiveButton("OK", (dialog1, which) -> {
-                             try
-                             {
-                                 double qty = Double.parseDouble(qtyEdit.getText().toString());
-                                 updateApproveTrxQty(trx, qty);
-                                 loadData();
-                             }
-                             catch(NumberFormatException e)
-                             {
-                                 showEditInvDialog(trx);
-                             }
-                         })
-                         .setNegativeButton("Ləğv et", null);
+                    .setMessage(trx.getInvName())
+                    .setCancelable(false)
+                    .setView(qtyEdit)
+                    .setPositiveButton("OK", (dialog1, which) -> {
+                        try {
+                            double qty = Double.parseDouble(qtyEdit.getText().toString());
+                            updateApproveTrxQty(trx, qty);
+                            loadData();
+                        } catch (NumberFormatException e) {
+                            showEditInvDialog(trx);
+                        }
+                    })
+                    .setNegativeButton("Ləğv et", null);
             AlertDialog dialog = dialogBuilder.create();
 
             Objects.requireNonNull(dialog.getWindow())
-                   .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                    .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
             dialog.show();
         }
     }
 
-    private void addApproveTrx(Trx trx)
-    {
+    private void addApproveTrx(Trx trx) {
         dbHelper.addApproveTrx(trx);
         amount += trx.getAmount();
-        if(docCreated)
-        {
+        if (docCreated) {
             updateDocAmount();
-        }
-        else
-        {
+        } else {
             createNewDoc();
         }
         loadData();
     }
 
-    private void updateApproveTrxQty(Trx trx, double qty)
-    {
+    private void updateApproveTrxQty(Trx trx, double qty) {
         ContentValues values = new ContentValues();
         values.put(DBHelper.QTY, qty);
         dbHelper.updateApproveTrx(String.valueOf(trx.getTrxId()), values);
@@ -816,12 +720,9 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         updateDocAmount();
     }
 
-    private Trx containingTrx(String invCode)
-    {
-        for(Trx trx : trxList)
-        {
-            if(trx.getInvCode().equals(invCode) && !trx.isReturned())
-            {
+    private Trx containingTrx(String invCode) {
+        for (Trx trx : trxList) {
+            if (trx.getInvCode().equals(invCode) && !trx.isReturned()) {
                 return trx;
             }
         }
@@ -829,12 +730,9 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         return new Trx();
     }
 
-    private boolean isReturned(String invCode)
-    {
-        for(Trx trx : trxList)
-        {
-            if(trx.getInvCode().equals(invCode) && trx.isReturned())
-            {
+    private boolean isReturned(String invCode) {
+        for (Trx trx : trxList) {
+            if (trx.getInvCode().equals(invCode) && trx.isReturned()) {
                 return true;
             }
         }
@@ -842,8 +740,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         return false;
     }
 
-    private void splitTrx(Trx trx)
-    {
+    private void splitTrx(Trx trx) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("trx", "split-trx");
@@ -854,15 +751,11 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             url = addRequestParameters(url, parameters);
             List<Trx> splitTrxList = getListData(url, "GET", null, Trx[].class);
 
-            if(splitTrxList != null)
-            {
+            if (splitTrxList != null) {
                 runOnUiThread(() -> {
-                    if(!splitTrxList.isEmpty())
-                    {
+                    if (!splitTrxList.isEmpty()) {
                         addSplitTrx(splitTrxList, trx);
-                    }
-                    else
-                    {
+                    } else {
                         addApproveTrx(trx);
                     }
                 });
@@ -870,12 +763,10 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         }).start();
     }
 
-    private void addSplitTrx(List<Trx> splitTrxList, Trx baseTrx)
-    {
+    private void addSplitTrx(List<Trx> splitTrxList, Trx baseTrx) {
         double qtySum = baseTrx.getQty();
 
-        for(int i = 0; i < splitTrxList.size(); i++)
-        {
+        for (int i = 0; i < splitTrxList.size(); i++) {
             Trx trx = splitTrxList.get(i);
             trx.setTrxNo(baseTrx.getTrxNo());
             trx.setTrxDate(baseTrx.getTrxDate());
@@ -884,8 +775,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             trx.setInvName(baseTrx.getInvName());
             trx.setDiscount(trx.getQty() * trx.getPrice() * trx.getDiscountRatio() / 100);
             trx.setAmount(trx.getPrice() * trx.getQty());
-            if(qtySum < trx.getQty())
-            {
+            if (qtySum < trx.getQty()) {
                 trx.setQty(qtySum);
                 trx.setDiscount(trx.getQty() * trx.getPrice() * trx.getDiscountRatio() / 100);
                 trx.setAmount(trx.getPrice() * trx.getQty());
@@ -895,8 +785,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             qtySum -= trx.getQty();
         }
 
-        if(qtySum > 0)
-        {
+        if (qtySum > 0) {
             baseTrx.setQty(qtySum);
             baseTrx.setAmount(qtySum * baseTrx.getPrice());
             dbHelper.addApproveTrx(baseTrx);
@@ -904,20 +793,16 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         loadData();
     }
 
-    private void print(String html)
-    {
+    private void print(String html) {
         WebView webView = new WebView(this);
-        webView.setWebViewClient(new WebViewClient()
-        {
+        webView.setWebViewClient(new WebViewClient() {
 
-            public boolean shouldOverrideUrlLoading(WebView view, String url)
-            {
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return false;
             }
 
             @Override
-            public void onPageFinished(WebView view, String url)
-            {
+            public void onPageFinished(WebView view, String url) {
                 showProgressDialog(false);
                 createWebPrintJob(view);
             }
@@ -926,8 +811,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         webView.loadDataWithBaseURL(null, html, "text/HTML", "UTF-8", null);
     }
 
-    private void createWebPrintJob(WebView webView)
-    {
+    private void createWebPrintJob(WebView webView) {
         PrintManager printManager = (PrintManager) this.getSystemService(Context.PRINT_SERVICE);
 
         String jobName = getString(R.string.app_name) + " Document";
@@ -938,19 +822,17 @@ public class ApproveTrxActivity extends ScannerSupportActivity
 
         printAdapter = webView.createPrintDocumentAdapter(jobName);
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             builder.setDuplexMode(PrintAttributes.DUPLEX_MODE_LONG_EDGE);
         }
         printManager.print(jobName, printAdapter, builder.build());
     }
 
-    private String getTransferForm()
-    {
+    private String getTransferForm() {
         String html = "<html><head><style>*{margin:0px; padding:0px}" +
-                      "table,tr,th,td{border: 1px solid black;border-collapse: collapse; font-size: 12px}" +
-                      "th{background-color: #636d72;color:white}td,th{padding:0 4px 0 4px}</style>" +
-                      "</head><body>";
+                "table,tr,th,td{border: 1px solid black;border-collapse: collapse; font-size: 12px}" +
+                "th{background-color: #636d72;color:white}td,th{padding:0 4px 0 4px}</style>" +
+                "</head><body>";
         html = html.concat("<h3 style='text-align: center'>Anbardan anbara transfer</h3></br>");
         html = html.concat(
                 "<div style='font-size: 14px'><b>Çıxış anbarı: " + srcWhs.toString() + "</br>");
@@ -963,12 +845,10 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         html = html.concat("<th>Miqdar</th>");
         html = html.concat("<th>Qiymət</th>");
         html = html.concat("<th>Məbləğ</th>");
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-        {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Collections.sort(trxList, Comparator.comparing(Trx::getPrevTrxNo));
         }
-        for(Trx trx : trxList)
-        {
+        for (Trx trx : trxList) {
 
             html = html.concat(
                     "<tr><td>" + trx.getInvCode() + "</td><td>" + trx.getInvName() + "</td>");
@@ -978,7 +858,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
             html = html.concat("<td style='text-align: right'>" + format(trx.getPrice()) + "</td>");
             html = html.concat(
                     "<td style='text-align: right'>" + format(trx.getQty() * trx.getPrice()) +
-                    "</td>");
+                            "</td>");
         }
 
         html = html.concat("<tr><td colspan='6' style='text-align: right'><b>Cəmi</b></td>");
@@ -988,12 +868,11 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         return html;
     }
 
-    private String getReturnForm()
-    {
+    private String getReturnForm() {
         String html = "<html><head><meta charset=\"UTF-8\"><style>*{margin:0px; padding:0px}" +
-                      "table,tr,th,td{border: 1px solid black;border-collapse: collapse; font-size: 12px}" +
-                      "th{background-color: #636d72;color:white}td,th{padding:0 4px 0 4px}</style>" +
-                      "</head><body>";
+                "table,tr,th,td{border: 1px solid black;border-collapse: collapse; font-size: 12px}" +
+                "th{background-color: #636d72;color:white}td,th{padding:0 4px 0 4px}</style>" +
+                "</head><body>";
         html = html.concat("<h3 style='text-align: center'>Satışdan geri qaytarma</h3></br>");
         html = html.concat(
                 "<div style='font-size: 14px'><b>Müştəri: " + customer.toString() + "</br>");
@@ -1012,19 +891,14 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         double invAmount;
         double discountAmount = 0;
         double amountWithoutDiscount = 0;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-        {
-            if(trxTypeId == 27)
-            {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (trxTypeId == 27) {
                 Collections.sort(trxList, Comparator.comparing(Trx::getPrevTrxNo));
-            }
-            else
-            {
+            } else {
                 Collections.sort(trxList, Comparator.comparingInt(Trx::getTrxId));
             }
         }
-        for(Trx trx : trxList)
-        {
+        for (Trx trx : trxList) {
             invAmount = trx.getAmount() - trx.getDiscount();
             discountAmount += trx.getDiscount();
             amountWithoutDiscount += invAmount;
@@ -1049,22 +923,19 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         html = html.concat(
                 "<tr><td colspan='7' style='text-align: right'><b>Cəmi (Endirimli)</b></td>");
         html = html.concat("<td style='text-align: right'><b>" + format(amountWithoutDiscount) +
-                           "</b></td></tr>");
+                "</b></td></tr>");
         html = html.concat("</table></body></html>");
 
         return html;
     }
 
-    private String format(double value)
-    {
+    private String format(double value) {
         return String.format(Locale.getDefault(), "%.03f", value);
     }
 
-    private void uploadTransfer()
-    {
+    private void uploadTransfer() {
         showProgressDialog(true);
-        if(isReady)
-        {
+        if (isReady) {
             new Thread(() -> {
                 String url = url("inv-move", "create-transfer");
                 TransferRequest request = new TransferRequest();
@@ -1072,8 +943,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                 request.setTrgWhsCode(trgWhs.getWhsCode());
                 request.setUserId(getUser().getId());
                 List<TransferRequestItem> items = new ArrayList<>();
-                for(Trx trx : trxList)
-                {
+                for (Trx trx : trxList) {
                     TransferRequestItem requestItem = new TransferRequestItem();
                     requestItem.setInvCode(trx.getInvCode());
                     requestItem.setQty(trx.getQty());
@@ -1082,24 +952,20 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                 request.setRequestItems(items);
 
                 executeUpdate(url, request, message -> {
-                    if(message.getStatusCode() == 0)
-                    {
+                    if (message.getStatusCode() == 0) {
                         dbHelper.deleteApproveDoc(trxNo);
                         finish();
                     }
                 });
             }).start();
-        }
-        else
-        {
+        } else {
             showProgressDialog(false);
             showMessageDialog(getString(R.string.info), "Mənbə təyin edilməyib",
-                              android.R.drawable.ic_dialog_info);
+                    android.R.drawable.ic_dialog_info);
         }
     }
 
-    private void showInfoDialog(Inventory inventory)
-    {
+    private void showInfoDialog(Inventory inventory) {
         String info = inventory.getInvName();
         info += "\n\nBrend: " + inventory.getInvBrand();
         AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(this);
@@ -1113,33 +979,28 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         dialogbuilder.show();
     }
 
-    private static class InventoryAdapter extends ArrayAdapter<Inventory> implements Filterable
-    {
+    private class InventoryAdapter extends ArrayAdapter<Inventory> implements Filterable {
         List<Inventory> list;
         ApproveTrxActivity activity;
 
-        public InventoryAdapter(@NonNull Context context, @NonNull List<Inventory> objects)
-        {
+        public InventoryAdapter(@NonNull Context context, @NonNull List<Inventory> objects) {
             super(context, 0, 0, objects);
             list = objects;
             activity = (ApproveTrxActivity) context;
         }
 
         @Override
-        public int getCount()
-        {
+        public int getCount() {
             return list.size();
         }
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             Inventory inventory = list.get(position);
-            if(convertView == null)
-            {
-                convertView = LayoutInflater.from(parent.getContext())
-                                            .inflate(R.layout.inv_list_item, parent, false);
+            if (convertView == null) {
+                convertView = getLayoutInflater()
+                        .inflate(R.layout.inv_list_item, parent, false);
             }
             TextView invCode = convertView.findViewById(R.id.inv_code);
             TextView invName = convertView.findViewById(R.id.inv_name);
@@ -1156,27 +1017,22 @@ public class ApproveTrxActivity extends ScannerSupportActivity
 
         @NonNull
         @Override
-        public Filter getFilter()
-        {
-            return new Filter()
-            {
+        public Filter getFilter() {
+            return new Filter() {
                 @Override
-                protected FilterResults performFiltering(CharSequence constraint)
-                {
+                protected FilterResults performFiltering(CharSequence constraint) {
 
                     FilterResults results = new FilterResults();
                     List<Inventory> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for(Inventory inventory : activity.invList)
-                    {
-                        if(inventory.getBarcode()
-                                    .concat(inventory.getInvCode())
-                                    .concat(inventory.getInvName())
-                                    .concat(inventory.getInvBrand())
-                                    .toLowerCase()
-                                    .contains(constraint))
-                        {
+                    for (Inventory inventory : activity.invList) {
+                        if (inventory.getBarcode()
+                                .concat(inventory.getInvCode())
+                                .concat(inventory.getInvName())
+                                .concat(inventory.getInvBrand())
+                                .toLowerCase()
+                                .contains(constraint)) {
                             filteredArrayData.add(inventory);
                         }
                     }
@@ -1187,8 +1043,7 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                 }
 
                 @Override
-                protected void publishResults(CharSequence constraint, FilterResults results)
-                {
+                protected void publishResults(CharSequence constraint, FilterResults results) {
                     list = (List<Inventory>) results.values;
                     notifyDataSetChanged();
                 }
@@ -1196,54 +1051,49 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         }
     }
 
-    private class TrxAdapter extends RecyclerView.Adapter<TrxAdapter.Holder> implements Filterable
-    {
+    private class TrxAdapter extends RecyclerView.Adapter<TrxAdapter.Holder> implements Filterable {
         private final ApproveTrxActivity activity;
         List<Trx> trxList;
         View itemView;
 
-        public TrxAdapter(Context context, List<Trx> trxList)
-        {
+        public TrxAdapter(Context context, List<Trx> trxList) {
             this.trxList = trxList;
             activity = (ApproveTrxActivity) context;
         }
 
         @NonNull
         @Override
-        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-        {
-            itemView = LayoutInflater.from(parent.getContext())
-                                     .inflate(R.layout.approve_trx_item_layout, parent, false);
+        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            itemView = getLayoutInflater()
+                    .inflate(R.layout.approve_trx_item_layout, parent, false);
             return new Holder(itemView);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull Holder holder, int position)
-        {
+        public void onBindViewHolder(@NonNull Holder holder, int position) {
             Trx trx = trxList.get(position);
             itemView.setOnLongClickListener(view -> {
                 Trx selectedTrx = trxList.get(position);
-                if(!selectedTrx.isReturned())
-                {
+                if (!selectedTrx.isReturned()) {
                     AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
                             ApproveTrxActivity.this);
                     dialogBuilder.setTitle(selectedTrx.getInvName())
-                                 .setMessage("Silmək istəyirsiniz?")
-                                 .setPositiveButton("Bəli", (dialog1, which) -> {
-                                     dbHelper.deleteApproveTrx(
-                                             String.valueOf(selectedTrx.getTrxId()));
-                                     amount -= selectedTrx.getQty() * selectedTrx.getPrice();
-                                     updateDocAmount();
-                                     loadData();
-                                 })
-                                 .setNegativeButton("Xeyr", null);
+                            .setMessage("Silmək istəyirsiniz?")
+                            .setPositiveButton("Bəli", (dialog1, which) -> {
+                                dbHelper.deleteApproveTrx(
+                                        String.valueOf(selectedTrx.getTrxId()));
+                                amount -= selectedTrx.getQty() * selectedTrx.getPrice();
+                                updateDocAmount();
+                                loadData();
+                            })
+                            .setNegativeButton("Xeyr", null);
                     dialogBuilder.show();
                 }
                 return true;
             });
             itemView.setOnClickListener(view -> {
                 Trx selectedTrx = trxList.get(position);
-                if(!selectedTrx.isReturned()) showEditInvDialog(selectedTrx);
+                if (!selectedTrx.isReturned()) showEditInvDialog(selectedTrx);
             });
             holder.invCode.setText(trx.getInvCode());
             holder.invName.setText(trx.getInvName());
@@ -1253,31 +1103,26 @@ public class ApproveTrxActivity extends ScannerSupportActivity
         }
 
         @Override
-        public int getItemCount()
-        {
+        public int getItemCount() {
             return trxList.size();
         }
 
         @Override
-        public Filter getFilter()
-        {
-            return new Filter()
-            {
+        public Filter getFilter() {
+            return new Filter() {
                 @Override
-                protected FilterResults performFiltering(CharSequence constraint)
-                {
+                protected FilterResults performFiltering(CharSequence constraint) {
 
                     FilterResults results = new FilterResults();
                     List<Trx> filteredArrayData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
-                    for(Trx trx : activity.trxList)
-                    {
-                        if(trx.getInvCode()
-                              .concat(trx.getInvName())
-                              .concat(trx.getInvBrand())
-                              .toLowerCase()
-                              .contains(constraint))
+                    for (Trx trx : activity.trxList) {
+                        if (trx.getInvCode()
+                                .concat(trx.getInvName())
+                                .concat(trx.getInvBrand())
+                                .toLowerCase()
+                                .contains(constraint))
                             filteredArrayData.add(trx);
                     }
 
@@ -1287,23 +1132,20 @@ public class ApproveTrxActivity extends ScannerSupportActivity
                 }
 
                 @Override
-                protected void publishResults(CharSequence constraint, FilterResults results)
-                {
+                protected void publishResults(CharSequence constraint, FilterResults results) {
                     trxList = (List<Trx>) results.values;
                     notifyDataSetChanged();
                 }
             };
         }
 
-        private class Holder extends RecyclerView.ViewHolder
-        {
+        private class Holder extends RecyclerView.ViewHolder {
             TextView invCode;
             TextView invName;
             TextView qty;
             TextView invBrand;
 
-            public Holder(@NonNull View itemView)
-            {
+            public Holder(@NonNull View itemView) {
                 super(itemView);
 
                 invCode = itemView.findViewById(R.id.inv_code);

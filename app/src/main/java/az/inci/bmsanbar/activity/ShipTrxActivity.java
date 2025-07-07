@@ -28,8 +28,7 @@ import az.inci.bmsanbar.model.v3.CheckShipmentResponse;
 import az.inci.bmsanbar.model.v3.ShipmentRequest;
 import az.inci.bmsanbar.model.v3.ShipmentRequestItem;
 
-public class ShipTrxActivity extends ScannerSupportActivity
-{
+public class ShipTrxActivity extends ScannerSupportActivity {
     private String driverCode;
     private String driverName;
     private String vehicleCode;
@@ -44,8 +43,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
     private boolean toCentral;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ship_trx_layout);
         int mode = getIntent().getIntExtra("mode", AppConfig.VIEW_MODE);
@@ -67,28 +65,27 @@ public class ShipTrxActivity extends ScannerSupportActivity
         toCentralCheck.setOnCheckedChangeListener((buttonView, isChecked) -> toCentral = isChecked);
 
         send.setOnClickListener(v -> {
-            if(!trxList.isEmpty() && !checkModeOn && docCreated)
+            if (!trxList.isEmpty() && !checkModeOn && docCreated)
                 createShipment();
         });
 
         trxListView.setOnItemLongClickListener((parent, view, position, id) -> {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setMessage(R.string.want_to_delete)
-                         .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
-                             ShipTrx trx = (ShipTrx) parent.getItemAtPosition(position);
-                             if(checkModeOn)
-                                 trxList.remove(trx);
-                             else
-                                 dbHelper.deleteShipTrxBySrc(trx.getSrcTrxNo());
-                             loadData();
-                         })
-                         .setNegativeButton(R.string.cancel, null);
+                    .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
+                        ShipTrx trx = (ShipTrx) parent.getItemAtPosition(position);
+                        if (checkModeOn)
+                            trxList.remove(trx);
+                        else
+                            dbHelper.deleteShipTrxBySrc(trx.getSrcTrxNo());
+                        loadData();
+                    })
+                    .setNegativeButton(R.string.cancel, null);
             dialogBuilder.show();
             return true;
         });
 
-        if(mode == AppConfig.VIEW_MODE)
-        {
+        if (mode == AppConfig.VIEW_MODE) {
             docCreated = true;
             driverCode = getIntent().getStringExtra("driverCode");
             driverName = getIntent().getStringExtra("driverName");
@@ -107,27 +104,23 @@ public class ShipTrxActivity extends ScannerSupportActivity
     }
 
     @Override
-    public void onScanComplete(String barcode)
-    {
+    public void onScanComplete(String barcode) {
 
-        if(docCreated || checkModeOn)
+        if (docCreated || checkModeOn)
             validateShipping(barcode);
-        else
-        {
-            if(barcode.startsWith("PER"))
+        else {
+            if (barcode.startsWith("PER"))
                 setDriverCode(barcode);
             else
                 setVehicleCode(barcode);
 
-            if(!isEmpty(driverCode) && !isEmpty(vehicleCode))
+            if (!isEmpty(driverCode) && !isEmpty(vehicleCode))
                 docCreated = true;
         }
     }
 
-    public void setDriverCode(String driverCode)
-    {
-        if(driverCode.startsWith("PER"))
-        {
+    public void setDriverCode(String driverCode) {
+        if (driverCode.startsWith("PER")) {
             this.driverCode = driverCode;
             showProgressDialog(true);
             new Thread(() -> {
@@ -136,57 +129,46 @@ public class ShipTrxActivity extends ScannerSupportActivity
                 parameters.put("per-code", driverCode);
                 url = addRequestParameters(url, parameters);
                 driverName = getSimpleObject(url, "GET", null, String.class);
-                if(driverName != null)
+                if (driverName != null)
                     runOnUiThread(() -> {
-                        if(!driverName.isEmpty())
-                        {
+                        if (!driverName.isEmpty()) {
                             this.driverCode = driverCode;
                             driverCodeEditText.setText(driverCode);
                             driverNameText.setText(driverName);
                             playSound(SOUND_SUCCESS);
-                        }
-                        else
-                        {
+                        } else {
                             showMessageDialog(getString(R.string.error),
-                                              getString(R.string.driver_code_incorrect),
-                                              ic_dialog_alert);
+                                    getString(R.string.driver_code_incorrect),
+                                    ic_dialog_alert);
                             playSound(SOUND_FAIL);
                         }
                     });
             }).start();
-        }
-        else
-        {
+        } else {
             showMessageDialog(getString(R.string.error), getString(R.string.driver_code_incorrect),
-                              ic_dialog_alert);
+                    ic_dialog_alert);
             playSound(SOUND_FAIL);
         }
     }
 
-    public void setVehicleCode(String vehicleCode)
-    {
-        if(!vehicleCode.startsWith("PER"))
-        {
-            if(vehicleCode.startsWith("VHC"))
+    public void setVehicleCode(String vehicleCode) {
+        if (!vehicleCode.startsWith("PER")) {
+            if (vehicleCode.startsWith("VHC"))
                 vehicleCode = vehicleCode.substring(3);
             this.vehicleCode = vehicleCode;
             vehicleCodeEditText.setText(vehicleCode);
             playSound(SOUND_SUCCESS);
-        }
-        else
-        {
+        } else {
             showMessageDialog(getString(R.string.error), getString(R.string.vehicle_code_incorrect),
-                              ic_dialog_alert);
+                    ic_dialog_alert);
             playSound(SOUND_FAIL);
         }
     }
 
-    public void validateShipping(String trxNo)
-    {
-        if(!checkModeOn && dbHelper.isShipped(trxNo))
-        {
+    public void validateShipping(String trxNo) {
+        if (!checkModeOn && dbHelper.isShipped(trxNo)) {
             showMessageDialog(getString(R.string.error), getString(R.string.doc_already_loaded),
-                              ic_dialog_alert);
+                    ic_dialog_alert);
             playSound(SOUND_FAIL);
             return;
         }
@@ -195,8 +177,7 @@ public class ShipTrxActivity extends ScannerSupportActivity
         checkShipment(trxNo);
     }
 
-    public void addDoc(String trxNo, boolean taxed)
-    {
+    public void addDoc(String trxNo, boolean taxed) {
         ShipTrx trx = new ShipTrx();
         trx.setSrcTrxNo(trxNo);
         trx.setDriverCode(driverCode);
@@ -206,31 +187,27 @@ public class ShipTrxActivity extends ScannerSupportActivity
         trx.setUserId(getUser().getId());
         trx.setTaxed(taxed);
 
-        if(checkModeOn)
-        {
+        if (checkModeOn) {
             trxList = new ArrayList<>();
             trxList.add(trx);
-        }
-        else
+        } else
             dbHelper.addShipTrx(trx);
         loadData();
     }
 
-    public void loadData()
-    {
-        if(!checkModeOn)
+    public void loadData() {
+        if (!checkModeOn)
             trxList = dbHelper.getShipTrx(driverCode);
 
-        if(trxList == null)
+        if (trxList == null)
             trxList = new ArrayList<>();
 
         ArrayAdapter<ShipTrx> adapter = new ArrayAdapter<>(this, R.layout.simple_list_item,
-                                                           trxList);
+                trxList);
         trxListView.setAdapter(adapter);
     }
 
-    private void checkShipment(String trxNo)
-    {
+    private void checkShipment(String trxNo) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("shipment", "check-shipment");
@@ -239,32 +216,28 @@ public class ShipTrxActivity extends ScannerSupportActivity
             parameters.put("driver-code", driverCode);
             url = addRequestParameters(url, parameters);
             CheckShipmentResponse shipmentResponse = getSimpleObject(url, "GET", null,
-                                                                     CheckShipmentResponse.class);
+                    CheckShipmentResponse.class);
 
-            if(shipmentResponse != null)
+            if (shipmentResponse != null)
                 runOnUiThread(() -> {
-                    if(checkModeOn || !shipmentResponse.isShipped())
-                    {
-                        if(trxNo.startsWith("DLV") || trxNo.startsWith("SIN"))
+                    if (checkModeOn || !shipmentResponse.isShipped()) {
+                        if (trxNo.startsWith("DLV") || trxNo.startsWith("SIN"))
                             checkTaxed(trxNo);
                         else
                             addDoc(trxNo, false);
                         playSound(SOUND_SUCCESS);
-                    }
-                    else
-                    {
+                    } else {
                         showMessageDialog(getString(R.string.error),
-                                          "Bu sənəd yüklənib: " + shipmentResponse.getDriverCode() +
-                                          " - " + shipmentResponse.getDriverName(),
-                                          ic_dialog_alert);
+                                "Bu sənəd yüklənib: " + shipmentResponse.getDriverCode() +
+                                        " - " + shipmentResponse.getDriverName(),
+                                ic_dialog_alert);
                         playSound(SOUND_FAIL);
                     }
                 });
         }).start();
     }
 
-    private void checkTaxed(String trxNo)
-    {
+    private void checkTaxed(String trxNo) {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("doc", "taxed");
@@ -272,29 +245,27 @@ public class ShipTrxActivity extends ScannerSupportActivity
             parameters.put("trx-no", trxNo);
             url = addRequestParameters(url, parameters);
             Boolean result = getSimpleObject(url, "GET", null, Boolean.class);
-            if(result != null)
+            if (result != null)
                 runOnUiThread(() -> addDoc(trxNo, result));
         }).start();
     }
 
-    public void createShipment()
-    {
+    public void createShipment() {
         showProgressDialog(true);
         String shipStatus = toCentral ? "MG" : "AC";
         String url = url("shipment", "create-shipment");
         ShipmentRequest request = ShipmentRequest.builder()
-                                                 .regionCode(trxList.get(0).getRegionCode())
-                                                 .driverCode(trxList.get(0).getDriverCode())
-                                                 .vehicleCode(trxList.get(0).getVehicleCode())
-                                                 .userId(getUser().getId())
-                                                 .build();
+                .regionCode(trxList.get(0).getRegionCode())
+                .driverCode(trxList.get(0).getDriverCode())
+                .vehicleCode(trxList.get(0).getVehicleCode())
+                .userId(getUser().getId())
+                .build();
         List<ShipmentRequestItem> requestItems = new ArrayList<>();
-        for(ShipTrx trx : trxList)
-        {
+        for (ShipTrx trx : trxList) {
             ShipmentRequestItem requestItem = ShipmentRequestItem.builder()
-                                                                 .srcTrxNo(trx.getSrcTrxNo())
-                                                                 .shipStatus(shipStatus)
-                                                                 .build();
+                    .srcTrxNo(trx.getSrcTrxNo())
+                    .shipStatus(shipStatus)
+                    .build();
             requestItems.add(requestItem);
         }
         request.setRequestItems(requestItems);
@@ -302,19 +273,16 @@ public class ShipTrxActivity extends ScannerSupportActivity
         executeUpdate(url, request, message -> {
             showMessageDialog(message.getTitle(), message.getBody(), message.getIconId());
 
-            if(message.getStatusCode() == 0)
-            {
+            if (message.getStatusCode() == 0) {
                 dbHelper.deleteShipTrxByDriver(driverCode);
                 clearFields();
-            }
-            else
+            } else
                 playSound(SOUND_FAIL);
         });
     }
 
 
-    private void clearFields()
-    {
+    private void clearFields() {
         driverCode = "";
         driverName = "";
         vehicleCode = "";

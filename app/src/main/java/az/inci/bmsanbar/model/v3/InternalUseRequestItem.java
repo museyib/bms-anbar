@@ -5,8 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class InternalUseRequestItem
-{
+public class InternalUseRequestItem {
     private String invCode;
     private String invName;
     private double qty;

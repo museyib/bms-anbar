@@ -3,8 +3,7 @@ package az.inci.bmsanbar.model.v2;
 import lombok.Data;
 
 @Data
-public class ProductApproveRequestItem
-{
+public class ProductApproveRequestItem {
     private String invCode;
     private String invName;
     private String invBrand;

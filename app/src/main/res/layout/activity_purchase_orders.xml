@@ -11,9 +11,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/refresh"
+        android:textAllCaps="false"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:textAllCaps="false"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <HorizontalScrollView
         android:id="@+id/doc_list_scroll"
@@ -35,45 +35,45 @@
                 <TextView
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/trx_no"
-                    android:paddingHorizontal="5dp"  />
+                    android:paddingHorizontal="5dp"
+                    android:text="@string/trx_no" />
 
                 <TextView
                     android:layout_width="100dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/trx_date"
-                    android:paddingHorizontal="5dp"  />
+                    android:paddingHorizontal="5dp"
+                    android:text="@string/trx_date" />
 
                 <TextView
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/seller"
-                    android:paddingHorizontal="5dp"  />
+                    android:paddingHorizontal="5dp"
+                    android:text="@string/seller" />
 
                 <TextView
                     android:layout_width="150dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/sbe"
-                    android:paddingHorizontal="5dp"  />
+                    android:paddingHorizontal="5dp"
+                    android:text="@string/sbe" />
 
                 <TextView
                     android:layout_width="250dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/description"
-                    android:paddingHorizontal="5dp"  />
+                    android:paddingHorizontal="5dp"
+                    android:text="@string/description" />
 
                 <TextView
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/whs"
-                    android:paddingHorizontal="5dp"  />
+                    android:paddingHorizontal="5dp"
+                    android:text="@string/whs" />
             </TableRow>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/data_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="80dp"  />
+                android:paddingBottom="80dp" />
         </LinearLayout>
     </HorizontalScrollView>
 

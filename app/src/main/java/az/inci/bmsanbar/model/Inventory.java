@@ -7,8 +7,7 @@ import java.util.Objects;
 import lombok.Data;
 
 @Data
-public class Inventory
-{
+public class Inventory {
     private String invCode;
     private String invName;
     private String barcode;
@@ -18,8 +17,7 @@ public class Inventory
     private double price;
     private double whsQty;
 
-    public static Inventory parseFromTrx(Trx trx)
-    {
+    public static Inventory parseFromTrx(Trx trx) {
         Inventory inventory = new Inventory();
         inventory.setInvCode(trx.getInvCode());
         inventory.setInvName(trx.getInvName());
@@ -32,24 +30,21 @@ public class Inventory
 
     @Override
     @NonNull
-    public String toString()
-    {
+    public String toString() {
         return invCode + " | " + invName + " | " + invBrand;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Inventory inventory = (Inventory) o;
         return Objects.equals(invCode, inventory.invCode) &&
-               Objects.equals(barcode, inventory.barcode);
+                Objects.equals(barcode, inventory.barcode);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(invCode, barcode);
     }
 }

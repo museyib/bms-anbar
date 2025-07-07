@@ -3,8 +3,7 @@ package az.inci.bmsanbar.model.v2;
 import lombok.Data;
 
 @Data
-public class UpdateDeliveryRequest
-{
+public class UpdateDeliveryRequest {
     private String trxNo;
     private String note;
     private String deliverPerson;

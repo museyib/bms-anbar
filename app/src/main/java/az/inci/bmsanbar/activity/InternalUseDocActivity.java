@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,8 +24,7 @@ import az.inci.bmsanbar.AppConfig;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Doc;
 
-public class InternalUseDocActivity extends AppBaseActivity
-{
+public class InternalUseDocActivity extends AppBaseActivity {
 
     ListView docListView;
     ImageButton add;
@@ -34,8 +32,7 @@ public class InternalUseDocActivity extends AppBaseActivity
     List<Doc> docList;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.internal_use_doc_layout);
         setTitle("Daxili istifadə");
@@ -66,13 +63,13 @@ public class InternalUseDocActivity extends AppBaseActivity
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(
                     InternalUseDocActivity.this);
             dialogBuilder.setMessage("Silmək istəyirsiniz?")
-                         .setPositiveButton("Bəli", (dialog1, which) -> {
-                             Doc doc = (Doc) parent.getItemAtPosition(position);
-                             dbHelper.deleteInternalUseDoc(doc.getTrxNo());
-                             InternalUseDocActivity.this.loadData();
-                         })
-                         .setNegativeButton("Xeyr", null)
-                         .create();
+                    .setPositiveButton("Bəli", (dialog1, which) -> {
+                        Doc doc = (Doc) parent.getItemAtPosition(position);
+                        dbHelper.deleteInternalUseDoc(doc.getTrxNo());
+                        InternalUseDocActivity.this.loadData();
+                    })
+                    .setNegativeButton("Xeyr", null)
+                    .create();
             dialogBuilder.show();
             return true;
         };
@@ -85,14 +82,12 @@ public class InternalUseDocActivity extends AppBaseActivity
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         loadData();
     }
 
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.pick_menu, menu);
         MenuItem attributes = menu.findItem(R.id.inv_attributes);
@@ -109,31 +104,25 @@ public class InternalUseDocActivity extends AppBaseActivity
         return true;
     }
 
-    public void loadData()
-    {
+    public void loadData() {
         docList = dbHelper.getInternalUseDocList();
-        if(docList.size() == 0)
-        {
+        if (docList.isEmpty()) {
             findViewById(R.id.doc_list_scroll).setVisibility(View.INVISIBLE);
-        }
-        else
-        {
+        } else {
             findViewById(R.id.doc_list_scroll).setVisibility(View.VISIBLE);
             DocAdapter adapter = new DocAdapter(this, R.layout.internal_use_doc_item_layout,
-                                                docList);
+                    docList);
             docListView.setAdapter(adapter);
         }
     }
 
 
-    static class DocAdapter extends ArrayAdapter<Doc>
-    {
+    class DocAdapter extends ArrayAdapter<Doc> {
 
         InternalUseDocActivity activity;
         List<Doc> list;
 
-        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects)
-        {
+        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects) {
             super(context, resourceId, objects);
             list = objects;
             activity = (InternalUseDocActivity) context;
@@ -141,15 +130,13 @@ public class InternalUseDocActivity extends AppBaseActivity
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             Doc doc = list.get(position);
 
-            if(convertView == null)
-            {
-                convertView = LayoutInflater.from(getContext())
-                                            .inflate(R.layout.internal_use_doc_item_layout, parent,
-                                                     false);
+            if (convertView == null) {
+                convertView = getLayoutInflater()
+                        .inflate(R.layout.internal_use_doc_item_layout, parent,
+                                false);
             }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);

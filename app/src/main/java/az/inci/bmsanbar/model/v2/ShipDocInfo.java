@@ -3,8 +3,7 @@ package az.inci.bmsanbar.model.v2;
 import lombok.Data;
 
 @Data
-public class ShipDocInfo
-{
+public class ShipDocInfo {
     private String driverCode;
     private String driverName;
     private String vehicleCode;

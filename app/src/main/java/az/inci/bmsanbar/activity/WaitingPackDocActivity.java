@@ -3,7 +3,6 @@ package az.inci.bmsanbar.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -20,15 +19,13 @@ import java.util.Map;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Doc;
 
-public class WaitingPackDocActivity extends AppBaseActivity
-{
+public class WaitingPackDocActivity extends AppBaseActivity {
 
     List<Doc> docList;
     ListView docListView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open_pack_doc);
 
@@ -45,22 +42,17 @@ public class WaitingPackDocActivity extends AppBaseActivity
     }
 
     @Override
-    public void loadData()
-    {
+    public void loadData() {
         DocAdapter docAdapter = new DocAdapter(this, R.layout.pack_doc_item_layout, docList);
         docListView.setAdapter(docAdapter);
-        if(docList.size() == 0)
-        {
+        if (docList.size() == 0) {
             findViewById(R.id.header).setVisibility(View.GONE);
-        }
-        else
-        {
+        } else {
             findViewById(R.id.header).setVisibility(View.VISIBLE);
         }
     }
 
-    public void getNewDocs()
-    {
+    public void getNewDocs() {
         showProgressDialog(true);
         new Thread(() -> {
             String url = url("pack", "waiting-docs");
@@ -68,46 +60,39 @@ public class WaitingPackDocActivity extends AppBaseActivity
             parameters.put("user-id", getUser().getId());
             url = addRequestParameters(url, parameters);
             docList = getListData(url, "GET", null, Doc[].class);
-            if(docList != null)
-            {
+            if (docList != null) {
                 runOnUiThread(this::loadData);
             }
         }).start();
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         getNewDocs();
     }
 
-    static class DocAdapter extends ArrayAdapter<Doc>
-    {
+    class DocAdapter extends ArrayAdapter<Doc> {
         List<Doc> list;
 
-        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects)
-        {
+        DocAdapter(@NonNull Context context, int resourceId, @NonNull List<Doc> objects) {
             super(context, resourceId, objects);
             list = objects;
         }
 
         @Override
-        public int getCount()
-        {
+        public int getCount() {
             return list.size();
         }
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             Doc doc = list.get(position);
 
-            if(convertView == null)
-            {
-                convertView = LayoutInflater.from(getContext())
-                                            .inflate(R.layout.pack_doc_item_layout, parent, false);
+            if (convertView == null) {
+                convertView = getLayoutInflater()
+                        .inflate(R.layout.pack_doc_item_layout, parent, false);
             }
 
             TextView trxNo = convertView.findViewById(R.id.trx_no);

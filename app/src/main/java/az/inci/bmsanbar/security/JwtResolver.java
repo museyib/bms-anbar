@@ -7,31 +7,27 @@ import java.util.Properties;
 
 import az.inci.bmsanbar.activity.AppBaseActivity;
 
-public class JwtResolver
-{
+public class JwtResolver {
     private final Context context;
     private final String username;
     private final String password;
     private final String secretKey;
 
-    public JwtResolver(Context context)
-    {
+    public JwtResolver(Context context) {
         this.context = context;
 
         Properties properties = new Properties();
-        try
-        {
+        try {
             properties.load(context.getAssets().open("app.properties"));
+        } catch (IOException ignored) {
         }
-        catch(IOException ignored) {}
 
         username = properties.getProperty("app.username");
         password = properties.getProperty("app.password");
         secretKey = properties.getProperty("app.secret-key");
     }
 
-    public String resolve()
-    {
+    public String resolve() {
         AuthenticationRequest request = new AuthenticationRequest();
         request.setUsername(username);
         request.setPassword(password);

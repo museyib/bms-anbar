@@ -7,12 +7,10 @@ import android.webkit.WebView;
 
 import az.inci.bmsanbar.R;
 
-public class PhotoActivity extends AppBaseActivity
-{
+public class PhotoActivity extends AppBaseActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory_photo);
         WebView webView = findViewById(R.id.photo_view);
@@ -21,7 +19,7 @@ public class PhotoActivity extends AppBaseActivity
         String invCode = getIntent().getStringExtra("invCode");
         String imgUrl = imageUrl + "/" + invCode + ".jpg";
         String htmlCode = "<html><head><style>img {max-width: 100%}" +
-                          "</style></head><body><img src='" + imgUrl + "'/></body></html>";
+                "</style></head><body><img src='" + imgUrl + "'/></body></html>";
         webView.loadData(htmlCode, "text/html", "UTF-8");
     }
 }

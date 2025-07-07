@@ -113,16 +113,14 @@
             android:label="@string/transport" />
         <activity android:name=".activity.AppBaseActivity" />
         <activity android:name=".activity.PickTrxActivity" />
-        <activity
-            android:name=".activity.BarcodeScannerCamera"
-            android:label="@string/camera_scanner" />
         <activity android:name=".activity.ProductApproveDocActivity" />
         <activity android:name=".activity.ProductApproveTrxActivity" />
         <activity android:name=".activity.EditBarcodesActivity" />
         <activity android:name=".activity.InternalUseDocActivity" />
         <activity android:name=".activity.InternalUseTrxActivity" />
         <activity android:name=".activity.ConfirmDeliveryActivity" />
-        <activity android:name=".activity.BarcodeScannerCameraV2" />
+        <activity android:name=".activity.BarcodeScannerCamera" />
+        <activity android:name="az.inci.bmsanbar.activity.LogViewActivity" />
     </application>
 
 </manifest>

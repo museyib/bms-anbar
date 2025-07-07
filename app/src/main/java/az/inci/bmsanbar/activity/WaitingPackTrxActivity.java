@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -24,8 +23,7 @@ import java.util.Map;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.Trx;
 
-public class WaitingPackTrxActivity extends AppBaseActivity
-{
+public class WaitingPackTrxActivity extends AppBaseActivity {
 
     List<Trx> trxList;
     ListView trxListView;
@@ -35,8 +33,7 @@ public class WaitingPackTrxActivity extends AppBaseActivity
     private DecimalFormat decimalFormat;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waiting_pack_trx);
         decimalFormat = new DecimalFormat();
@@ -59,18 +56,14 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         getData();
     }
 
-    private void showInfoDialog(Trx trx)
-    {
+    private void showInfoDialog(Trx trx) {
         String info = trx.getNotes().replaceAll("; ", "\n");
         info = info.replaceAll("\\\\n", "\n");
         info += "\n\nÖlçü vahidi: " + trx.getUom();
         info += "\n\nBrend: " + trx.getInvBrand();
-        if(!TextUtils.isEmpty(trx.getPickUser()))
-        {
+        if (!TextUtils.isEmpty(trx.getPickUser())) {
             info += "\n\nYığan: " + trx.getPickUser();
-        }
-        else
-        {
+        } else {
             info += "\n\nYığım qrupu: " + trx.getPickGroup();
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -93,27 +86,23 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         builder.show();
     }
 
-    public void getData()
-    {
+    public void getData() {
         showProgressDialog(true);
         new Thread(() -> {
             trxList = getTrxList();
-            if(trxList != null) runOnUiThread(this::loadData);
+            if (trxList != null) runOnUiThread(this::loadData);
         }).start();
     }
 
     @Override
-    protected void loadData()
-    {
-        if(trxList.size() > 0)
-        {
+    protected void loadData() {
+        if (trxList.size() > 0) {
             TrxAdapter trxAdapter = new TrxAdapter(this, R.layout.pack_trx_item_layout, trxList);
             trxListView.setAdapter(trxAdapter);
         }
     }
 
-    private List<Trx> getTrxList()
-    {
+    private List<Trx> getTrxList() {
         String url = url("pack", "waiting-doc-items");
         Map<String, String> parameters = new HashMap<>();
         parameters.put("trx-no", trxNo);
@@ -121,39 +110,33 @@ public class WaitingPackTrxActivity extends AppBaseActivity
         return getListData(url, "GET", null, Trx[].class);
     }
 
-    static class TrxAdapter extends ArrayAdapter<Trx>
-    {
+    class TrxAdapter extends ArrayAdapter<Trx> {
         WaitingPackTrxActivity activity;
         List<Trx> list;
 
-        TrxAdapter(@NonNull Context context, int resourceId, @NonNull List<Trx> objects)
-        {
+        TrxAdapter(@NonNull Context context, int resourceId, @NonNull List<Trx> objects) {
             super(context, resourceId, objects);
             list = objects;
             activity = (WaitingPackTrxActivity) context;
         }
 
         @Override
-        public int getCount()
-        {
+        public int getCount() {
             return list.size();
         }
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             Trx trx = list.get(position);
 
-            if(convertView == null)
-            {
-                convertView = LayoutInflater.from(getContext())
-                                            .inflate(R.layout.waiting_pack_trx_item_layout, parent,
-                                                     false);
+            if (convertView == null) {
+                convertView = getLayoutInflater()
+                        .inflate(R.layout.waiting_pack_trx_item_layout, parent,
+                                false);
             }
 
-            switch(trx.getPickStatus())
-            {
+            switch (trx.getPickStatus()) {
                 case "P":
                     convertView.setBackgroundColor(Color.GREEN);
                     break;

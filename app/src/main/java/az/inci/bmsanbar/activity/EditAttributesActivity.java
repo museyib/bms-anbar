@@ -23,8 +23,7 @@ import java.util.Map;
 import az.inci.bmsanbar.R;
 import az.inci.bmsanbar.model.InvAttribute;
 
-public class EditAttributesActivity extends AppBaseActivity
-{
+public class EditAttributesActivity extends AppBaseActivity {
 
     ListView attributeListView;
     String invCode;
@@ -32,8 +31,7 @@ public class EditAttributesActivity extends AppBaseActivity
     List<InvAttribute> attributeList;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_attributes);
 
@@ -45,25 +43,21 @@ public class EditAttributesActivity extends AppBaseActivity
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         loadData();
     }
 
-    public void loadData()
-    {
+    public void loadData() {
         showProgressDialog(true);
         new Thread(() -> {
             attributeList = getAttributeList();
-            if(attributeList != null) runOnUiThread(this::updatePage);
+            if (attributeList != null) runOnUiThread(this::updatePage);
         }).start();
     }
 
-    public void updatePage()
-    {
-        if(attributeList.size() > 0)
-        {
+    public void updatePage() {
+        if (attributeList.size() > 0) {
             findViewById(R.id.save).setOnClickListener(v -> updateAttributes());
         }
         AttributeAdapter adapter = new AttributeAdapter(this, attributeList);
@@ -71,15 +65,14 @@ public class EditAttributesActivity extends AppBaseActivity
 
         AdapterView.OnItemClickListener itemClickListener = (parent, view, position, id) -> {
             View dialog = LayoutInflater.from(EditAttributesActivity.this)
-                                        .inflate(R.layout.edit_attribute_dialog, parent, false);
+                    .inflate(R.layout.edit_attribute_dialog, parent, false);
             InvAttribute attribute = attributeList.get(position);
             EditAttributesActivity.this.showEditAttributeDialog(attribute, dialog);
         };
         attributeListView.setOnItemClickListener(itemClickListener);
     }
 
-    private void showEditAttributeDialog(InvAttribute attribute, View dialog)
-    {
+    private void showEditAttributeDialog(InvAttribute attribute, View dialog) {
         TextView nameText = dialog.findViewById(R.id.attribute_name);
         EditText valueEdit = dialog.findViewById(R.id.attribute_value);
         nameText.setText(attribute.getAttributeName());
@@ -92,8 +85,7 @@ public class EditAttributesActivity extends AppBaseActivity
         dialogBuilder.show();
     }
 
-    private List<InvAttribute> getAttributeList()
-    {
+    private List<InvAttribute> getAttributeList() {
         String url = url("inv", "attribute-list-by-whs");
         Map<String, String> parameters = new HashMap<>();
         parameters.put("inv-code", invCode);
@@ -102,8 +94,7 @@ public class EditAttributesActivity extends AppBaseActivity
         return getListData(url, "GET", null, InvAttribute[].class);
     }
 
-    private void updateAttributes()
-    {
+    private void updateAttributes() {
         showProgressDialog(true);
         String url = url("inv", "update-attributes");
         executeUpdate(url, attributeList, message -> {
@@ -112,13 +103,11 @@ public class EditAttributesActivity extends AppBaseActivity
         });
     }
 
-    private static class AttributeAdapter extends ArrayAdapter<InvAttribute>
-    {
+    private class AttributeAdapter extends ArrayAdapter<InvAttribute> {
         Context context;
         List<InvAttribute> attributeList;
 
-        public AttributeAdapter(@NonNull Context context, @NonNull List<InvAttribute> objects)
-        {
+        public AttributeAdapter(@NonNull Context context, @NonNull List<InvAttribute> objects) {
             super(context, 0, objects);
             this.context = context;
             attributeList = objects;
@@ -126,13 +115,11 @@ public class EditAttributesActivity extends AppBaseActivity
 
         @NonNull
         @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
-        {
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             InvAttribute attribute = attributeList.get(position);
-            if(convertView == null)
-            {
-                convertView = LayoutInflater.from(context)
-                                            .inflate(R.layout.attribute_item, parent, false);
+            if (convertView == null) {
+                convertView = getLayoutInflater()
+                        .inflate(R.layout.attribute_item, parent, false);
             }
 
             ViewHolder holder = new ViewHolder();
@@ -141,39 +128,32 @@ public class EditAttributesActivity extends AppBaseActivity
             holder.valueEdit = convertView.findViewById(R.id.attribute_value);
             holder.nameEdit.setText(attribute.getAttributeName());
 
-            if(attribute.getAttributeType().equals("BIT"))
-            {
+            if (attribute.getAttributeType().equals("BIT")) {
                 holder.valueCheck.setChecked(attribute.getAttributeValue().equals("1"));
                 holder.valueCheck.setOnCheckedChangeListener(
                         (buttonView, isChecked) -> attribute.setAttributeValue(
                                 String.valueOf(isChecked ? 1 : 0)));
                 holder.valueCheck.setVisibility(View.VISIBLE);
                 holder.valueEdit.setVisibility(View.GONE);
-            }
-            else
-            {
+            } else {
                 holder.valueEdit.setText(attribute.getAttributeValue());
                 holder.valueEdit.setVisibility(View.VISIBLE);
                 holder.valueCheck.setVisibility(View.GONE);
             }
 
-            if(((EditAttributesActivity) context).getUser().isLocationFlag() &&
-               (attribute.getAttributeId().equals("AT010") ||
-                attribute.getAttributeId().equals("AT011")) ||
-               !((EditAttributesActivity) context).getUser().isLocationFlag())
-            {
+            if (((EditAttributesActivity) context).getUser().isLocationFlag() &&
+                    (attribute.getAttributeId().equals("AT010") ||
+                            attribute.getAttributeId().equals("AT011")) ||
+                    !((EditAttributesActivity) context).getUser().isLocationFlag()) {
                 convertView.setVisibility(View.VISIBLE);
-            }
-            else
-            {
+            } else {
                 convertView.setVisibility(View.GONE);
             }
 
             return convertView;
         }
 
-        private static class ViewHolder
-        {
+        private class ViewHolder {
             TextView nameEdit;
             TextView valueEdit;
             CheckBox valueCheck;

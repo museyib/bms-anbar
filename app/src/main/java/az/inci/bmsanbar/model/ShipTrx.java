@@ -7,8 +7,7 @@ import java.util.Objects;
 import lombok.Data;
 
 @Data
-public class ShipTrx
-{
+public class ShipTrx {
     private String regionCode;
     private String driverCode;
     private String driverName;
@@ -19,23 +18,20 @@ public class ShipTrx
 
     @NonNull
     @Override
-    public String toString()
-    {
+    public String toString() {
         return srcTrxNo + (taxed ? "\t : İcazəlidir" : "");
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         ShipTrx trx = (ShipTrx) o;
         return srcTrxNo.equals(trx.srcTrxNo);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(srcTrxNo);
     }
 }

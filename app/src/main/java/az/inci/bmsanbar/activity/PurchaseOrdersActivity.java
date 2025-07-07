@@ -3,7 +3,6 @@ package az.inci.bmsanbar.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,8 +45,7 @@ public class PurchaseOrdersActivity extends AppBaseActivity implements SearchVie
         getDocList();
     }
 
-    private void getDocList()
-    {
+    private void getDocList() {
         showProgressDialog(true);
         new Thread(() -> {
             Map<String, String> parameters = new HashMap<>();
@@ -55,8 +53,7 @@ public class PurchaseOrdersActivity extends AppBaseActivity implements SearchVie
             String url = addRequestParameters(url("purchase", "doc"), parameters);
             docList = getListData(url, "GET", null, PurchaseDoc[].class);
 
-            if (docList != null)
-            {
+            if (docList != null) {
                 runOnUiThread(() -> {
                     PurchaseDocAdapter adapter = new PurchaseDocAdapter(this, docList);
                     dataListView.setAdapter(adapter);
@@ -83,30 +80,28 @@ public class PurchaseOrdersActivity extends AppBaseActivity implements SearchVie
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem item = menu.findItem(R.id.search);
         SearchView searchView = (SearchView) item.getActionView();
-        if (searchView != null)
-        {
+        if (searchView != null) {
             searchView.setOnQueryTextListener(this);
             searchView.setActivated(true);
         }
         return super.onCreateOptionsMenu(menu);
     }
 
-    private class PurchaseDocAdapter extends RecyclerView.Adapter<PurchaseDocAdapter.ViewHolder>  implements Filterable
-    {
+    private class PurchaseDocAdapter extends RecyclerView.Adapter<PurchaseDocAdapter.ViewHolder> implements Filterable {
         private final Context context;
         private List<PurchaseDoc> localDataList;
         private View itemView;
 
-        public PurchaseDocAdapter(Context context, List<PurchaseDoc> localDataList)
-        {
+        public PurchaseDocAdapter(Context context, List<PurchaseDoc> localDataList) {
             this.context = context;
 
             this.localDataList = localDataList;
         }
+
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            itemView = LayoutInflater.from(context).inflate(R.layout.purchase_order_item, parent, false);
+            itemView = getLayoutInflater().inflate(R.layout.purchase_order_item, parent, false);
 
             return new ViewHolder(itemView);
         }
@@ -133,40 +128,17 @@ public class PurchaseOrdersActivity extends AppBaseActivity implements SearchVie
             return localDataList.size();
         }
 
-        class ViewHolder extends RecyclerView.ViewHolder
-        {
-            TextView trxNo;
-            TextView trxDate;
-            TextView seller;
-            TextView sbe;
-            TextView description;
-            TextView whs;
-
-            public ViewHolder(@NonNull View itemView) {
-                super(itemView);
-
-                trxNo = itemView.findViewById(R.id.trx_no);
-                trxDate = itemView.findViewById(R.id.trx_date);
-                seller = itemView.findViewById(R.id.seller);
-                sbe = itemView.findViewById(R.id.sbe);
-                description = itemView.findViewById(R.id.description);
-                whs = itemView.findViewById(R.id.whs);
-            }
-        }
-
-
         @Override
         public Filter getFilter() {
             return new Filter() {
                 @Override
                 protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults filterResults = new FilterResults();
-                    List<PurchaseDoc> filteredData =new ArrayList<>();
+                    List<PurchaseDoc> filteredData = new ArrayList<>();
                     constraint = constraint.toString().toLowerCase();
 
 
-                    for (PurchaseDoc doc : docList)
-                    {
+                    for (PurchaseDoc doc : docList) {
                         StringBuilder sb = new StringBuilder();
                         sb.append(doc.getBpName());
                         sb.append(doc.getSbeName());
@@ -189,6 +161,26 @@ public class PurchaseOrdersActivity extends AppBaseActivity implements SearchVie
                     notifyDataSetChanged();
                 }
             };
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            TextView trxNo;
+            TextView trxDate;
+            TextView seller;
+            TextView sbe;
+            TextView description;
+            TextView whs;
+
+            public ViewHolder(@NonNull View itemView) {
+                super(itemView);
+
+                trxNo = itemView.findViewById(R.id.trx_no);
+                trxDate = itemView.findViewById(R.id.trx_date);
+                seller = itemView.findViewById(R.id.seller);
+                sbe = itemView.findViewById(R.id.sbe);
+                description = itemView.findViewById(R.id.description);
+                whs = itemView.findViewById(R.id.whs);
+            }
         }
     }
 }

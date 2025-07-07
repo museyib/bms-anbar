@@ -141,4 +141,7 @@
     <string name="device_info">Cihaz ID-si</string>
     <string name="info_not_found">Məlumat tapılmadı</string>
     <string name="latest_movements">Son hərəkət tarixçəsi</string>
+    <string name="clear_logs">Loqları təmizlə</string>
+    <string name="share">Paylaş</string>
+    <string name="logs">Loqlar</string>
 </resources>

@@ -5,8 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ShipmentRequestItem
-{
+public class ShipmentRequestItem {
     private String srcTrxNo;
     private String shipStatus;
 }
