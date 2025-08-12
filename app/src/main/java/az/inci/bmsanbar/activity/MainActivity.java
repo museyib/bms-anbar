@@ -62,7 +62,6 @@ public class MainActivity extends AppBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        enableStorageAccess();
 
         id = preferences.getString("last_login_id", "");
         password = preferences.getString("last_login_password", "");

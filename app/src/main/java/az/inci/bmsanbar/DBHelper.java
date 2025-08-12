@@ -1,5 +1,8 @@
 package az.inci.bmsanbar;
 
+import static az.inci.bmsanbar.AppConfig.DB_NAME;
+import static az.inci.bmsanbar.AppConfig.DB_VERSION;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -7,6 +10,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -86,8 +95,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public DBHelper(Context context) {
-        super(context, Objects.requireNonNull(context.getExternalFilesDir("/"))
-                .getPath() + "/" + AppConfig.DB_NAME, null, AppConfig.DB_VERSION);
+        super(context, getDatabasePath(context), null, DB_VERSION);
         logger = new Logger(context);
     }
 
@@ -98,17 +106,52 @@ public class DBHelper extends SQLiteOpenHelper {
         return instance;
     }
 
+    private static String getDatabasePath(Context context) {
+        File internalDb = context.getDatabasePath(DB_NAME);
+        if (internalDb.exists()) {
+            return internalDb.getPath();
+        }
+
+        File oldDb = new File(
+                Objects.requireNonNull(context.getExternalFilesDir("/")),
+                DB_NAME
+        );
+
+        if (oldDb.exists()) {
+            try {
+                copyFile(oldDb, internalDb);
+            } catch (IOException e) {
+                return oldDb.getPath();
+            }
+            return internalDb.getPath();
+        }
+
+        return internalDb.getPath();
+    }
+
+    private static void copyFile(File src, File dst) throws IOException {
+        try (InputStream in = new FileInputStream(src);
+             OutputStream out = new FileOutputStream(dst)) {
+
+            byte[] buffer = new byte[4096];
+            int len;
+            while ((len = in.read(buffer)) > 0) {
+                out.write(buffer, 0, len);
+            }
+        }
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
-        createPickDocTable();
-        createPickTrxTable();
-        createPackDocTable();
-        createPackTrxTable();
-        createShipTrxTable();
-        createApproveDocTable();
-        createApproveTrxTable();
-        createInternalUseDocTable();
-        createInternalUseTrxTable();
+        createPickDocTable(db);
+        createPickTrxTable(db);
+        createPackDocTable(db);
+        createPackTrxTable(db);
+        createShipTrxTable(db);
+        createApproveDocTable(db);
+        createApproveTrxTable(db);
+        createInternalUseDocTable(db);
+        createInternalUseTrxTable(db);
     }
 
     @Override
@@ -121,9 +164,7 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    private void createPickDocTable() {
-        SQLiteDatabase db = getWritableDatabase();
-        List<Doc> allPickDocs = getAllPickDocs();
+    private void createPickDocTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + PICK_DOC);
 
         StringBuilder sb = new StringBuilder();
@@ -147,42 +188,6 @@ public class DBHelper extends SQLiteOpenHelper {
         } catch (Exception e) {
             logger.logError(e.toString());
         }
-
-        for (Doc doc : allPickDocs) {
-            addPickDoc(doc);
-        }
-    }
-
-    public List<Doc> getAllPickDocs() {
-        SQLiteDatabase db = getWritableDatabase();
-        List<Doc> docList = new ArrayList<>();
-
-        String query = "SELECT TRX_NO," +
-                "TRX_DATE," +
-                "DOC_DESC," +
-                "PREV_TRX_NO," +
-                "PICK_USER," +
-                "PICK_AREA," +
-                "PICK_GROUP, " +
-                "WHS_CODE FROM PICK_DOC";
-
-        try (Cursor cursor = db.rawQuery(query, new String[]{})) {
-            while (cursor.moveToNext()) {
-                Doc doc = new Doc();
-                doc.setTrxNo(cursor.getString(0));
-                doc.setTrxDate(cursor.getString(1));
-                doc.setDescription(cursor.getString(2));
-                doc.setPrevTrxNo(cursor.getString(3));
-                doc.setPickUser(cursor.getString(4));
-                doc.setPickArea(cursor.getString(5));
-                doc.setPickGroup(cursor.getString(6));
-                doc.setWhsCode(cursor.getString(7));
-
-                docList.add(doc);
-            }
-        }
-
-        return docList;
     }
 
     public List<Doc> getPickDocsByPickUser(String pickUser) {
@@ -274,10 +279,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return 0;
     }
 
-    private void createPickTrxTable() {
-        SQLiteDatabase db = getWritableDatabase();
-        List<Trx> alPickTrx = getAllPickTrx();
-
+    private void createPickTrxTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + PICK_TRX);
         StringBuilder sb = new StringBuilder();
 
@@ -308,10 +310,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 .append(STATUS).append(" INTEGER")
                 .append(")")
                 .toString());
-
-        for (Trx trx : alPickTrx) {
-            addPickTrx(trx);
-        }
     }
 
     public void addPickTrx(Trx trx) {
@@ -514,9 +512,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.delete(PICK_DOC, TRX_NO + "=?", new String[]{trxNo});
     }
 
-    private void createPackDocTable() {
-        SQLiteDatabase db = getWritableDatabase();
-        List<Doc> allPackDocs = getAllPackDocs();
+    private void createPackDocTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + PACK_DOC);
 
         StringBuilder sb = new StringBuilder();
@@ -547,48 +543,6 @@ public class DBHelper extends SQLiteOpenHelper {
         } catch (SQLiteException e) {
             logger.logError(e.toString());
         }
-
-        for (Doc doc : allPackDocs) {
-            addPackDoc(doc);
-        }
-    }
-
-    public List<Doc> getAllPackDocs() {
-        SQLiteDatabase db = getWritableDatabase();
-        List<Doc> docList = new ArrayList<>();
-
-        String query = "SELECT TRX_NO," +
-                "TRX_DATE," +
-                "DOC_DESC," +
-                "PREV_TRX_NO," +
-                "BP_CODE," +
-                "BP_NAME," +
-                "SBE_CODE," +
-                "SBE_NAME," +
-                "APPROVE_USER," +
-                "NOTES," +
-                "WHS_CODE FROM PACK_DOC";
-
-        try (Cursor cursor = db.rawQuery(query, new String[]{})) {
-            while (cursor.moveToNext()) {
-                Doc doc = new Doc();
-                doc.setTrxNo(cursor.getString(0));
-                doc.setTrxDate(cursor.getString(1));
-                doc.setDescription(cursor.getString(2));
-                doc.setPrevTrxNo(cursor.getString(3));
-                doc.setBpCode(cursor.getString(4));
-                doc.setBpName(cursor.getString(5));
-                doc.setSbeCode(cursor.getString(6));
-                doc.setSbeName(cursor.getString(7));
-                doc.setApproveUser(cursor.getString(8));
-                doc.setNotes(cursor.getString(9));
-                doc.setWhsCode(cursor.getString(10));
-
-                docList.add(doc);
-            }
-        }
-
-        return docList;
     }
 
     public List<Doc> getPackDocsByApproveUser(String approveUser) {
@@ -688,9 +642,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return 0;
     }
 
-    private void createPackTrxTable() {
-        SQLiteDatabase db = getWritableDatabase();
-        List<Trx> allPackTrx = getAllPackTrx();
+    private void createPackTrxTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + PACK_TRX);
         StringBuilder sb = new StringBuilder();
 
@@ -722,10 +674,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 .append(STATUS).append(" INTEGER")
                 .append(")")
                 .toString());
-
-        for (Trx trx : allPackTrx) {
-            addPackTrx(trx);
-        }
     }
 
     public void addPackTrx(Trx trx) {
@@ -757,52 +705,6 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(STATUS, 0);
 
         db.insert(PACK_TRX, null, values);
-    }
-
-    public List<Trx> getAllPackTrx() {
-        SQLiteDatabase db = getWritableDatabase();
-
-        List<Trx> trxList = new ArrayList<>();
-
-        String sql = "SELECT * FROM PACK_TRX";
-            try (Cursor cursor = db.rawQuery(sql, new String[]{})) {
-
-            int position = 0;
-
-            while (cursor.moveToNext()) {
-                Trx trx = new Trx();
-                trx.setTrxId(cursor.getInt(0));
-                trx.setTrxNo(cursor.getString(1));
-                trx.setTrxDate(cursor.getString(2));
-                trx.setPickStatus(cursor.getString(3));
-                trx.setInvCode(cursor.getString(4));
-                trx.setInvName(cursor.getString(5));
-                trx.setInvBrand(cursor.getString(6));
-                trx.setBpName(cursor.getString(7));
-                trx.setSbeName(cursor.getString(8));
-                trx.setWhsCode(cursor.getString(9));
-                trx.setUom(cursor.getString(10));
-                trx.setUomFactor(cursor.getDouble(11));
-                trx.setQty(cursor.getDouble(12));
-                trx.setPickedQty(cursor.getDouble(13));
-                trx.setPackedQty(cursor.getDouble(14));
-                trx.setPickArea(cursor.getString(15));
-                trx.setPickGroup(cursor.getString(16));
-                trx.setPickUser(cursor.getString(17));
-                trx.setApproveUser(cursor.getString(18));
-                trx.setBarcode(cursor.getString(19));
-                trx.setPrevTrxNo(cursor.getString(20));
-                trx.setNotes(cursor.getString(21));
-                trx.setPriority(cursor.getInt(22));
-                trx.setPosition(position);
-
-                if (!trxList.contains(trx)) {
-                    trxList.add(trx);
-                    position++;
-                }
-            }
-        }
-        return trxList;
     }
 
     public List<Trx> getPackTrxByApproveUser(String trxNo) {
@@ -938,8 +840,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.delete(PACK_DOC, TRX_NO + "=?", new String[]{trxNo});
     }
 
-    public void createShipTrxTable() {
-        SQLiteDatabase db = getWritableDatabase();
+    public void createShipTrxTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + SHIP_TRX);
         StringBuilder sb = new StringBuilder();
 
@@ -1059,8 +960,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return barcodeList.toString();
     }
 
-    private void createApproveDocTable() {
-        SQLiteDatabase db = getWritableDatabase();
+    private void createApproveDocTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + APPROVE_DOC);
         db.execSQL(
                 "CREATE TABLE APPROVE_DOC (TRX_NO TEXT PRIMARY KEY, TRX_DATE TEXT, TRX_TYPE_ID INTEGER," +
@@ -1170,8 +1070,7 @@ public class DBHelper extends SQLiteOpenHelper {
         deleteApproveTrxByTrxNo(trxNo);
     }
 
-    private void createApproveTrxTable() {
-        SQLiteDatabase db = getWritableDatabase();
+    private void createApproveTrxTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + APPROVE_TRX);
         db.execSQL(
                 "CREATE TABLE APPROVE_TRX (TRX_ID INTEGER PRIMARY KEY, TRX_NO TEXT, INV_CODE TEXT," +
@@ -1265,8 +1164,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return n;
     }
 
-    private void createInternalUseDocTable() {
-        SQLiteDatabase db = getWritableDatabase();
+    private void createInternalUseDocTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + INTERNAL_USE_DOC);
         db.execSQL("CREATE TABLE INTERNAL_USE_DOC (" +
                 "TRX_NO TEXT PRIMARY KEY, " +
@@ -1334,8 +1232,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    private void createInternalUseTrxTable() {
-        SQLiteDatabase db = getWritableDatabase();
+    private void createInternalUseTrxTable(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS " + INTERNAL_USE_TRX);
         db.execSQL("CREATE TABLE INTERNAL_USE_TRX (" +
                 "TRX_ID INTEGER PRIMARY KEY, " +
